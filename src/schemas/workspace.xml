@@ -1,0 +1,37 @@
+<mljcr:workspace
+	xmlns:mljcr="http://marklogic.com/jcr"
+	xmlns:jcr="http://www.jcp.org/jcr/1.0"
+	xmlns:nt="http://www.jcp.org/nt/1.0"
+	xmlns:mix="http://www.jcp.org/mix/1.0"
+	xmlns:mytypes="http://mycorp.com/mytypes"
+	xmlns:myapp="http://mycorp.com/myapp"
+	name="Test Workspace">
+	<mljcr:root>
+		<myapp:article jcr:primaryType="nt:hierarchyNode" jcr:mixinTypes="nt:referenceable"
+			jcr:uuid="1234-5678-9876" jcr:created="2008-02-02T15:30:22">
+			<myapp:title jcr:primaryType="mytypes:title">Britney Spears Breaks Down</myapp:title>
+			<myapp:pub-date jcr:primaryType="nt:date" jcr:date="2008-03-02"/>
+			<myapp:photo jcr:primaryType="mytypes:photo">
+				<myapp:caption jcr:primaryType="mytypes:caption"
+					mytypes:text="Britney Spears Leaving Courtroom"/>
+				<myapp:image jcr:primaryType="nt:resource" jcr:mimeType="image/jpeg"
+					jcr:lastModified="2007-05-15T09:20:07" jcr:data="32138092380.jpg"/>
+			</myapp:photo>
+			<myapp:body jcr:primaryType="mytypes:article-body">
+				<myapp:para jcr:primaryType="mytypes:para">
+					Britney Spears went nuts again today...
+				</myapp:para>
+				<myapp:para jcr:primaryType="mytypes:para">
+					More useless drivel...
+				</myapp:para>
+			</myapp:body>
+			<myapp:author-photo jcr:primaryType="mytypes:photo-ref"
+				myapp:photo-path="/photolib/authors/gossip-monger.jpg"/>
+		</myapp:article>
+	</mljcr:root>
+	<mljcr:stored-queries>
+		<mljcr:query jcr:primaryType="nt:query" jcr:language="xpath">
+			<jcr:statement>//myapp:article/myapp:para[jcr:contains(.,"nuts")]</jcr:statement>
+		</mljcr:query>
+	</mljcr:stored-queries>
+</mljcr:workspace>
