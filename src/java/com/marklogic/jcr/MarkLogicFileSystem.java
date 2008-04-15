@@ -49,6 +49,8 @@ public class MarkLogicFileSystem implements FileSystem
 {
 	private static final Logger log = LoggerFactory.getLogger (MarkLogicFileSystem.class);
 
+	private static final String MODULE_ROOT = "filesystem/";
+
 	// bean properties
 	private String contentSourceUrl = null;
 	private String uriRoot = null;
@@ -102,10 +104,7 @@ public class MarkLogicFileSystem implements FileSystem
 		// TODO: anything to do here?
 	}
 
-	private static final String GET_DOC_QUERY =
-		"xquery version '1.0-ml';" +
-		"declare variable $uri external;" +
-		"fn:doc ($uri)";
+	private static final String GET_DOC_MODULE = "get-doc.xqy";
 
 	public InputStream getInputStream (String filePath) throws FileSystemException
 	{
@@ -114,7 +113,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 		log.info ("getInputStream: filePath=" + uri);
 
-		ResultSequence rs = runRequest (GET_DOC_QUERY, var);
+		ResultSequence rs = runModule (GET_DOC_MODULE, var);
 
 		if ( ! rs.hasNext()) {
 			throw new FileSystemException ("Cannot fetch document: " + filePath);
@@ -194,10 +193,7 @@ public class MarkLogicFileSystem implements FileSystem
 		throw new FileSystemException ("NOT IMPL");
 	}
 
-	private static final String CREATE_FOLDER_QUERY =
-		"xquery version '1.0-ml';" +
-		"declare variable $uri external;" +
-		"xdmp:directory-create ($uri)";
+	private static final String CREATE_FOLDER_MODULE = "create-folder.xqy";
 
 	public void createFolder (String folderPath) throws FileSystemException
 	{
@@ -206,65 +202,47 @@ public class MarkLogicFileSystem implements FileSystem
 
 		log.info ("createFolder: folderPath=" + uri);
 
-		runRequest (CREATE_FOLDER_QUERY, var);
+		runModule (CREATE_FOLDER_MODULE, var);
 	}
 
-	private static final String EXISTS_QUERY =
-		"xquery version '1.0-ml';" +
-		"declare variable $uri external;" +
-		"declare variable $dir-uri := fn:concat ($uri, '/');" +
-		"fn:exists (doc ($uri)) or fn:exists (xdmp:document-properties ($dir-uri)//prop:directory)";
+	private static final String EXISTS_MODULE = "exists.xqy";
 
 	public boolean exists (String path) throws FileSystemException
 	{
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		boolean result = runBinaryrequest (EXISTS_QUERY, var);
+		boolean result = runBinaryModule (EXISTS_MODULE, var);
 		log.info ("exists: String path=" + uri + ", result=" + result);
 
 		return result;
 	}
 
-	private static final String IS_FILE_QUERY =
-		"xquery version '1.0-ml';" +
-		"declare variable $uri external;" +
-		"declare variable $dir-uri := fn:concat ($uri, '/');" +
-		"fn:exists (doc ($uri))";
+	private static final String IS_FILE_MODULE = "is-file.xqy";
 
 	public boolean isFile (String path) throws FileSystemException
 	{
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		boolean result = runBinaryrequest (IS_FILE_QUERY, var);
+		boolean result = runBinaryModule (IS_FILE_MODULE, var);
 		log.info ("isFile: String path=" + uri + ", result=" + result);
 
 		return result;
 	}
 
-	private static final String IS_FOLDER_QUERY =
-		"xquery version '1.0-ml';" +
-		"declare variable $uri external;" +
-		"declare variable $dir-uri := fn:concat ($uri, '/');" +
-		"fn:exists (xdmp:document-properties ($uri)//prop:directory) or " +
-		"fn:exists (xdmp:document-properties ($dir-uri)//prop:directory)";
+	private static final String IS_FOLDER_MODULE = "is-folder.xqy";
 
 	public boolean isFolder (String path) throws FileSystemException
 	{
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		boolean result = runBinaryrequest (IS_FOLDER_QUERY, var);
+		boolean result = runBinaryModule (IS_FOLDER_MODULE, var);
 		log.info ("isFolder: String path=" + uri + ", result=" + result);
 
 		return result;
 	}
-
-	private static final String FETCH_DOC_QUERY =
-		"xquery version '1.0-ml';" +
-		"declare variable $uri external;" +
-		"fn:doc ($uri)";
 
 	public long length (String filePath) throws FileSystemException
 	{
@@ -275,10 +253,10 @@ public class MarkLogicFileSystem implements FileSystem
 		return fetchFile (uri).length;
 	}
 
-	public byte [] fetchFile (String uri) throws FileSystemException
+	private byte [] fetchFile (String uri) throws FileSystemException
 	{
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-		ResultSequence rs = runRequest (FETCH_DOC_QUERY, var);
+		ResultSequence rs = runModule (GET_DOC_MODULE, var);
 
 		if ( ! rs.hasNext()) {
 			throw new FileSystemException ("Document does not exist: " + uri);
@@ -375,6 +353,11 @@ public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 
+	private String modulePath (String module)
+	{
+		return (MODULE_ROOT + module);
+	}
+
 	private String fullPath (String relPath)
 	{
 		return (uriRoot + relPath);
@@ -444,10 +427,36 @@ public class MarkLogicFileSystem implements FileSystem
 
 	}
 
-	private boolean runBinaryrequest (String query, XdmVariable var)
+	private ResultSequence runModule (String module, XdmVariable var)
 		throws FileSystemException
 	{
-		ResultSequence rs = runRequest (query, var);
+		Session session = contentSource.newSession();
+		Request request = session.newModuleInvoke (modulePath (module));
+
+		request.setVariable (var);
+
+		try {
+			return (session.submitRequest (request));
+		} catch (RequestException e) {
+			throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
+		}
+
+	}
+
+//	private boolean runBinaryrequest (String query, XdmVariable var)
+//		throws FileSystemException
+//	{
+//		ResultSequence rs = runRequest (query, var);
+//		ResultItem item = rs.next();
+//		XSBoolean bool = (XSBoolean) item.getItem();
+//
+//		return bool.asPrimitiveBoolean();
+//	}
+
+	private boolean runBinaryModule (String module, XdmVariable var)
+		throws FileSystemException
+	{
+		ResultSequence rs = runModule (module, var);
 		ResultItem item = rs.next();
 		XSBoolean bool = (XSBoolean) item.getItem();
 
