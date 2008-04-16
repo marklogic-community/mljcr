@@ -19,6 +19,7 @@ import com.marklogic.xcc.exceptions.XccConfigException;
 import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
 import com.marklogic.xcc.types.XdmVariable;
+import com.marklogic.xcc.types.XSInteger;
 
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
@@ -185,6 +186,7 @@ public class MarkLogicFileSystem implements FileSystem
 		}
 	}
 
+	// FIXME: Implement this
 	public RandomAccessOutputStream getRandomAccessOutputStream (String filePath)
 		throws FileSystemException, UnsupportedOperationException
 	{
@@ -244,12 +246,17 @@ public class MarkLogicFileSystem implements FileSystem
 		return result;
 	}
 
+	private static final String DOC_LENGTH_MODULE = "doc-length.xqy";
+
 	public long length (String filePath) throws FileSystemException
 	{
 		String uri = fullPath (filePath);
-		log.info ("length: filePath=" + uri);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		// FIXME: This needs to be done in XQuery
+		int length = runIntModule (DOC_LENGTH_MODULE, var);
+
+		log.info ("length: filePath=" + uri + ", length=" + length);
+
 		return fetchFile (uri).length;
 	}
 
@@ -295,48 +302,87 @@ public class MarkLogicFileSystem implements FileSystem
 		throw new FileSystemException ("NOT IMPL");
 	}
 
+	private static final String HAS_CHILDREN_MODULE = "has-children.xqy";
+
 	public boolean hasChildren (String path) throws FileSystemException
 	{
-		log.info ("hasChildren: folderPath=" + path);
+		String uri = fullPath (path);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		throw new FileSystemException ("NOT IMPL");
+		boolean result = runBinaryModule (HAS_CHILDREN_MODULE, var);
+
+		log.info ("hasChildren: folderPath=" + path + ", result=" + result);
+
+		return result;
 	}
+
+	private static final String LIST_CHILDREN_MODULE = "list-children.xqy";
 
 	public String[] list (String folderPath) throws FileSystemException
 	{
 		log.info ("list: folderPath=" + folderPath);
 
-		throw new FileSystemException ("NOT IMPL");
+		String uri = fullPath (folderPath);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+
+		ResultSequence rs = runModule (LIST_CHILDREN_MODULE, var);
+
+		return rs.asStrings();
 	}
+
+	private static final String LIST_FILES_MODULE = "list-files.xqy";
 
 	public String[] listFiles (String folderPath) throws FileSystemException
 	{
 		log.info ("listFiles: folderPath=" + folderPath);
 
-		throw new FileSystemException ("NOT IMPL");
+		String uri = fullPath (folderPath);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+
+		ResultSequence rs = runModule (LIST_FILES_MODULE, var);
+
+		return rs.asStrings();
 	}
+
+	private static final String LIST_FOLDERS_MODULE = "list-folders.xqy";
 
 	public String[] listFolders (String folderPath) throws FileSystemException
 	{
 		log.info ("listFolders: folderPath=" + folderPath);
 
-		throw new FileSystemException ("NOT IMPL");
+		String uri = fullPath (folderPath);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+
+		ResultSequence rs = runModule (LIST_FOLDERS_MODULE, var);
+
+		return rs.asStrings();
 	}
+
+	private static final String DELETE_FILE_MODULE = "delete-file.xqy";
 
 	public void deleteFile (String filePath) throws FileSystemException
 	{
 		log.info ("deleteFile: folderPath=" + filePath);
 
-		throw new FileSystemException ("NOT IMPL");
+		String uri = fullPath (filePath);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+
+		runModule (DELETE_FILE_MODULE, var);
 	}
+
+	private static final String DELETE_FOLDER_MODULE = "delete-folder.xqy";
 
 	public void deleteFolder (String folderPath) throws FileSystemException
 	{
 		log.info ("deleteFolder: folderPath=" + folderPath);
 
-		throw new FileSystemException ("NOT IMPL");
+		String uri = fullPath (folderPath);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+
+		runModule (DELETE_FOLDER_MODULE, var);
 	}
 
+	// FIXME: Implement this
 	public void move (String srcPath, String destPath) throws FileSystemException
 	{
 		log.info ("move: srcPath=" + srcPath + ", destPath" + destPath);
@@ -344,6 +390,7 @@ public class MarkLogicFileSystem implements FileSystem
 		throw new FileSystemException ("NOT IMPL");
 	}
 
+	// FIXME: Implement this
 	public void copy (String srcPath, String destPath) throws FileSystemException
 	{
 		log.info ("copy: srcPath=" + srcPath + ", destPath" + destPath);
@@ -411,21 +458,21 @@ public class MarkLogicFileSystem implements FileSystem
 		return false;
 	}
 
-	private ResultSequence runRequest (String query, XdmVariable var)
-		throws FileSystemException
-	{
-		Session session = contentSource.newSession();
-		Request request = session.newAdhocQuery (query);
-
-		request.setVariable (var);
-
-		try {
-			return (session.submitRequest (request));
-		} catch (RequestException e) {
-			throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
-		}
-
-	}
+//	private ResultSequence runRequest (String query, XdmVariable var)
+//		throws FileSystemException
+//	{
+//		Session session = contentSource.newSession();
+//		Request request = session.newAdhocQuery (query);
+//
+//		request.setVariable (var);
+//
+//		try {
+//			return (session.submitRequest (request));
+//		} catch (RequestException e) {
+//			throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
+//		}
+//
+//	}
 
 	private ResultSequence runModule (String module, XdmVariable var)
 		throws FileSystemException
@@ -443,16 +490,6 @@ public class MarkLogicFileSystem implements FileSystem
 
 	}
 
-//	private boolean runBinaryrequest (String query, XdmVariable var)
-//		throws FileSystemException
-//	{
-//		ResultSequence rs = runRequest (query, var);
-//		ResultItem item = rs.next();
-//		XSBoolean bool = (XSBoolean) item.getItem();
-//
-//		return bool.asPrimitiveBoolean();
-//	}
-
 	private boolean runBinaryModule (String module, XdmVariable var)
 		throws FileSystemException
 	{
@@ -461,6 +498,16 @@ public class MarkLogicFileSystem implements FileSystem
 		XSBoolean bool = (XSBoolean) item.getItem();
 
 		return bool.asPrimitiveBoolean();
+	}
+
+	private int runIntModule (String module, XdmVariable var)
+		throws FileSystemException
+	{
+		ResultSequence rs = runModule (module, var);
+		ResultItem item = rs.next();
+		XSInteger intVal = (XSInteger) item.getItem();
+
+		return intVal.asPrimitiveInt();
 	}
 
 	// ------------------------------------------------------------
