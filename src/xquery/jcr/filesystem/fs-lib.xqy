@@ -43,8 +43,7 @@ declare function directory-child-count ($uri as xs:string) as xs:integer
 	else fn:count (xdmp:directory ($dir-uri, "1"))
 };
 
-(: FIXME: Need to list directory names as well :)
-declare function directory-child-uris ($directory-uri as xs:string) as xs:string*
+declare function directory-file-uris ($directory-uri as xs:string) as xs:string*
 {
 	let $dir-uri := dir-uri ($directory-uri)
 
@@ -52,3 +51,16 @@ declare function directory-child-uris ($directory-uri as xs:string) as xs:string
 	for $uri in xdmp:directory ($dir-uri, "1")
 	return fn:substring-after (fn:base-uri ($uri), $dir-uri)
 };
+
+declare function directory-dir-uris ($uri as xs:string) as xs:string*
+{
+	let $dir := dir-uri ($uri)
+	for $i in xdmp:directory-properties ($dir)
+	return fn:substring-before (fn:substring-after (fn:base-uri ($i), $dir), "/")
+};
+
+declare function directory-child-uris ($uri as xs:string) as xs:string*
+{
+	directory-dir-uris ($uri), directory-file-uris ($uri)
+};
+

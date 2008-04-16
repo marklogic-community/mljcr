@@ -4,5 +4,5 @@ import module namespace jcrfslib="http://marklogic.com/jcr/fs" at "fs-lib.xqy";
 
 declare variable $uri external;
 
-jcrfslib:directory-child-uris ($uri)
+jcrfslib:directory-file-uris ($uri)
 
