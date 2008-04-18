@@ -56,6 +56,7 @@ public class MarkLogicRepoStartupServlet extends RepositoryStartupServlet
 		 * @param sc		       search configuration for system search manager.
 		 * @param cc		       optional cluster configuration
 		 * @param parser		   configuration parser
+		 * @param dataStoreConfig  Dunno
 		 */
 		public RepoConfig (String home, SecurityConfig sec, FileSystemConfig fsc,
 			String workspaceDirectory, String workspaceConfigDirectory,
@@ -73,7 +74,7 @@ public class MarkLogicRepoStartupServlet extends RepositoryStartupServlet
 		public void init () throws ConfigurationException, IllegalStateException
 		{
 			super.init ();
-			
+
 //			if (!workspaces.isEmpty()) {
 //			    throw new IllegalStateException(
 //				    "Repository configuration has already been initialized.");
