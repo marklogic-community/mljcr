@@ -8,7 +8,9 @@ declare function doc-length ($uri as xs:string) as xs:integer
 {
 	let $node := fn:doc ($uri)/node()[1]
 	let $node-kind := xdmp:node-kind ($node)
-	let $str := xdmp:quote ($node)
+	let $str := if ($node-kind = "binary")
+			then fn:string (xs:hexBinary ($node))
+			else xdmp:quote ($node)
 	let $len := if ($node-kind = "binary")
 			then fn:string-length ($str) idiv 2
 			else fn:string-length ($str)

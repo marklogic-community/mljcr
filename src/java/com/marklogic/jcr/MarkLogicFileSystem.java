@@ -214,6 +214,7 @@ public class MarkLogicFileSystem implements FileSystem
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
+		log.info ("exists: checking for uri=" + uri);
 		boolean result = runBinaryModule (EXISTS_MODULE, var);
 		log.info ("exists: String path=" + uri + ", result=" + result);
 
@@ -450,6 +451,7 @@ public class MarkLogicFileSystem implements FileSystem
 	{
 		if (uri.endsWith (".txt") ||
 			uri.endsWith (".css") ||
+			uri.endsWith (".dtd") ||
 			uri.endsWith (".properties"))
 		{
 			return true;
