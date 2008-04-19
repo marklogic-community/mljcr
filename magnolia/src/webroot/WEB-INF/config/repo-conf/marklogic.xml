@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE Repository PUBLIC "-//The Apache Software Foundation//DTD Jackrabbit 1.2//EN" "http://jackrabbit.apache.org/dtd/repository-1.2.dtd">
+<Repository>
+    <FileSystem class="com.marklogic.jcr.MarkLogicFileSystem">
+        <param name="uriRoot" value="${rep.home}/repository"/>
+        <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+    </FileSystem>
+    <Security appName="Jackrabbit">
+        <AccessManager class="org.apache.jackrabbit.core.security.SimpleAccessManager">
+        </AccessManager>
+
+        <LoginModule class="org.apache.jackrabbit.core.security.SimpleLoginModule">
+           <param name="anonymousId" value="anonymous"/>
+        </LoginModule>
+    </Security>
+    <Workspaces rootPath="${rep.home}/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
+    <Workspace name="${wsp.name}">
+        <FileSystem class="com.marklogic.jcr.MarkLogicFileSystem">
+		<param name="uriRoot" value="${wsp.home}"/>
+		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        </FileSystem>
+        <PersistenceManager class="com.marklogic.jcr.MarkLogicPersistenceManager">
+        </PersistenceManager>
+    </Workspace>
+    <Versioning rootPath="${rep.home}/version">
+        <FileSystem class="com.marklogic.jcr.MarkLogicFileSystem">
+            <param name="uriRoot" value="${rep.home}/version" />
+		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        </FileSystem>
+        <PersistenceManager class="com.marklogic.jcr.MarkLogicPersistenceManager">
+        </PersistenceManager>
+    </Versioning>
+</Repository>

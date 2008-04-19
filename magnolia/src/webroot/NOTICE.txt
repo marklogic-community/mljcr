@@ -1,0 +1,149 @@
+magnolia-empty-webapp
+Copyright 1993-2008 Magnolia International
+
+This product includes/uses software(s) developed by 'an unknown organization'
+  - Unnamed - commons-beanutils:commons-beanutils:jar:1.7.0
+  - JavaBeans Activation Framework (JAF) (http://java.sun.com/products/javabeans/jaf/index.jsp)
+      License: Common Development and Distribution License (CDDL) v1.0  (https://glassfish.dev.java.net/public/CDDLv1.0.html)
+  - JavaMail API (https://glassfish.dev.java.net/javaee5/mail/)
+      License: Common Development and Distribution License (CDDL) v1.0  (https://glassfish.dev.java.net/public/CDDLv1.0.html)
+  - Unnamed - javax.servlet:jstl:jar:1.1.2
+  - Unnamed - jaxen:jaxen:jar:1.0-FCS
+  - Unnamed - jdom:jdom:jar:1.0
+  - Neko HTML
+  - Ehcache Core (http://ehcache.sf.net/ehcache)
+      License: The Apache Software License, Version 2.0  (http://ehcache.sourceforge.net/LICENSE.txt)
+  - ezmorph (http://ezmorph.sourceforge.net)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - json-lib (http://json-lib.sourceforge.net)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - jsr107cache (http://maven.apache.org)
+  -  (http://schmidt.devlib.org/image-info/)
+      License: Public Domain  (http://schmidt.devlib.org/image-info/index.html)
+  - FreeMarker (http://www.freemarker.org)
+      License: BSD-style license  (http://www.freemarker.org/LICENSE.txt)
+  - Java UUID Generator (http://jug.safehaus.org/)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+      License: GNU Lesser General Public License v2.1  (http://www.gnu.org/licenses/lgpl.html)
+  - TextMining extractors (http://www.textmining.org/)
+  - Unnamed - oro:oro:jar:2.0.8
+  - PDFBox - Java PDF Library
+  - Unnamed - poi:poi:jar:2.5.1-final-20040804
+  - Unnamed - saxpath:saxpath:jar:1.0-FCS
+  - Unnamed - taglibs:standard:jar:1.1.2
+
+This product includes/uses software(s) developed by 'Apache Software Foundation' (http://db.apache.org/)
+  - Derby Engine (http://db.apache.org/derby/)
+
+This product includes/uses software(s) developed by 'Apache Software Foundation' (http://jakarta.apache.org/)
+  - HttpClient (http://jakarta.apache.org/commons/httpclient/)
+      License: Apache License  (http://www.apache.org/licenses/LICENSE-2.0)
+
+This product includes/uses software(s) developed by 'Apache Software Foundation' (http://www.apache.org)
+  - Log4j (http://logging.apache.org/log4j/docs/)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - Lucene Java (http://lucene.apache.org)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software(s) developed by 'Apache Software Foundation' (http://www.apache.org/)
+  - FileUpload (http://jakarta.apache.org/commons/fileupload/)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - Xerces2 Java Parser (http://xerces.apache.org/xerces2-j/)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software(s) developed by 'Dawid Kurzyniec' (http://www.mathcs.emory.edu/~dawidk/)
+  - Backport of JSR 166 (http://www.mathcs.emory.edu/dcl/util/backport-util-concurrent/)
+      License: Public Domain  (http://creativecommons.org/licenses/publicdomain)
+
+This product includes/uses software(s) developed by 'Day Software Management AG' (http://www.day.com/)
+  - Content Repository for Java Technology API (http://www.jcp.org/en/jsr/detail?id=170)
+      License: Day License  (http://www.day.com/maven/jsr170/licenses/day-spec-license.htm)
+
+This product includes/uses software(s) developed by 'Dough Lea' (http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html)
+  - Dough Lea's util.concurrent package
+      License: Public domain, Sun Microsoystems  (>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html)
+
+This product includes/uses software(s) developed by 'Magnolia International' (http://www.magnolia.info)
+  - magnolia-core (http://www.magnolia.info/magnolia-core)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-editor-fckeditor (http://www.magnolia.info/magnolia-editor-fckeditor)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-gui (http://www.magnolia.info/magnolia-gui)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-jaas (http://www.magnolia.info/magnolia-jaas)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-module-admininterface (http://www.magnolia.info/magnolia-module-admininterface)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-module-cache (http://www.magnolia.info/magnolia-module-cache)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-module-exchange-simple (http://www.magnolia.info/magnolia-module-exchange-simple)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-module-mail (http://www.magnolia.info/magnolia-module-mail)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-module-templating (http://www.magnolia.info/magnolia-module-templating)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-taglib-cms (http://www.magnolia.info/magnolia-taglib-cms)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+  - magnolia-taglib-utility (http://www.magnolia.info/magnolia-taglib-utility)
+      License: GPLv3  (http://www.gnu.org/licenses/gpl-3.0.txt)
+      License: Magnolia Network Agreement  (http://www.magnolia.info/mna.html)
+
+This product includes/uses software(s) developed by 'Openmind' (http://www.openmindonline.it)
+  - openutils for Log4j (http://openutils-log4j)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software(s) developed by 'OpenWFE' (http://www.openwfe.org)
+  - OpenWFE applic (http://www.openwfe.org)
+      License: BSD License  (http://www.opensource.org/licenses/bsd-license.php)
+  - OpenWFE jcr (http://www.openwfe.org)
+      License: BSD License  (http://www.opensource.org/licenses/bsd-license.php)
+
+This product includes/uses software(s) developed by 'QOS.ch' (http://www.qos.ch)
+  - JCL Implemented Over SLF4J (http://www.slf4j.org)
+  - SLF4J API Module (http://www.slf4j.org)
+  - SLF4J LOG4J-12 Binding (http://www.slf4j.org)
+
+This product includes/uses software(s) developed by 'servlets.com' (http://www.servlets.com/)
+  - COS (http://www.servlets.com/)
+      License: Jason Hunter License  (http://www.servlets.com/cos/license.html)
+
+This product includes/uses software(s) developed by 'The Apache Software Foundation' (http://jakarta.apache.org)
+  - Betwixt (http://jakarta.apache.org/commons/${pom.artifactId.substring(8)}/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - Commons Chain (http://jakarta.apache.org/commons/${pom.artifactId.substring(8)}/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - Codec (http://jakarta.apache.org/commons/codec/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - Collections (http://jakarta.apache.org/commons/collections/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - Digester (http://jakarta.apache.org/commons/digester/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - IO (http://jakarta.apache.org/commons/io/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - Lang (http://jakarta.apache.org/commons/lang/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+  - Commons Pool (http://jakarta.apache.org/commons/${pom.artifactId.substring(8)}/)
+      License: The Apache Software License, Version 2.0  (/LICENSE.txt)
+
+This product includes/uses software(s) developed by 'The Apache Software Foundation' (http://www.apache.org/)
+  - Jackrabbit API (http://jackrabbit.apache.org/jackrabbit-api)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - Jackrabbit Core (http://jackrabbit.apache.org/jackrabbit-core)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - Jackrabbit JCR Commons (http://jackrabbit.apache.org/jackrabbit-jcr-commons)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - Jackrabbit Text Extractors (http://jackrabbit.apache.org/jackrabbit-text-extractors)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - Apache Velocity (http://velocity.apache.org/engine/releases/velocity-1.5/)
+      License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+

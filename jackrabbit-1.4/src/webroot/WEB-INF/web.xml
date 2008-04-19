@@ -51,7 +51,7 @@
 
         <init-param>
             <param-name>bootstrap-config</param-name>
-            <param-value>/Users/ron/Work/marklogic/jsr170/src/webroot/WEB-INF/marklogic-config/bootstrap.properties</param-value>
+            <param-value>/Users/ron/Work/marklogic/jsr170/jackrabbit-1.4/src/webroot/WEB-INF/marklogic-config/bootstrap.properties</param-value>
             <description>
                 Property file that hold the same initialization properties than
                 the init-params below. If a parameter is specified in both
@@ -142,7 +142,7 @@
 
         <init-param>
             <param-name>bootstrap-config</param-name>
-            <param-value>/Users/ron/Work/marklogic/jsr170/src/webroot/WEB-INF/marklogic-config/bootstrap.properties</param-value>
+            <param-value>/Users/ron/Work/marklogic/jsr170/jackrabbit-1.4/src/webroot/WEB-INF/marklogic-config/bootstrap.properties</param-value>
             <description>
                 Property file that hold the same initialization properties than
                 the init-params below. If a parameter is specified in both
