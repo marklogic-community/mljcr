@@ -13,16 +13,18 @@ import org.apache.jackrabbit.core.fs.FileSystemPathUtil;
 import org.apache.jackrabbit.core.fs.FileSystemResource;
 import org.apache.jackrabbit.core.nodetype.NodeDefId;
 import org.apache.jackrabbit.core.nodetype.PropDefId;
-import org.apache.jackrabbit.core.persistence.AbstractPersistenceManager;
 import org.apache.jackrabbit.core.persistence.PMContext;
+import org.apache.jackrabbit.core.persistence.PersistenceManager;
 import org.apache.jackrabbit.core.persistence.util.BLOBStore;
 import org.apache.jackrabbit.core.persistence.util.ResourceBasedBLOBStore;
+import org.apache.jackrabbit.core.state.ChangeLog;
 import org.apache.jackrabbit.core.state.ItemStateException;
 import org.apache.jackrabbit.core.state.NoSuchItemStateException;
 import org.apache.jackrabbit.core.state.NodeReferences;
 import org.apache.jackrabbit.core.state.NodeReferencesId;
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
+import org.apache.jackrabbit.core.state.ItemState;
 import org.apache.jackrabbit.core.util.DOMWalker;
 import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
@@ -53,7 +55,7 @@ import java.util.Set;
  * and <code>NodeReferences</code> objects in XML format.
  * @noinspection OverlyComplexClass,ClassWithTooManyMethods
  */
-public class MarkLogicPersistenceManager extends AbstractPersistenceManager
+public class MarkLogicPersistenceManager implements PersistenceManager
 {
 	private static final Logger log = LoggerFactory.getLogger (MarkLogicPersistenceManager.class);
 
@@ -161,6 +163,20 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 	/**
 	 * {@inheritDoc}
 	 */
+	public NodeState createNew(NodeId id) {
+	    return new NodeState(id, null, null, NodeState.STATUS_NEW, false);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public PropertyState createNew(PropertyId id) {
+	    return new PropertyState(id, PropertyState.STATUS_NEW, false);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public synchronized void close() throws Exception
 	{
 		if (!initialized) {
@@ -168,6 +184,92 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 		}
 
 		initialized = false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	protected void destroy (NodeReferences refs) throws ItemStateException
+	{
+		if (!initialized) {
+			throw new IllegalStateException ("not initialized");
+		}
+
+		NodeReferencesId id = refs.getId ();
+		String refsFilePath = buildNodeReferencesFilePath (id);
+		FileSystemResource refsFile = new FileSystemResource (itemStateFS, refsFilePath);
+		try {
+			if (refsFile.exists()) {
+				// delete resource and prune empty parent folders
+				refsFile.delete (true);
+			}
+		} catch (FileSystemException fse) {
+			String msg = "failed to delete references: " + id;
+			log.debug (msg);
+			throw new ItemStateException (msg, fse);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public synchronized boolean exists (NodeId id) throws ItemStateException
+	{
+		if (!initialized) {
+			throw new IllegalStateException ("not initialized");
+		}
+
+		try {
+			String nodeFilePath = buildNodeFilePath (id);
+			FileSystemResource nodeFile = new FileSystemResource (itemStateFS, nodeFilePath);
+			return nodeFile.exists();
+		} catch (FileSystemException fse) {
+			String msg = "failed to check existence of item state: " + id;
+			log.debug (msg);
+			throw new ItemStateException (msg, fse);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public synchronized boolean exists (PropertyId id) throws ItemStateException
+	{
+		if (!initialized) {
+			throw new IllegalStateException ("not initialized");
+		}
+
+		try {
+			String propFilePath = buildPropFilePath (id);
+			FileSystemResource propFile = new FileSystemResource (itemStateFS, propFilePath);
+			return propFile.exists();
+		} catch (FileSystemException fse) {
+			String msg = "failed to check existence of item state: " + id;
+			log.error (msg, fse);
+			throw new ItemStateException (msg, fse);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public synchronized boolean exists (NodeReferencesId id)
+		throws ItemStateException
+	{
+
+		if (!initialized) {
+			throw new IllegalStateException ("not initialized");
+		}
+
+		try {
+			String refsFilePath = buildNodeReferencesFilePath (id);
+			FileSystemResource refsFile = new FileSystemResource (itemStateFS, refsFilePath);
+			return refsFile.exists ();
+		} catch (FileSystemException fse) {
+			String msg = "failed to check existence of references: " + id;
+			log.debug (msg);
+			throw new ItemStateException (msg, fse);
+		}
 	}
 
 	/**
@@ -199,7 +301,7 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 				readState (walker, state);
 				return state;
 			} finally {
-				in.close ();
+				in.close();
 			}
 		} catch (IOException ioe) {
 			e = ioe;
@@ -238,7 +340,7 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 				readState (walker, state);
 				return state;
 			} finally {
-				in.close ();
+				in.close();
 			}
 		} catch (IOException ioe) {
 			e = ioe;
@@ -252,22 +354,194 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 		throw new ItemStateException (msg, e);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public synchronized NodeReferences load (NodeReferencesId id)
+		throws ItemStateException
+	{
+
+		if (!initialized) {
+			throw new IllegalStateException ("not initialized");
+		}
+
+		Exception e = null;
+		String refsFilePath = buildNodeReferencesFilePath (id);
+		try {
+			if (!itemStateFS.isFile (refsFilePath)) {
+				throw new NoSuchItemStateException (id.toString ());
+			}
+
+			InputStream in = itemStateFS.getInputStream (refsFilePath);
+
+			try {
+				DOMWalker walker = new DOMWalker (in);
+				NodeReferences refs = new NodeReferences (id);
+				readState (walker, refs);
+				return refs;
+			} finally {
+				in.close ();
+			}
+		} catch (IOException ioe) {
+			e = ioe;
+			// fall through
+		} catch (FileSystemException fse) {
+			e = fse;
+			// fall through
+		}
+		String msg = "failed to load references: " + id;
+		log.debug (msg);
+		throw new ItemStateException (msg, e);
+	}
+
+	/** @noinspection UseOfSystemOutOrSystemErr*/
+	public void store (ChangeLog changeLog) throws ItemStateException
+	{
+		StringBuffer sb = new StringBuffer();
+
+		sb.append ("<").append ("jcr-change-list").append (">\n");
+		sb.append ("\t<").append ("deleted-states").append (">\n");
+
+		for (Iterator it = changeLog.deletedStates(); it.hasNext();) {
+			ItemState state = (ItemState) it.next();
+
+			sb.append ("\t\t<").append ("node").append (">");
+
+			if (state.isNode()) {
+				sb.append (((NodeState) state).getNodeId().getUUID());
+			}
+
+			sb.append ("\t\t</").append ("node").append (">\n");
+		}
+
+		sb.append ("\t</").append ("deleted-states").append (">\n");
+
+		sb.append ("\t<").append ("added-states").append (">\n");
+
+		for (Iterator it = changeLog.addedStates(); it.hasNext();)
+		{
+			ItemState state = (ItemState) it.next();
+
+			if (state.isNode ()) {
+				formatElement ((NodeState) state, sb);
+			} else {
+				// FIXME: encode blobs inline?
+				formatElement ((PropertyState) state, sb);
+			}
+		}
+
+		sb.append ("\t</").append ("added-states").append (">\n");
+
+		sb.append ("\t<").append ("modified-states").append (">\n");
+
+		for (Iterator it = changeLog.modifiedStates(); it.hasNext();)
+		{
+			ItemState state = (ItemState) it.next();
+
+			if (state.isNode ()) {
+				formatElement ((NodeState) state, sb);
+			} else {
+				// FIXME: encode blobs inline?
+				formatElement ((PropertyState) state, sb);
+			}
+		}
+
+		sb.append ("\t</").append ("modified-states").append (">\n");
+
+		sb.append ("\t<").append ("modified-refs").append (">\n");
+
+		for (Iterator it = changeLog.modifiedRefs(); it.hasNext ();)
+		{
+			NodeReferences refs = (NodeReferences) it.next ();
+
+			formatElement (refs, sb);
+		}
+
+		sb.append ("\t</").append ("modified-refs").append (">\n");
+
+		sb.append ("</").append ("jcr-change-list").append (">\n");
+
+		System.out.println ("=========================================");
+		System.out.println (sb.toString ());
+		System.out.println ("=========================================");
+
+		try {
+			contextFS.updateState (workspaceDocUri, sb.toString());
+		} catch (FileSystemException e) {
+			throw new ItemStateException ("Updating state: " + e, e);
+		}
+
+		// ================
+
+
+		Iterator iter = changeLog.deletedStates ();
+		while (iter.hasNext ()) {
+			ItemState state = (ItemState) iter.next ();
+			if (state.isNode ()) {
+				destroy ((NodeState) state);
+			} else {
+				destroy ((PropertyState) state);
+			}
+		}
+		iter = changeLog.addedStates ();
+		while (iter.hasNext ()) {
+			ItemState state = (ItemState) iter.next ();
+			if (state.isNode ()) {
+				store ((NodeState) state);
+			} else {
+				store ((PropertyState) state);
+			}
+		}
+		iter = changeLog.modifiedStates ();
+		while (iter.hasNext ()) {
+			ItemState state = (ItemState) iter.next ();
+			if (state.isNode ()) {
+				store ((NodeState) state);
+			} else {
+				store ((PropertyState) state);
+			}
+		}
+		iter = changeLog.modifiedRefs ();
+		while (iter.hasNext ()) {
+			NodeReferences refs = (NodeReferences) iter.next ();
+			if (refs.hasReferences ()) {
+				store (refs);
+			} else {
+				if (exists (refs.getId ())) {
+					destroy (refs);
+				}
+			}
+		}
+	}
+
 	// ---------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
-	protected void store (NodeState state) throws ItemStateException
+	private void store (NodeState state) throws ItemStateException
 	{
 		if (!initialized) {
 			throw new IllegalStateException ("not initialized");
 		}
 
-		NodeId id = state.getNodeId();
 		StringBuffer sb = new StringBuffer();
 
+		formatElement (state, sb);
+
+		//noinspection UseOfSystemOutOrSystemErr
+		System.out.println ("Node state:\n========\n" + sb.toString());
+
+		persistItem (buildNodeFilePath (state.getNodeId()), sb.toString());
+
+		//noinspection UseOfSystemOutOrSystemErr
+		System.out.println ("========");
+	}
+
+	private void formatElement (NodeState state, StringBuffer sb)
+	{
 		sb.append ("<").append (NODE_ELEMENT).append (" ");
-		sb.append (UUID_ATTRIBUTE).append ("=\"").append (id.getUUID()).append("\" ");
+		sb.append (UUID_ATTRIBUTE).append ("=\"").append (state.getNodeId().getUUID()).append("\" ");
 		sb.append (PARENTUUID_ATTRIBUTE).append ("=\"").append ((state.getParentId () == null ? "" : state.getParentId().getUUID().toString())).append ("\" ");
 		sb.append (DEFINITIONID_ATTRIBUTE).append ("=\"").append (state.getDefinitionId().toString()).append ("\" ");
 		sb.append (MODCOUNT_ATTRIBUTE).append ("=\"").append (state.getModCount()).append ("\" ");
@@ -308,14 +582,6 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 		}
 		sb.append ("</").append (NODES_ELEMENT).append (">\n");
 		sb.append ("</").append (NODE_ELEMENT).append (">\n");
-
-		//noinspection UseOfSystemOutOrSystemErr
-		System.out.println ("Node state:\n========\n" + sb.toString());
-
-		persistItem (buildNodeFilePath (id), sb.toString());
-
-		//noinspection UseOfSystemOutOrSystemErr
-		System.out.println ("========");
 	}
 
 	/**
@@ -327,6 +593,22 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 			throw new IllegalStateException ("not initialized");
 		}
 
+		StringBuffer sb = new StringBuffer();
+
+		formatElement (state, sb);
+
+		//noinspection UseOfSystemOutOrSystemErr
+		System.out.println ("Property state:\n========\n" + sb.toString());
+
+		persistItem (buildPropFilePath (state.getPropertyId()), sb.toString());
+
+		//noinspection UseOfSystemOutOrSystemErr
+		System.out.println ("========");
+	}
+
+	private void formatElement (PropertyState state, StringBuffer sb)
+		throws ItemStateException
+	{
 		int type = state.getType();
 		String typeName;
 
@@ -336,8 +618,6 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 			// should never be getting here
 			throw new ItemStateException ("unexpected property-type ordinal: " + type, e);
 		}
-
-		StringBuffer sb = new StringBuffer();
 
 		sb.append ("<").append (PROPERTY_ELEMENT).append (" ");
 		sb.append (NAME_ATTRIBUTE).append ("=\"");
@@ -414,14 +694,6 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 
 		sb.append ("\t</").append (VALUES_ELEMENT).append (">\n");
 		sb.append ("</").append (PROPERTY_ELEMENT).append (">\n");
-
-		//noinspection UseOfSystemOutOrSystemErr
-		System.out.println ("Property state:\n========\n" + sb.toString());
-
-		persistItem (buildPropFilePath (state.getPropertyId()), sb.toString());
-
-		//noinspection UseOfSystemOutOrSystemErr
-		System.out.println ("========");
 	}
 
 	/**
@@ -435,20 +707,26 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 
 		StringBuffer sb = new StringBuffer();
 
+		formatElement (refs, sb);
+
+		persistItem (buildNodeReferencesFilePath (refs.getId()), sb.toString());
+	}
+
+	private void formatElement (NodeReferences refs, StringBuffer sb)
+	{
 		sb.append ("<").append (NODEREFERENCES_ELEMENT).append (" ");
 		sb.append (TARGETID_ATTRIBUTE).append ("=\"").append (refs.getId()).append ("\">\n");
 
 		// write references (i.e. the id's of the REFERENCE properties)
 
-		for (Iterator it = refs.getReferences ().iterator (); it.hasNext ();)
+		for (Iterator it = refs.getReferences().iterator(); it.hasNext();)
 		{
 			PropertyId propId = (PropertyId) it.next ();
 			sb.append ("\t<").append (NODEREFERENCE_ELEMENT).append (" ");
 			sb.append (PROPERTYID_ATTRIBUTE).append ("=\"").append (propId).append ("\"/>\n");
 		}
-		sb.append ("</").append (NODEREFERENCES_ELEMENT).append (">\n");
 
-		persistItem (buildNodeReferencesFilePath (refs.getId()), sb.toString());
+		sb.append ("</").append (NODEREFERENCES_ELEMENT).append (">\n");
 	}
 
 	private void persistItem (String path, String xml)
@@ -492,8 +770,9 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 		NodeId id = state.getNodeId ();
 		String nodeFilePath = buildNodeFilePath (id);
 		FileSystemResource nodeFile = new FileSystemResource (itemStateFS, nodeFilePath);
+
 		try {
-			if (nodeFile.exists ()) {
+			if (nodeFile.exists()) {
 				// delete resource and prune empty parent folders
 				nodeFile.delete (true);
 			}
@@ -542,134 +821,8 @@ public class MarkLogicPersistenceManager extends AbstractPersistenceManager
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public synchronized NodeReferences load (NodeReferencesId id)
-		throws ItemStateException
-	{
-
-		if (!initialized) {
-			throw new IllegalStateException ("not initialized");
-		}
-
-		Exception e = null;
-		String refsFilePath = buildNodeReferencesFilePath (id);
-		try {
-			if (!itemStateFS.isFile (refsFilePath)) {
-				throw new NoSuchItemStateException (id.toString ());
-			}
-
-			InputStream in = itemStateFS.getInputStream (refsFilePath);
-
-			try {
-				DOMWalker walker = new DOMWalker (in);
-				NodeReferences refs = new NodeReferences (id);
-				readState (walker, refs);
-				return refs;
-			} finally {
-				in.close ();
-			}
-		} catch (IOException ioe) {
-			e = ioe;
-			// fall through
-		} catch (FileSystemException fse) {
-			e = fse;
-			// fall through
-		}
-		String msg = "failed to load references: " + id;
-		log.debug (msg);
-		throw new ItemStateException (msg, e);
-	}
-
 
 	// ----------------------------------------------------------
-
-	/**
-	 * {@inheritDoc}
-	 */
-	protected void destroy (NodeReferences refs) throws ItemStateException
-	{
-		if (!initialized) {
-			throw new IllegalStateException ("not initialized");
-		}
-
-		NodeReferencesId id = refs.getId ();
-		String refsFilePath = buildNodeReferencesFilePath (id);
-		FileSystemResource refsFile = new FileSystemResource (itemStateFS, refsFilePath);
-		try {
-			if (refsFile.exists ()) {
-				// delete resource and prune empty parent folders
-				refsFile.delete (true);
-			}
-		} catch (FileSystemException fse) {
-			String msg = "failed to delete references: " + id;
-			log.debug (msg);
-			throw new ItemStateException (msg, fse);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public synchronized boolean exists (NodeId id) throws ItemStateException
-	{
-		if (!initialized) {
-			throw new IllegalStateException ("not initialized");
-		}
-
-		try {
-			String nodeFilePath = buildNodeFilePath (id);
-			FileSystemResource nodeFile = new FileSystemResource (itemStateFS, nodeFilePath);
-			return nodeFile.exists ();
-		} catch (FileSystemException fse) {
-			String msg = "failed to check existence of item state: " + id;
-			log.debug (msg);
-			throw new ItemStateException (msg, fse);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public synchronized boolean exists (PropertyId id) throws ItemStateException
-	{
-		if (!initialized) {
-			throw new IllegalStateException ("not initialized");
-		}
-
-		try {
-			String propFilePath = buildPropFilePath (id);
-			FileSystemResource propFile = new FileSystemResource (itemStateFS, propFilePath);
-			return propFile.exists ();
-		} catch (FileSystemException fse) {
-			String msg = "failed to check existence of item state: " + id;
-			log.error (msg, fse);
-			throw new ItemStateException (msg, fse);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public synchronized boolean exists (NodeReferencesId id)
-		throws ItemStateException
-	{
-
-		if (!initialized) {
-			throw new IllegalStateException ("not initialized");
-		}
-
-		try {
-			String refsFilePath = buildNodeReferencesFilePath (id);
-			FileSystemResource refsFile = new FileSystemResource (itemStateFS, refsFilePath);
-			return refsFile.exists ();
-		} catch (FileSystemException fse) {
-			String msg = "failed to check existence of references: " + id;
-			log.debug (msg);
-			throw new ItemStateException (msg, fse);
-		}
-	}
 
 	// ----------------------------------------------------------
 

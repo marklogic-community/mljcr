@@ -78,7 +78,11 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public void setUriRoot (String uriRoot)
 	{
-		this.uriRoot = uriRoot;
+		if (uriRoot.startsWith ("/")) {
+			this.uriRoot = uriRoot;
+		} else {
+			this.uriRoot = "/" + uriRoot;
+		}
 	}
 
 	// ------------------------------------------------------------
@@ -401,6 +405,18 @@ public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 
+	private static final String UPDATE_STATE_MODULE = "update-state.xqy";
+
+	public void updateState (String uri, String deltas) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("deltas-str"), ValueFactory.newXSString (deltas));
+
+		runModule (UPDATE_STATE_MODULE, var1, var2);
+	}
+
+	// ------------------------------------------------------------
+
 	private String modulePath (String module)
 	{
 		return (MODULE_ROOT + module);
@@ -476,13 +492,14 @@ public class MarkLogicFileSystem implements FileSystem
 //
 //	}
 
-	private ResultSequence runModule (String module, XdmVariable var)
+	private ResultSequence runModule (String module, XdmVariable var1, XdmVariable var2)
 		throws FileSystemException
 	{
 		Session session = contentSource.newSession();
 		Request request = session.newModuleInvoke (modulePath (module));
 
-		request.setVariable (var);
+		if (var1 != null) request.setVariable (var1);
+		if (var2 != null) request.setVariable (var2);
 
 		try {
 			return (session.submitRequest (request));
@@ -490,6 +507,12 @@ public class MarkLogicFileSystem implements FileSystem
 			throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
 		}
 
+	}
+
+	private ResultSequence runModule (String module, XdmVariable var)
+		throws FileSystemException
+	{
+		return runModule (module, var, null);
 	}
 
 	private boolean runBinaryModule (String module, XdmVariable var)
