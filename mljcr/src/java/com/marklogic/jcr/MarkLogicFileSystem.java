@@ -25,6 +25,8 @@ import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.fs.FileSystemPathUtil;
 import org.apache.jackrabbit.core.fs.RandomAccessOutputStream;
+import org.apache.jackrabbit.core.NodeId;
+import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.util.TransientFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -415,6 +417,64 @@ public class MarkLogicFileSystem implements FileSystem
 		runModule (UPDATE_STATE_MODULE, var1, var2);
 	}
 
+	private static final String CHECK_NODE_EXISTS_MODULE = "check-node-exists.xqy";
+
+	public boolean itemExists (String uri, NodeId nodeId) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+
+		return runBinaryModule (CHECK_NODE_EXISTS_MODULE, var1, var2);
+	}
+
+	private static final String CHECK_PROP_EXISTS_MODULE = "check-property-exists.xqy";
+
+	public boolean itemExists (String uri, PropertyId propertyId) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (propertyId.getParentId().getUUID().toString()));
+		XdmVariable var3 = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (propertyId.getName().toString())));
+
+		return runBinaryModule (CHECK_PROP_EXISTS_MODULE, var1, var2, var3);
+	}
+
+	private static final String QUERY_NODE_STATE_MODULE = "query-node-state.xqy";
+
+	public InputStream nodeStateAsStream (String uri, NodeId nodeId) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+
+		ResultSequence rs = runModule (QUERY_NODE_STATE_MODULE, var1, var2);
+
+		if (rs.size() == 0) {
+			return null;
+		}
+
+System.out.println ("Node load: " + rs.itemAt (0).asString());
+
+		return rs.next().asInputStream();
+	}
+
+	private static final String QUERY_PROP_STATE_MODULE = "query-property-state.xqy";
+
+	public InputStream propertyStateAsStream (String uri, PropertyId propertyId) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (propertyId.getParentId().getUUID().toString()));
+		XdmVariable var3 = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (propertyId.getName().toString())));
+
+		ResultSequence rs = runModule (QUERY_PROP_STATE_MODULE, var1, var2, var3);
+
+		if (rs.size() == 0) {
+			return null;
+		}
+
+System.out.println ("Property load: " + rs.itemAt (0).asString());
+
+		return rs.next().asInputStream();
+	}
+
 	// ------------------------------------------------------------
 
 	private String modulePath (String module)
@@ -492,7 +552,8 @@ public class MarkLogicFileSystem implements FileSystem
 //
 //	}
 
-	private ResultSequence runModule (String module, XdmVariable var1, XdmVariable var2)
+	private ResultSequence runModule (String module, XdmVariable var1,
+		XdmVariable var2, XdmVariable var3)
 		throws FileSystemException
 	{
 		Session session = contentSource.newSession();
@@ -500,6 +561,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 		if (var1 != null) request.setVariable (var1);
 		if (var2 != null) request.setVariable (var2);
+		if (var3 != null) request.setVariable (var3);
 
 		try {
 			return (session.submitRequest (request));
@@ -509,20 +571,40 @@ public class MarkLogicFileSystem implements FileSystem
 
 	}
 
+	private ResultSequence runModule (String module, XdmVariable var1,
+		XdmVariable var2)
+		throws FileSystemException
+	{
+		return runModule (module, var1, var2, null);
+	}
+
 	private ResultSequence runModule (String module, XdmVariable var)
 		throws FileSystemException
 	{
-		return runModule (module, var, null);
+		return runModule (module, var, null, null);
+	}
+
+	private boolean runBinaryModule (String module, XdmVariable var1,
+		XdmVariable var2, XdmVariable var3)
+		throws FileSystemException
+	{
+		ResultSequence rs = runModule (module, var1, var2, var3);
+		ResultItem item = rs.next();
+		XSBoolean bool = (XSBoolean) item.getItem();
+
+		return bool.asPrimitiveBoolean();
+	}
+
+	private boolean runBinaryModule (String module, XdmVariable var1, XdmVariable var2)
+		throws FileSystemException
+	{
+		return runBinaryModule (module, var1, var2, null);
 	}
 
 	private boolean runBinaryModule (String module, XdmVariable var)
 		throws FileSystemException
 	{
-		ResultSequence rs = runModule (module, var);
-		ResultItem item = rs.next();
-		XSBoolean bool = (XSBoolean) item.getItem();
-
-		return bool.asPrimitiveBoolean();
+		return runBinaryModule (module, var, null, null);
 	}
 
 	private int runIntModule (String module, XdmVariable var)
