@@ -12,4 +12,4 @@ declare variable $deltas as element (jcr-change-list) := xdmp:unquote ($deltas-s
 
 xdmp:log (fn:concat ("uri: ", $uri, ", type: ", xdmp:node-kind ($deltas))),
 
-state:handle-state-updates ($state, $deltas)
+xdmp:node-replace ($state, state:apply-state-updates ($state, $deltas)
