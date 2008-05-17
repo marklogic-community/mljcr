@@ -405,6 +405,12 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 	/** @noinspection UseOfSystemOutOrSystemErr*/
 	public void store (ChangeLog changeLog) throws ItemStateException
 	{
+		// TODO: Gather blobs in a list
+		// assign unique names to each
+		// assign unique name to change list XML
+		// insert all into temp dir
+		// invoke module to process them and delete
+
 		StringBuffer sb = new StringBuffer();
 
 		sb.append ("<").append ("jcr-change-list").append (">\n");
