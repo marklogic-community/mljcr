@@ -419,8 +419,6 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 		for (Iterator it = changeLog.deletedStates(); it.hasNext();) {
 			ItemState state = (ItemState) it.next();
 
-			// TODO: Need to send prop deletes
-
 			if (state.isNode()) {
 				sb.append ("\t\t<node uuid=");
 				sb.append (((NodeState) state).getNodeId().getUUID());

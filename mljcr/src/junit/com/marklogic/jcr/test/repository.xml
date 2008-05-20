@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+  -->
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!DOCTYPE Repository PUBLIC "-//The Apache Software Foundation//DTD Jackrabbit 1.4//EN"
+                            "http://jackrabbit.apache.org/dtd/repository-1.4.dtd">
+<!-- Example Repository Configuration File -->
+<Repository>
+    <!--
+        virtual file system where the repository stores global state
+        (e.g. registered namespaces, custom node types, etc.)
+    -->
+    <FileSystem class="com.marklogic.jcr.MarkLogicFileSystem">
+        <param name="uriRoot" value="${rep.home}/repository"/>
+        <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+    </FileSystem>
+
+    <!--
+        security configuration
+    -->
+    <Security appName="Jackrabbit">
+        <!--
+            access manager:
+            class: FQN of class implementing the AccessManager interface
+        -->
+        <AccessManager class="org.apache.jackrabbit.core.security.SimpleAccessManager">
+            <!-- <param name="config" value="${rep.home}/access.xml"/> -->
+        </AccessManager>
+
+        <LoginModule class="org.apache.jackrabbit.core.security.SimpleLoginModule">
+           <!-- anonymous user name ('anonymous' is the default value) -->
+           <param name="anonymousId" value="anonymous"/>
+           <!--
+              default user name to be used instead of the anonymous user
+              when no login credentials are provided (unset by default)
+           -->
+           <!-- <param name="defaultUserId" value="superuser"/> -->
+        </LoginModule>
+    </Security>
+
+    <!--
+        location of workspaces root directory and name of default workspace
+    -->
+    <Workspaces rootPath="${rep.home}/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
+    <!--
+        workspace configuration template:
+        used to create the initial workspace if there's no workspace yet
+    -->
+    <Workspace name="${wsp.name}">
+        <!--
+            virtual file system of the workspace:
+            class: FQN of class implementing the FileSystem interface
+        -->
+        <FileSystem class="com.marklogic.jcr.MarkLogicFileSystem">
+		<param name="uriRoot" value="${wsp.home}"/>
+		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        </FileSystem>
+        <!--
+            persistence manager of the workspace:
+            class: FQN of class implementing the PersistenceManager interface
+        -->
+        <PersistenceManager class="com.marklogic.jcr.MarkLogicPersistenceManager">
+        </PersistenceManager>
+    </Workspace>
+
+    <!--
+        Configures the versioning
+    -->
+    <Versioning rootPath="${rep.home}/version">
+        <!--
+            Configures the filesystem to use for versioning for the respective
+            persistence manager
+        -->
+        <FileSystem class="com.marklogic.jcr.MarkLogicFileSystem">
+            <param name="uriRoot" value="${rep.home}/version" />
+		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        </FileSystem>
+
+        <!--
+            Configures the persistence manager to be used for persisting version state.
+            Please note that the current versioning implementation is based on
+            a 'normal' persistence manager, but this could change in future
+            implementations.
+        -->
+        <PersistenceManager class="com.marklogic.jcr.MarkLogicPersistenceManager">
+        </PersistenceManager>
+    </Versioning>
+</Repository>
