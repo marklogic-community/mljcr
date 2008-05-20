@@ -17,7 +17,6 @@
 package org.apache.jackrabbit.test.api;
 
 import org.apache.jackrabbit.test.AbstractJCRTest;
-import org.apache.log4j.Level;
 
 import javax.jcr.Session;
 import javax.jcr.Workspace;
@@ -43,6 +42,7 @@ import java.io.ByteArrayInputStream;
  * <p/>
  * TreeComparator also creates an example tree that contains as many features as
  * possible.
+ * @noinspection ClassWithTooManyFields,ClassWithTooManyMethods
  */
 class TreeComparator extends AbstractJCRTest {
     public SerializationContext sc;
@@ -74,9 +74,10 @@ class TreeComparator extends AbstractJCRTest {
     public void setSession(Session session) {
         this.session = session;
     }
-    
+
     /**
      * Makes sure that the source and target folder exist, and are empty
+     * @throws javax.jcr.RepositoryException XX
      */
     private void init() throws RepositoryException {
         root = sc.testroot;
@@ -224,7 +225,7 @@ class TreeComparator extends AbstractJCRTest {
             // Long
             pt.setProperty(sc.longTestProperty, (long) (1 / 3));
             // Double
-            pt.setProperty(sc.doubleTestProperty, (double) Math.PI);
+            pt.setProperty(sc.doubleTestProperty, Math.PI);
             // Boolean
             pt.setProperty(sc.booleanTestProperty, true);
             // Name
@@ -337,7 +338,8 @@ class TreeComparator extends AbstractJCRTest {
             }
             compareNodes(source, target);
         } else if (check == CHECK_EMPTY) {
-            try {
+		//noinspection EmptyCatchBlock
+		try {
                 session.getItem(targetPath);
                 fail("The item " + targetPath + " must not be available.");
             } catch (RepositoryException e) {
@@ -400,7 +402,8 @@ class TreeComparator extends AbstractJCRTest {
             String pName = null;
             // todo
             String pPath = null;
-            try {
+		//noinspection EmptyCatchBlock
+		try {
                 pPath = pa.getPath();
             } catch (RepositoryException e) {
 
@@ -539,10 +542,10 @@ class TreeComparator extends AbstractJCRTest {
      * Returns the path to the target root.
      *
      * @return The path to the target root.
+     * @param sourcePath XX
      */
     private String getTargetPath(String sourcePath) {
-        String targetPath = sourcePath.replaceAll(sourceFolder, targetFolder);
-        return targetPath;
+	    return sourcePath.replaceAll(sourceFolder, targetFolder);
     }
 
     /**
@@ -561,6 +564,9 @@ class TreeComparator extends AbstractJCRTest {
 
     /**
      * Recursive display of source and target tree
+     * @param n XX
+     * @param level XX
+     * @throws javax.jcr.RepositoryException XX
      */
     public void showTree(Node n, int level) throws RepositoryException {
         for (int t = 0; t < level; t++) {
@@ -583,9 +589,9 @@ class TreeComparator extends AbstractJCRTest {
 
     /**
      * Checks if a given property should be skipped during xml import.
-     *  
-     * @param propertyName
-     * @return
+     *
+     * @param propertyName XX
+     * @return XX
      */
    public boolean propertySkipped(String propertyName) {
         if (sc.propertySkipped.indexOf(" " + propertyName + " ") < 0) {

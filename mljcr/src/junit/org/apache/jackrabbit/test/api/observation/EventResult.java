@@ -16,14 +16,14 @@
  */
 package org.apache.jackrabbit.test.api.observation;
 
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
 import java.io.PrintWriter;
 
 /**
@@ -45,7 +45,7 @@ public class EventResult implements EventListener {
     /**
      * Sync object for result synchronization
      */
-    private Sync sync = new Mutex();
+    private Lock sync = new ReentrantLock();
 
     /**
      * <code>PrintWriter</code> where log messages are written.
@@ -60,7 +60,7 @@ public class EventResult implements EventListener {
     public EventResult(PrintWriter log) {
         this.log = log;
         try {
-            sync.acquire();
+            sync.lockInterruptibly();
         } catch (InterruptedException e) {
             log.println("Could not aquire sync.");
             throw new RuntimeException("EventResult: Interrupted while aquiring sync.");
@@ -98,7 +98,7 @@ public class EventResult implements EventListener {
      */
     public EventIterator getEventIterator(long wait) {
         try {
-            if (sync.attempt(wait)) {
+            if (sync.tryLock (wait, TimeUnit.MILLISECONDS)) {
                 // result ready
                 return events;
             }
@@ -117,7 +117,7 @@ public class EventResult implements EventListener {
      */
     public void onEvent(EventIterator events) {
         this.events = events;
-        sync.release();
+        sync.unlock();
     }
 
     /**

@@ -16,12 +16,12 @@
  */
 package org.apache.jackrabbit.test;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
 
 import java.io.Writer;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implements a PrintWriter which allows to alternatively plug in a
@@ -42,7 +42,7 @@ public class LogPrintWriter extends PrintWriter {
     /**
      * Default Level is debug.
      */
-    private Level level = Level.DEBUG;
+    private Level level = Level.FINE;
 
     /**
      * Creates a new <code>LogPrintWriter</code> which is based on a
@@ -139,7 +139,7 @@ public class LogPrintWriter extends PrintWriter {
             return;
         }
         if (log != null) {
-            log.log(level, buffer);
+            log.log(level, buffer.toString());
         } else {
             try {
                 out.write(buffer.toString());
