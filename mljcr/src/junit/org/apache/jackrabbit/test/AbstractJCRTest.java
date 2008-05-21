@@ -18,18 +18,19 @@ package org.apache.jackrabbit.test;
 
 import junit.framework.TestResult;
 
-import javax.jcr.Node;
-import javax.jcr.Session;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.Repository;
 import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RangeIterator;
-import java.util.StringTokenizer;
-import java.util.Random;
-import java.util.List;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.StringTokenizer;
 
 /**
  * Abstract base class for all JCR test classes.
@@ -284,7 +285,7 @@ public abstract class AbstractJCRTest extends JUnitTest {
 
         superuser = helper.getSuperuserSession();
 
-        // setup some common names
+		    // setup some common names
         jcrPrimaryType = superuser.getNamespacePrefix(NS_JCR_URI) + ":primaryType";
         jcrMixinTypes = superuser.getNamespacePrefix(NS_JCR_URI) + ":mixinTypes";
         jcrPredecessors = superuser.getNamespacePrefix(NS_JCR_URI) + ":predecessors";

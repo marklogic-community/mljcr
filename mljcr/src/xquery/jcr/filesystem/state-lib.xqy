@@ -13,7 +13,8 @@ module namespace jcrstatelib="http://marklogic.com/jcr/state";
  :)
 
 (: Find a node's name by looking it up by id in the change list.
-   When added, it should appear as a child entry for some other node. :)
+   When added, it should appear as a child entry for some other
+   node in the change list. :)
 declare private function find-node-name ($deltas as element(jcr-change-list),
 	$id as xs:string)
 	as xs:string
@@ -87,8 +88,8 @@ let $dummy := xdmp:log (fn:concat ("  add node uuid=", fn:string ($id)))
 (:$node/nodes,:)
 		for $i in $node/nodes/node
 		where fn:empty ($deltas/added-states/node[@uuid = $i/@uuid])
-		return $i
-		(: TODO: handle noderefs :)
+		return $i,
+		$deltas/modified-refs/references[@targetId = $id]/reference
 		(: TODO: move blobs from temp location, set type :)
 	}</node>
 
@@ -105,6 +106,7 @@ let $dummy := xdmp:log (fn:concat ("process-one-node=", fn:string ($n/@uuid)))
 	let $node-name-attr := $n/@name
 	let $replace-node := $deltas/modified-states/node[@uuid = $n/@uuid]
 	let $node := if ($replace-node) then $replace-node else $n
+	let $node-id := $node/@uuid
 	return
 	<node>{
 		if ($node/@name) then () else $node-name-attr,
@@ -112,13 +114,15 @@ let $dummy := xdmp:log (fn:concat ("process-one-node=", fn:string ($n/@uuid)))
 		$node/mixinTypes,
 		process-properties ($node, $deltas),
 		process-nodes ($n/node, $deltas),
-		add-new-nodes ($deltas/added-states/node[@parentUUID = $node/@uuid], $deltas),
+		add-new-nodes ($deltas/added-states/node[@parentUUID = $node-id], $deltas),
 (:$node/nodes,:)
 		for $i in $node/nodes/node
 		let $id := $i/@uuid
 		where fn:empty (($n/node[@uuid = $id], $deltas/added-states/node[@uuid = $id]))
-		return $i
-		(: TODO: handle noderefs :)
+		return $i,
+		if (fn:exists ($deltas/modified-refs/references[@targetId = $node-id]/reference))
+		then $deltas/modified-refs/references[@targetId = $node-id]/reference
+		else $n/references
 	}</node>
 };
 
@@ -153,6 +157,7 @@ return
 (: =============================================================== :)
 
 declare function check-node-exists ($state as element(workspace), $id as xs:string)
+	as xs:boolean
 {
 	fn:exists ($state/node[fn:string(@uuid) = $id])
 };
@@ -174,7 +179,7 @@ declare function query-node-state ($state as element(workspace), $id as xs:strin
 			for $n in $node/node
 			return
 			<node>{
-				$n/@name, $n/uuid
+				$n/@name, $n/@uuid
 			}</node>
 		}</nodes>,
 
@@ -190,16 +195,43 @@ declare function query-node-state ($state as element(workspace), $id as xs:strin
 
 declare function check-property-exists ($state as element(workspace),
 	$id as xs:string, $name as xs:string)
+	as xs:boolean
 {
 	fn:exists ($state/node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name])
 };
-
 
 declare function query-property-state ($state as element(workspace),
 	$id as xs:string, $name as xs:string)
 	as element(property)?
 {
 	$state/node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name]
+};
+
+(: =============================================================== :)
+
+declare function check-reference-exists ($state as element(workspace),
+	$id as xs:string)
+	as xs:boolean
+{
+	fn:exists ($state//node[fn:string(@uuid) = $id]/reference)
+};
+
+declare function query-references-state ($state as element(workspace),
+	$id as xs:string)
+	as element(references)
+{
+	let $node := $state//node[fn:string(@uuid) = $id]
+	return
+	<references>{
+		attribute { "targetId" } { $id },
+		for $ref in $node/reference
+		let $nodeId := fn:string ($ref/@parentUUID)
+		let $propName := $ref/@name
+		return
+		<reference>{
+			attribute { "propertyId" } { fn:concat ($nodeId, "/", $propName) }
+		}</reference>
+	}</references>
 };
 
 (: =============================================================== :)

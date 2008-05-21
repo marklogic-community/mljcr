@@ -253,7 +253,13 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			throw new IllegalStateException ("not initialized");
 		}
 
-		throw new ItemStateException ("NOT YET IMPLEMENTED");
+		try {
+			return contextFS.itemExists (workspaceDocUri, id);
+		} catch (FileSystemException e) {
+			String msg = "failed to check existence of item state: " + id + ", msg=" + e;
+			log.debug (msg, e);
+			throw new ItemStateException (msg, e);
+		}
 
 //		try {
 //			String refsFilePath = buildNodeReferencesFilePath (id);
@@ -371,7 +377,42 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			throw new IllegalStateException ("not initialized");
 		}
 
-		throw new ItemStateException ("NOT YET IMPLEMENTED");
+		Exception e = null;
+//		String nodeFilePath = buildNodeFilePath (id);
+
+		try {
+//			if (!itemStateFS.isFile (nodeFilePath)) {
+//				throw new NoSuchItemStateException (id.toString());
+//			}
+//			InputStream in = itemStateFS.getInputStream (nodeFilePath);
+
+			InputStream in = contextFS.referencesStateAsStream (workspaceDocUri, id.getTargetId());
+
+			if (in == null) {
+				throw new NoSuchItemStateException (id.toString());
+			}
+
+			try {
+				DOMWalker walker = new DOMWalker (in);
+
+				NodeReferences refs = new NodeReferences (id);
+				readState (walker, refs);
+				return refs;
+			} finally {
+				in.close();
+			}
+		} catch (IOException ioe) {
+			e = ioe;
+			// fall through
+		} catch (FileSystemException fse) {
+			e = fse;
+			// fall through
+		}
+		String msg = "failed to read node state: " + id;
+		log.debug (msg);
+		throw new ItemStateException (msg, e);
+
+
 
 //		Exception e = null;
 //		String refsFilePath = buildNodeReferencesFilePath (id);
@@ -420,15 +461,15 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			ItemState state = (ItemState) it.next();
 
 			if (state.isNode()) {
-				sb.append ("\t\t<node uuid=");
+				sb.append ("\t\t<node uuid=\"");
 				sb.append (((NodeState) state).getNodeId().getUUID());
-				sb.append ("/>\n");
+				sb.append ("\"/>\n");
 			} else {
-				sb.append ("\t\t<property parentUUID=");
-				sb.append (((NodeState) state).getNodeId().getUUID());
-				sb.append (" name=");
+				sb.append ("\t\t<property parentUUID=\"");
+				sb.append (state.getParentId().getUUID().toString());
+				sb.append ("\" name=\"");
 				sb.append (Text.encodeIllegalXMLCharacters (((PropertyState) state).getName().toString()));
-				sb.append ("/>\n");
+				sb.append ("\"/>\n");
 			}
 		}
 
@@ -569,7 +610,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("<").append (MIXINTYPES_ELEMENT).append (">\n");
 		for (Iterator it = state.getMixinTypeNames().iterator(); it.hasNext();)
 		{
-			sb.append (MIXINTYPE_ELEMENT).append (" ");
+			sb.append ("<").append (MIXINTYPE_ELEMENT).append (" ");
 			sb.append (NAME_ATTRIBUTE).append ("=\"");
 			sb.append (Text.encodeIllegalXMLCharacters (it.next().toString())).append ("\"/>\n");
 		}
@@ -741,7 +782,10 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 		{
 			PropertyId propId = (PropertyId) it.next ();
 			sb.append ("\t<").append (NODEREFERENCE_ELEMENT).append (" ");
-			sb.append (PROPERTYID_ATTRIBUTE).append ("=\"").append (propId).append ("\"/>\n");
+			sb.append (PARENTUUID_ATTRIBUTE).append ("=\"").append (propId.getParentId().getUUID().toString()).append ("\" ");
+			sb.append (NAME_ATTRIBUTE).append ("=\"").append (propId.getName ().toString ()).append ("\"/>\n");
+
+//			sb.append (PROPERTYID_ATTRIBUTE).append ("=\"").append (propId).append ("\"/>\n");
 		}
 
 		sb.append ("</").append (NODEREFERENCES_ELEMENT).append (">\n");
@@ -1072,30 +1116,30 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			values.toArray (new InternalValue[values.size ()]));
 	}
 
-//	private void readState (DOMWalker walker, NodeReferences refs)
-//		throws ItemStateException
-//	{
-//		// first do some paranoid sanity checks
-//		if (!walker.getName ().equals (NODEREFERENCES_ELEMENT)) {
-//			String msg = "invalid serialization format (unexpected element: " + walker.getName () + ")";
-//			log.debug (msg);
-//			throw new ItemStateException (msg);
-//		}
-//		// check targetId
-//		if (!refs.getId ().equals (NodeReferencesId.valueOf (walker.getAttribute (TARGETID_ATTRIBUTE)))) {
-//			String msg = "invalid serialized state: targetId  mismatch";
-//			log.debug (msg);
-//			throw new ItemStateException (msg);
-//		}
-//
-//		// now we're ready to read the references data
-//
-//		// property id's
-//		refs.clearAllReferences ();
-//		while (walker.iterateElements (NODEREFERENCE_ELEMENT)) {
-//			refs.addReference (PropertyId.valueOf (walker.getAttribute (PROPERTYID_ATTRIBUTE)));
-//		}
-//	}
+	private void readState (DOMWalker walker, NodeReferences refs)
+		throws ItemStateException
+	{
+		// first do some paranoid sanity checks
+		if (!walker.getName ().equals (NODEREFERENCES_ELEMENT)) {
+			String msg = "invalid serialization format (unexpected element: " + walker.getName () + ")";
+			log.debug (msg);
+			throw new ItemStateException (msg);
+		}
+		// check targetId
+		if (!refs.getId ().equals (NodeReferencesId.valueOf (walker.getAttribute (TARGETID_ATTRIBUTE)))) {
+			String msg = "invalid serialized state: targetId  mismatch";
+			log.debug (msg);
+			throw new ItemStateException (msg);
+		}
+
+		// now we're ready to read the references data
+
+		// property id's
+		refs.clearAllReferences ();
+		while (walker.iterateElements (NODEREFERENCE_ELEMENT)) {
+			refs.addReference (PropertyId.valueOf (walker.getAttribute (PROPERTYID_ATTRIBUTE)));
+		}
+	}
 
 	private void insureStateDoc (FileSystem fs, String uri, String template)
 		throws FileSystemException, IOException

@@ -18,15 +18,16 @@ import com.marklogic.xcc.exceptions.RequestException;
 import com.marklogic.xcc.exceptions.XccConfigException;
 import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
-import com.marklogic.xcc.types.XdmVariable;
 import com.marklogic.xcc.types.XSInteger;
+import com.marklogic.xcc.types.XdmVariable;
 
+import org.apache.jackrabbit.core.NodeId;
+import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.fs.FileSystemPathUtil;
 import org.apache.jackrabbit.core.fs.RandomAccessOutputStream;
-import org.apache.jackrabbit.core.NodeId;
-import org.apache.jackrabbit.core.PropertyId;
+import org.apache.jackrabbit.core.state.NodeReferencesId;
 import org.apache.jackrabbit.util.TransientFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -438,6 +439,16 @@ public class MarkLogicFileSystem implements FileSystem
 		return runBinaryModule (CHECK_PROP_EXISTS_MODULE, var1, var2, var3);
 	}
 
+	private static final String CHECK_REF_EXISTS_MODULE = "check-reference-exists.xqy";
+
+	public boolean itemExists (String uri, NodeReferencesId referencesId) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (referencesId.getTargetId().getUUID().toString()));
+
+		return runBinaryModule (CHECK_REF_EXISTS_MODULE, var1, var2);
+	}
+
 	private static final String QUERY_NODE_STATE_MODULE = "query-node-state.xqy";
 
 	public InputStream nodeStateAsStream (String uri, NodeId nodeId) throws FileSystemException
@@ -471,6 +482,24 @@ System.out.println ("Node load: " + rs.itemAt (0).asString());
 		}
 
 System.out.println ("Property load: " + rs.itemAt (0).asString());
+
+		return rs.next().asInputStream();
+	}
+
+	private static final String QUERY_REFS_STATE_MODULE = "query-references-state.xqy";
+
+	public InputStream referencesStateAsStream (String uri, NodeId nodeId) throws FileSystemException
+	{
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+
+		ResultSequence rs = runModule (QUERY_REFS_STATE_MODULE, var1, var2);
+
+		if (rs.size() == 0) {
+			return null;
+		}
+
+System.out.println ("Refs load: " + rs.itemAt (0).asString());
 
 		return rs.next().asInputStream();
 	}

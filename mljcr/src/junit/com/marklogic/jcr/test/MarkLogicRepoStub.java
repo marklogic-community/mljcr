@@ -27,7 +27,7 @@ import java.io.FileNotFoundException;
  */
 public class MarkLogicRepoStub extends RepositoryStub
 {
-	public static final String REPO_CONFIG_FILE_PROP = "com.marklogic.jcr.test.repoconfig.xml";
+	public static final String REPO_CONFIG_FILE_PROP = "com.marklogic.jcr.test.repoconfig";
 	public static final String REPO_HOME = "/tmp/JackRabbitRepo";
 
 	private Repository repository = null;
