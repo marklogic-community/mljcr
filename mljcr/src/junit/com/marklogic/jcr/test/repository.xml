@@ -58,7 +58,7 @@
     <!--
         location of workspaces root directory and name of default workspace
     -->
-    <Workspaces rootPath="${rep.home}/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
+    <Workspaces rootPath="${rep.home}/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="test"/>
     <!--
         workspace configuration template:
         used to create the initial workspace if there's no workspace yet
