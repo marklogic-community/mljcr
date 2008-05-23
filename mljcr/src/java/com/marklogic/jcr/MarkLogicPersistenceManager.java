@@ -14,7 +14,6 @@ import org.apache.jackrabbit.core.nodetype.NodeDefId;
 import org.apache.jackrabbit.core.nodetype.PropDefId;
 import org.apache.jackrabbit.core.persistence.PMContext;
 import org.apache.jackrabbit.core.persistence.PersistenceManager;
-import org.apache.jackrabbit.core.persistence.util.BLOBStore;
 import org.apache.jackrabbit.core.persistence.util.ResourceBasedBLOBStore;
 import org.apache.jackrabbit.core.state.ChangeLog;
 import org.apache.jackrabbit.core.state.ItemState;
@@ -102,7 +101,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 
 	private MarkLogicFileSystem contextFS;
 	private FileSystem itemStateFS;
-	private BLOBStore blobStore;
+	private MarkLogicBlobStore blobStore;
 
 	private final NameFactory factory;
 
@@ -704,16 +703,21 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 				try {
 					// put binary value in BLOB store
 					BLOBFileValue blobVal = val.getBLOBFileValue();
-					InputStream in = blobVal.getStream();
 					String blobId = blobStore.createId (state.getPropertyId(), i);
+					long blobLen = blobVal.getLength();
 
-					try {
-						blobStore.put (blobId, in, blobVal.getLength());
-					} finally {
+					if (blobLen == 0) {
+						blobId = MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID;
+					} else {
+						InputStream in = blobVal.getStream();
 						try {
-							in.close();
-						} catch (IOException e) {
-							// ignore
+							blobStore.put (blobId, in, blobLen);
+						} finally {
+							try {
+								in.close();
+							} catch (IOException e) {
+								// ignore
+							}
 						}
 					}
 					// store id of BLOB as property value
@@ -725,11 +729,10 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 						// optimization: if the BLOB store is resource-based
 						// retrieve the resource directly rather than having
 						// to read the BLOB from an input stream
-						FileSystemResource fsRes =
-							((ResourceBasedBLOBStore) blobStore).getResource (blobId);
+						FileSystemResource fsRes = blobStore.getResource (blobId);
 						values[i] = InternalValue.create (fsRes);
 					} else {
-						in = blobStore.get (blobId);
+						InputStream in = blobStore.get (blobId);
 						try {
 							values[i] = InternalValue.create (in);
 						} finally {

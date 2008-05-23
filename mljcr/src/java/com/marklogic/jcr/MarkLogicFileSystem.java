@@ -218,6 +218,10 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public boolean exists (String path) throws FileSystemException
 	{
+		if (path.endsWith (MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID)) {
+			return true;
+		}
+
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
@@ -258,6 +262,10 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public long length (String filePath) throws FileSystemException
 	{
+		if (filePath.endsWith (MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID)) {
+			return 0;
+		}
+
 		String uri = fullPath (filePath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 

@@ -5,21 +5,28 @@
 package com.marklogic.jcr.test;
 
 import org.apache.jackrabbit.core.RepositoryImpl;
+import org.apache.jackrabbit.core.WorkspaceImpl;
 import org.apache.jackrabbit.core.config.ConfigurationException;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
+import org.apache.jackrabbit.core.nodetype.NodeTypeManagerImpl;
 import org.apache.jackrabbit.test.RepositoryStub;
 import org.apache.jackrabbit.test.RepositoryStubException;
 import org.xml.sax.InputSource;
 
+import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.NamespaceRegistry;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -35,16 +42,17 @@ public class MarkLogicRepoStub extends RepositoryStub
 
 	private static final String SERIALIZED_TESTDATA = "com/marklogic/jcr/test/testdata-docview.xml";
 	private static final String SERIALIZED_TESTROOT = "com/marklogic/jcr/test/testroot-docview.xml";
-	private static final String SERIALIZED_JCR_SYSTEM = "com/marklogic/jcr/test/jcr_system-docview.xml";
+	private static final String NAMESPACES_PROPS = "com/marklogic/jcr/test/test-namespaces.properties";
+	private static final String NODETYPE_DEFS = "com/marklogic/jcr/test/test-nodetypes.xml";
 
-	private Repository repository = null;
+	private RepositoryImpl repository = null;
 
 	public MarkLogicRepoStub (Properties env)
 	{
 		super (env);
 	}
 
-	public Repository getRepository () throws RepositoryStubException
+	public Repository getRepository() throws RepositoryStubException
 	{
 		if (repository == null) {
 			String repoConfigFile = environment.getProperty(REPO_CONFIG_FILE_PROP);
@@ -60,7 +68,12 @@ public class MarkLogicRepoStub extends RepositoryStub
 				in = new FileInputStream (repoConfigFile);
 				repositoryConfig = RepositoryConfig.create (new InputSource (in), REPO_HOME);
 				repository = RepositoryImpl.create (repositoryConfig);
-				loadTestData (repository);
+				Session session = repository.login (getSuperuserCredentials(), null);
+
+				createTestWorkspace (repository, session);
+				registerTestNamespaces (session);
+				registerTestNodeTypes (session);
+				loadTestData (session);
 			} catch (FileNotFoundException e) {
 				throw new RepositoryStubException ("Cannot open file " + repoConfigFile + ": " + e);
 			} catch (ConfigurationException e) {
@@ -73,13 +86,80 @@ public class MarkLogicRepoStub extends RepositoryStub
 		return repository;
 	}
 
-
-	private void loadTestData (Repository repository) throws RepositoryException, RepositoryStubException
+	private void createTestWorkspace (Repository repository, Session session) throws RepositoryException
 	{
-		Session session = repository.login (getSuperuserCredentials(), null);
+		try {
+			repository.login (getSuperuserCredentials(), "test");
+			return;		// already exists
+		} catch (NoSuchWorkspaceException e) {
+			// fall through
+		}
+
+		WorkspaceImpl workspace = (WorkspaceImpl) session.getWorkspace();
+
+		workspace.createWorkspace ("test");
+		session.save();
+	}
+
+	private void registerTestNodeTypes (Session session) throws RepositoryException, RepositoryStubException
+	{
+		NodeTypeManagerImpl ntMgr = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+
+		try {
+			ntMgr.getNodeType ("test:canSetProperty");
+			return;		// already registered
+		} catch (NoSuchNodeTypeException e) {
+			// fall through
+		}
+
+		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream (NODETYPE_DEFS);
+
+		try {
+			ntMgr.registerNodeTypes (in, "text/xml");
+		} catch (IOException e) {
+			throw new RepositoryStubException ("Cannot register node types " + NODETYPE_DEFS + ": " + e);
+		}
+
+		session.save();
+	}
+
+	private void registerTestNamespaces (Session session) throws RepositoryException, RepositoryStubException
+	{
+		NamespaceRegistry nsReg = session.getWorkspace ().getNamespaceRegistry ();
+		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream (NAMESPACES_PROPS);
+		Properties props = new Properties();
+
+		try {
+			props.load (in);
+			in.close();
+		} catch (IOException e) {
+			throw new RepositoryStubException ("Cannot open properties " + NAMESPACES_PROPS + ": " + e);
+		}
+
+		for (Iterator it = props.entrySet().iterator (); it.hasNext ();)
+		{
+			Map.Entry entry = (Map.Entry) it.next();
+			String prefix = (String) entry.getKey();
+			String uri = (String) entry.getValue();
+
+			try {
+				nsReg.getURI (prefix);
+				// if no exception, then it's already registered
+			} catch (RepositoryException e) {
+				nsReg.registerNamespace (prefix, uri);
+			}
+		}
+
+		session.save();
+	}
+
+
+	private void loadTestData (Session session) throws RepositoryException, RepositoryStubException
+	{
 		importDocView (session, SERIALIZED_TESTDATA);
 		importDocView (session, SERIALIZED_TESTROOT);
-//		importDocView (session, SERIALIZED_JCR_SYSTEM);
+
+		session.save();
 	}
 
 	private void importDocView (Session session, String resourceName)
@@ -90,6 +170,7 @@ public class MarkLogicRepoStub extends RepositoryStub
 		try {
 			session.importXML("/", in, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
 			session.save();
+			in.close();
 		} catch (IOException e) {
 			throw new RepositoryStubException ("Cannot open file " + resourceName + ": " + e);
 		}

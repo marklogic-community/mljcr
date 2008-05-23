@@ -9,6 +9,9 @@ import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemPathUtil;
 import org.apache.jackrabbit.core.PropertyId;
 
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ron
@@ -17,6 +20,8 @@ import org.apache.jackrabbit.core.PropertyId;
  */
 public class MarkLogicBlobStore extends FileSystemBLOBStore
 {
+	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
+
 	/**
 	 * Creates a new <code>FileSystemBLOBStore</code> instance.
 	 *
@@ -41,5 +46,17 @@ public class MarkLogicBlobStore extends FileSystemBLOBStore
 		sb.append (FileSystemPathUtil.escapeName(id.getName().toString())).append (".blob");
 
 		return sb.toString();
+	}
+
+	//------------------------------------------------------------
+
+
+	public InputStream get (String blobId) throws Exception
+	{
+		if ( ! MAGIC_EMPTY_BLOB_ID.equals (blobId)) {
+			return super.get (blobId);
+		}
+
+		return new ByteArrayInputStream (new byte [0]);
 	}
 }
