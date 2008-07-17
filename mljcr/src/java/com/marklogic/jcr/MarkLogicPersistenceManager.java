@@ -4,6 +4,9 @@
 
 package com.marklogic.jcr;
 
+import com.marklogic.jcr.compat.PMAdapter;
+import com.marklogic.jcr.compat.PMAdapter14;
+
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.core.fs.BasedFileSystem;
@@ -27,8 +30,6 @@ import org.apache.jackrabbit.core.util.DOMWalker;
 import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.spi.Name;
-import org.apache.jackrabbit.spi.NameFactory;
-import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,13 +98,13 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 
 //	private static final String NODEREFSFILENAME = "references.xml";
 
-	private boolean initialized;
+	private boolean initialized = false;
 
 	private MarkLogicFileSystem contextFS;
 	private FileSystem itemStateFS;
 	private MarkLogicBlobStore blobStore;
 
-	private final NameFactory factory;
+	private final PMAdapter pmAdapter = new PMAdapter14();
 
 	private static final String workspaceDocUri = "/state.xml";
 	private static final String workspaceStateTemplate = "<workspace />";
@@ -115,8 +116,6 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 	 */
 	public MarkLogicPersistenceManager()
 	{
-		initialized = false;
-		factory = NameFactoryImpl.getInstance ();
 	}
 
 	//---------------------------------------------------< PersistenceManager >
@@ -302,7 +301,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 				String ntName = walker.getAttribute (NODETYPE_ATTRIBUTE);
 
 				NodeState state = createNew (id);
-				state.setNodeTypeName (factory.create (ntName));
+				pmAdapter.setNodeTypeName (state, ntName);
 				readState (walker, state);
 				return state;
 			} finally {
@@ -959,7 +958,8 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 		// check nodetype
 		String ntName = walker.getAttribute (NODETYPE_ATTRIBUTE);
-		if (!factory.create (ntName).equals (state.getNodeTypeName ())) {
+
+		if (pmAdapter.sameNodeTypeName (state, ntName)) {
 			String msg = "invalid serialized state: nodetype mismatch";
 			log.debug (msg);
 			throw new ItemStateException (msg);
@@ -983,9 +983,9 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 
 		// mixin types
 		if (walker.enterElement (MIXINTYPES_ELEMENT)) {
-			Set mixins = new HashSet ();
+			Set mixins = new HashSet();
 			while (walker.iterateElements (MIXINTYPE_ELEMENT)) {
-				mixins.add (factory.create (walker.getAttribute (NAME_ATTRIBUTE)));
+				pmAdapter.addName (mixins, walker.getAttribute (NAME_ATTRIBUTE));
 			}
 			if (mixins.size () > 0) {
 				state.setMixinTypeNames (mixins);
@@ -998,7 +998,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			while (walker.iterateElements (PROPERTY_ELEMENT)) {
 				String propName = walker.getAttribute (NAME_ATTRIBUTE);
 				// @todo deserialize type and values
-				state.addPropertyName (factory.create (propName));
+				pmAdapter.addPropertyName (state, propName);
 			}
 			walker.leaveElement ();
 		}
@@ -1008,7 +1008,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			while (walker.iterateElements (NODE_ELEMENT)) {
 				String childName = walker.getAttribute (NAME_ATTRIBUTE);
 				String childUUID = walker.getAttribute (UUID_ATTRIBUTE);
-				state.addChildNodeEntry (factory.create (childName), NodeId.valueOf (childUUID));
+				pmAdapter.addChildNodeEntry (state, childName, NodeId.valueOf (childUUID));
 			}
 			walker.leaveElement ();
 		}
@@ -1025,7 +1025,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 			throw new ItemStateException (msg);
 		}
 		// check name
-		if (!state.getName ().equals (factory.create (walker.getAttribute (NAME_ATTRIBUTE)))) {
+		if ( ! pmAdapter.samePropertyName (state, walker.getAttribute (NAME_ATTRIBUTE))) {
 			String msg = "invalid serialized state: name mismatch";
 			log.debug (msg);
 			throw new ItemStateException (msg);
