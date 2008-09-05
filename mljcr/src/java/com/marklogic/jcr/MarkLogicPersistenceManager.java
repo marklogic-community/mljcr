@@ -5,7 +5,6 @@
 package com.marklogic.jcr;
 
 import com.marklogic.jcr.compat.PMAdapter;
-import com.marklogic.jcr.compat.PMAdapter14;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
@@ -51,7 +50,7 @@ import java.util.Set;
  * and <code>NodeReferences</code> objects in XML format.
  * @noinspection OverlyComplexClass,ClassWithTooManyMethods
  */
-public class MarkLogicPersistenceManager implements PersistenceManager
+abstract public class MarkLogicPersistenceManager implements PersistenceManager
 {
 	private static final Logger log = LoggerFactory.getLogger (MarkLogicPersistenceManager.class);
 
@@ -104,7 +103,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 	private FileSystem itemStateFS;
 	private MarkLogicBlobStore blobStore;
 
-	private final PMAdapter pmAdapter = new PMAdapter14();
+	private final PMAdapter pmAdapter;
 
 	private static final String workspaceDocUri = "/state.xml";
 	private static final String workspaceStateTemplate = "<workspace />";
@@ -113,9 +112,11 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 
 	/**
 	 * Creates a new <code>XMLPersistenceManager</code> instance.
+	 * @param pmAdapter A PMAdapter instance for JackRabbit interface
 	 */
-	public MarkLogicPersistenceManager()
+	public MarkLogicPersistenceManager (PMAdapter pmAdapter)
 	{
+		this.pmAdapter = pmAdapter;
 	}
 
 	//---------------------------------------------------< PersistenceManager >
@@ -959,7 +960,7 @@ public class MarkLogicPersistenceManager implements PersistenceManager
 		// check nodetype
 		String ntName = walker.getAttribute (NODETYPE_ATTRIBUTE);
 
-		if (pmAdapter.sameNodeTypeName (state, ntName)) {
+		if ( ! pmAdapter.sameNodeTypeName (state, ntName)) {
 			String msg = "invalid serialized state: nodetype mismatch";
 			log.debug (msg);
 			throw new ItemStateException (msg);
