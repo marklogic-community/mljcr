@@ -26,8 +26,8 @@ import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.util.DOMWalker;
 import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.name.QName;
+import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
