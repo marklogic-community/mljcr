@@ -105,8 +105,11 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 	private final PMAdapter pmAdapter;
 
+	private static final String JCR_NAMESPACE = "http://marklogic.com/jcr";
+	private static final String CHANGE_LIST_ELEMENT = "change-list";
 	private static final String workspaceDocUri = "/state.xml";
-	private static final String workspaceStateTemplate = "<workspace />";
+	private static final String workspaceStateTemplate =
+		"<workspace xmlns=\"" + JCR_NAMESPACE + "\"/>";
 
 	// ---------------------------------------------------------
 
@@ -453,7 +456,8 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		StringBuffer sb = new StringBuffer();
 
-		sb.append ("<").append ("jcr-change-list").append (">\n");
+		sb.append ("<").append (CHANGE_LIST_ELEMENT);
+		sb.append (" xmlns=\"").append (JCR_NAMESPACE).append ("\">\n");
 		sb.append ("\t<").append ("deleted-states").append (">\n");
 
 		for (Iterator it = changeLog.deletedStates(); it.hasNext();) {
@@ -517,7 +521,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		sb.append ("\t</").append ("modified-refs").append (">\n");
 
-		sb.append ("</").append ("jcr-change-list").append (">\n");
+		sb.append ("</").append (CHANGE_LIST_ELEMENT).append (">\n");
 
 		System.out.println ("=========================================");
 		System.out.println (sb.toString ());
