@@ -1,7 +1,7 @@
 
 xquery version "1.0-ml";
 
-import module namespace state="http://marklogic.com/jcr/state" at "state-lib.xqy";
+import module namespace state="http://marklogic.com/jcr/state" at "../lib/state-lib.xqy";
 
 declare default element namespace "http://marklogic.com/jcr";
 
