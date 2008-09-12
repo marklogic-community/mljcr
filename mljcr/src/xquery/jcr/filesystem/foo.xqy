@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-import module namespace jcrfslib="http://marklogic.com/jcr/fs" at "fs-lib.xqy";
+import module namespace jcrfslib="http://marklogic.com/jcr/fs" at "../lib/fs-lib.xqy";
 
 declare variable $uri := "jackrabbit/repository/default/data/dc1dce46-bcaa-4ab5-9355-a8bde270435d/%7bhttp%3a%2f%2fwww.jcp.org%2fjcr%2f1.0%7ddata.blob";
 
