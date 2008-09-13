@@ -53,7 +53,9 @@ public class MarkLogicFileSystem implements FileSystem
 {
 	private static final Logger log = LoggerFactory.getLogger (MarkLogicFileSystem.class);
 
-	private static final String MODULE_ROOT = "filesystem/";
+	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
+	private static final String FS = "filesystem/";
+	private static final String STATE = "state/";
 
 	// bean properties
 	private String contentSourceUrl = null;
@@ -112,7 +114,7 @@ public class MarkLogicFileSystem implements FileSystem
 		// TODO: anything to do here?
 	}
 
-	private static final String GET_DOC_MODULE = "get-doc.xqy";
+	private static final String GET_DOC_MODULE = FS + "get-doc.xqy";
 
 	public InputStream getInputStream (String filePath) throws FileSystemException
 	{
@@ -202,7 +204,7 @@ public class MarkLogicFileSystem implements FileSystem
 		throw new FileSystemException ("NOT IMPL");
 	}
 
-	private static final String CREATE_FOLDER_MODULE = "create-folder.xqy";
+	private static final String CREATE_FOLDER_MODULE = FS + "create-folder.xqy";
 
 	public void createFolder (String folderPath) throws FileSystemException
 	{
@@ -214,7 +216,7 @@ public class MarkLogicFileSystem implements FileSystem
 		runModule (CREATE_FOLDER_MODULE, var);
 	}
 
-	private static final String EXISTS_MODULE = "exists.xqy";
+	private static final String EXISTS_MODULE = FS + "exists.xqy";
 
 	public boolean exists (String path) throws FileSystemException
 	{
@@ -232,7 +234,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return result;
 	}
 
-	private static final String IS_FILE_MODULE = "is-file.xqy";
+	private static final String IS_FILE_MODULE = FS + "is-file.xqy";
 
 	public boolean isFile (String path) throws FileSystemException
 	{
@@ -245,7 +247,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return result;
 	}
 
-	private static final String IS_FOLDER_MODULE = "is-folder.xqy";
+	private static final String IS_FOLDER_MODULE = FS + "is-folder.xqy";
 
 	public boolean isFolder (String path) throws FileSystemException
 	{
@@ -258,7 +260,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return result;
 	}
 
-	private static final String DOC_LENGTH_MODULE = "doc-length.xqy";
+	private static final String DOC_LENGTH_MODULE = FS + "doc-length.xqy";
 
 	public long length (String filePath) throws FileSystemException
 	{
@@ -318,7 +320,7 @@ public class MarkLogicFileSystem implements FileSystem
 		throw new FileSystemException ("NOT IMPL");
 	}
 
-	private static final String HAS_CHILDREN_MODULE = "has-children.xqy";
+	private static final String HAS_CHILDREN_MODULE = FS + "has-children.xqy";
 
 	public boolean hasChildren (String path) throws FileSystemException
 	{
@@ -332,7 +334,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return result;
 	}
 
-	private static final String LIST_CHILDREN_MODULE = "list-children.xqy";
+	private static final String LIST_CHILDREN_MODULE = FS + "list-children.xqy";
 
 	public String[] list (String folderPath) throws FileSystemException
 	{
@@ -346,7 +348,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return rs.asStrings();
 	}
 
-	private static final String LIST_FILES_MODULE = "list-files.xqy";
+	private static final String LIST_FILES_MODULE = FS + "list-files.xqy";
 
 	public String[] listFiles (String folderPath) throws FileSystemException
 	{
@@ -360,7 +362,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return rs.asStrings();
 	}
 
-	private static final String LIST_FOLDERS_MODULE = "list-folders.xqy";
+	private static final String LIST_FOLDERS_MODULE = FS + "list-folders.xqy";
 
 	public String[] listFolders (String folderPath) throws FileSystemException
 	{
@@ -374,7 +376,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return rs.asStrings();
 	}
 
-	private static final String DELETE_FILE_MODULE = "delete-file.xqy";
+	private static final String DELETE_FILE_MODULE = FS + "delete-file.xqy";
 
 	public void deleteFile (String filePath) throws FileSystemException
 	{
@@ -386,7 +388,7 @@ public class MarkLogicFileSystem implements FileSystem
 		runModule (DELETE_FILE_MODULE, var);
 	}
 
-	private static final String DELETE_FOLDER_MODULE = "delete-folder.xqy";
+	private static final String DELETE_FOLDER_MODULE = FS + "delete-folder.xqy";
 
 	public void deleteFolder (String folderPath) throws FileSystemException
 	{
@@ -416,7 +418,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 
-	private static final String UPDATE_STATE_MODULE = "update-state.xqy";
+	private static final String UPDATE_STATE_MODULE = STATE + "update-state.xqy";
 
 	public void updateState (String uri, String deltas) throws FileSystemException
 	{
@@ -426,7 +428,7 @@ public class MarkLogicFileSystem implements FileSystem
 		runModule (UPDATE_STATE_MODULE, var1, var2);
 	}
 
-	private static final String CHECK_NODE_EXISTS_MODULE = "check-node-exists.xqy";
+	private static final String CHECK_NODE_EXISTS_MODULE = STATE + "check-node-exists.xqy";
 
 	public boolean itemExists (String uri, NodeId nodeId) throws FileSystemException
 	{
@@ -436,7 +438,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return runBinaryModule (CHECK_NODE_EXISTS_MODULE, var1, var2);
 	}
 
-	private static final String CHECK_PROP_EXISTS_MODULE = "check-property-exists.xqy";
+	private static final String CHECK_PROP_EXISTS_MODULE = STATE + "check-property-exists.xqy";
 
 	public boolean itemExists (String uri, PropertyId propertyId) throws FileSystemException
 	{
@@ -447,7 +449,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return runBinaryModule (CHECK_PROP_EXISTS_MODULE, var1, var2, var3);
 	}
 
-	private static final String CHECK_REF_EXISTS_MODULE = "check-reference-exists.xqy";
+	private static final String CHECK_REF_EXISTS_MODULE = STATE + "check-reference-exists.xqy";
 
 	public boolean itemExists (String uri, NodeReferencesId referencesId) throws FileSystemException
 	{
@@ -457,7 +459,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return runBinaryModule (CHECK_REF_EXISTS_MODULE, var1, var2);
 	}
 
-	private static final String QUERY_NODE_STATE_MODULE = "query-node-state.xqy";
+	private static final String QUERY_NODE_STATE_MODULE = STATE + "query-node-state.xqy";
 
 	public InputStream nodeStateAsStream (String uri, NodeId nodeId) throws FileSystemException
 	{
@@ -475,7 +477,7 @@ System.out.println ("Node load: " + rs.itemAt (0).asString());
 		return rs.next().asInputStream();
 	}
 
-	private static final String QUERY_PROP_STATE_MODULE = "query-property-state.xqy";
+	private static final String QUERY_PROP_STATE_MODULE = STATE + "query-property-state.xqy";
 
 	public InputStream propertyStateAsStream (String uri, PropertyId propertyId) throws FileSystemException
 	{
@@ -494,7 +496,7 @@ System.out.println ("Property load: " + rs.itemAt (0).asString());
 		return rs.next().asInputStream();
 	}
 
-	private static final String QUERY_REFS_STATE_MODULE = "query-references-state.xqy";
+	private static final String QUERY_REFS_STATE_MODULE = STATE + "query-references-state.xqy";
 
 	public InputStream referencesStateAsStream (String uri, NodeId nodeId) throws FileSystemException
 	{
@@ -516,7 +518,7 @@ System.out.println ("Refs load: " + rs.itemAt (0).asString());
 
 	private String modulePath (String module)
 	{
-		return (MODULE_ROOT + module);
+		return (MODULES_ROOT + module);
 	}
 
 	private String fullPath (String relPath)

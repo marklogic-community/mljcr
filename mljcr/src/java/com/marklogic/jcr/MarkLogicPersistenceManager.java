@@ -109,7 +109,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	private static final String CHANGE_LIST_ELEMENT = "change-list";
 	private static final String workspaceDocUri = "/state.xml";
 	private static final String workspaceStateTemplate =
-		"<workspace xmlns=\"" + JCR_NAMESPACE + "\"/>";
+		"<workspace xmlns=\"" + JCR_NAMESPACE + "\" version=\"1.0\"/>";
 
 	// ---------------------------------------------------------
 
@@ -142,6 +142,8 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		blobStore = new MarkLogicBlobStore (itemStateFS);
 
 		insureStateDoc (contextFS, workspaceDocUri, workspaceStateTemplate);
+
+		contextFS.getUriRoot ();
 
 		initialized = true;
 	}
