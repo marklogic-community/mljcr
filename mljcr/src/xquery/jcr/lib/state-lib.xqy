@@ -144,7 +144,7 @@ let $dummy := xdmp:log (fn:concat ("process-nodes=", fn:count ($nodes)))
 };
 
 (: Returns a new workspace node with deltas applied :)
-declare function apply-state-updates ($state as element(workspace),
+declare private function old-apply-state-updates ($state as element(workspace),
 	$deltas as element(change-list))
 	as element(workspace)
 {
@@ -156,12 +156,111 @@ return
 	}</workspace>
 };
 
+(: ========= :)
+(: ========= :)
+(: ========= :)
+
+(: TODO: Rename me :)
+declare private function delete-node-property ($prop as element(property))
+	as empty-sequence()
+{
+	(: TODO: delete blob if type = Binary :)
+	()
+};
+
+declare private function new-property ($prop as element(property))
+	as element(property)
+{
+	(: TODO: handle binary properties, move/re-insert document :)
+	$prop
+};
+
+declare private function prune-property ($prop as element(property),
+	$deltas as element(change-list))
+	as element(property)*
+{
+	if (fn:exists ($deltas/deleted-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
+	then delete-node-property ($prop)
+	else if (fn:exists ($deltas/modified-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
+	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name])
+	else $prop
+};
+
+declare private function prune-references ($node-id as attribute(uuid),
+	$refs as element(reference)*, $deltas as element(change-list))
+	as element(reference)*
+{
+	if (fn:exists ($deltas/modified-refs/references[@targetId = $node-id]))
+	then $deltas/modified-refs/references[@targetId = $node-id]/reference
+	else $refs
+};
+
+
+declare private function process-node ($node as element(node),
+	$deltas as element(change-list))
+	as element(node)?
+{
+	(: need to recurse down to handle deleted binary nodes :)
+	(: note function mapping :)
+	let $node-id := $node/@uuid
+	let $child-nodes := (process-node ($node/node, $deltas),
+		process-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas))
+	let $child-properties := (prune-property ($node/property, $deltas),
+		new-property ($deltas/added-states/property[@parentUUID = $node-id]))
+	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
+	return
+	if ($deltas/deleted-states/node[@uuid] = $node-id)
+	then ()
+	else
+	<node>{
+		let $replace-node := $deltas/modified-states/node[@uuid = $node-id]
+		let $node := if ($replace-node) then $replace-node else $node
+		return
+		(
+			if ($node/@name) then () else attribute { "name" } { find-node-name ($deltas, $node-id) },
+			$node/@*,
+			$node/mixinTypes,
+			$child-properties,
+			$child-nodes,
+			$child-refs
+		)
+	}</node>
+};
+
+declare private function parentless-new-nodes ($state as element(workspace),
+	$deltas as element(change-list))
+	as element(node)*
+{
+	for $new-node in $deltas/added-states/node
+	let $parent-id := $new-node/@parentUUID
+	where fn:empty (($deltas/added-states/node[@uuid = $parent-id],
+			$state//node[@uuid = $parent-id]))
+	return $new-node
+};
+
+(: Returns a new workspace node with deltas applied :)
+declare function apply-state-updates ($state as element(workspace),
+	$deltas as element(change-list))
+	as element(workspace)
+{
+	<workspace>{
+		$state/@*,
+		process-node ($state/node, $deltas),
+		process-node (parentless-new-nodes ($state, $deltas), $deltas)
+	}</workspace>
+};
+
+
+(: ========= :)
+(: ========= :)
+(: ========= :)
+
 (: =============================================================== :)
 
 declare function check-node-exists ($state as element(workspace), $id as xs:string)
 	as xs:boolean
 {
-	fn:exists ($state/node[fn:string(@uuid) = $id])
+	fn:exists ($state//node[fn:string(@uuid) = $id])
 };
 
 declare function query-node-state ($state as element(workspace), $id as xs:string)
@@ -199,7 +298,7 @@ declare function check-property-exists ($state as element(workspace),
 	$id as xs:string, $name as xs:string)
 	as xs:boolean
 {
-	fn:exists ($state/node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name])
+	fn:exists ($state//node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name])
 };
 
 declare function query-property-state ($state as element(workspace),

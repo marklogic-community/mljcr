@@ -13,5 +13,14 @@ declare variable $deltas as element (change-list) := xdmp:unquote ($deltas-str)/
 
 
 xdmp:log (fn:concat ("uri: ", $uri, ", type: ", xdmp:node-kind ($deltas))),
+xdmp:log ("======================= deltas ==========================="),
+xdmp:log ($deltas-str),
+xdmp:log ("======================= before ==========================="),
+xdmp:log (xdmp:quote ($state)),
+xdmp:log ("======================= after ============================"),
+xdmp:log (xdmp:quote (state:apply-state-updates ($state, $deltas))),
+xdmp:log ("=========================================================="),
+xdmp:log ("=========================================================="),
+
 
 xdmp:node-replace ($state, state:apply-state-updates ($state, $deltas))
