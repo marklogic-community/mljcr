@@ -10,4 +10,9 @@ declare variable $uuid external;
 
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
-state:query-references-state ($state, $uuid)
+let $result := state:query-references-state ($state, $uuid)
+(:
+let $dummy := xdmp:log (fn:concat ("query-references-state: uri=", $uri, ", uuid=", $uuid, ", result=", xdmp:quote ($result)))
+:)
+
+return $result

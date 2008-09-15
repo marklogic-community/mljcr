@@ -12,7 +12,8 @@ declare variable $state as element (workspace) := doc ($uri)/workspace;
 declare variable $deltas as element (change-list) := xdmp:unquote ($deltas-str)/element();
 
 
-xdmp:log (fn:concat ("uri: ", $uri, ", type: ", xdmp:node-kind ($deltas))),
+(:
+xdmp:log (fn:concat ("apply-state-updates: uri: ", $uri)),
 xdmp:log ("======================= deltas ==========================="),
 xdmp:log ($deltas-str),
 xdmp:log ("======================= before ==========================="),
@@ -21,6 +22,6 @@ xdmp:log ("======================= after ============================"),
 xdmp:log (xdmp:quote (state:apply-state-updates ($state, $deltas))),
 xdmp:log ("=========================================================="),
 xdmp:log ("=========================================================="),
-
+:)
 
 xdmp:node-replace ($state, state:apply-state-updates ($state, $deltas))

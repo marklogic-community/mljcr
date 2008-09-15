@@ -9,6 +9,12 @@ declare variable $uri external;
 declare variable $uuid external;
 declare variable $name external;
 
+declare variable $decoded-name := xdmp:url-decode ($name);
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
-state:check-property-exists ($state, $uuid, $name)
+let $result := state:check-property-exists ($state, $uuid, $decoded-name)
+(:
+let $dummy := xdmp:log (fn:concat ("check-property-exists: uri=", $uri, ", uuid=", $uuid, ", name=", $decoded-name, ", result=", $result))
+:)
+
+return $result

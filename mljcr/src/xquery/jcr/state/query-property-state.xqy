@@ -9,6 +9,11 @@ declare variable $uri external;
 declare variable $uuid external;
 declare variable $name external;
 
+declare variable $decoded-name := xdmp:url-decode ($name);
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
-state:query-property-state ($state, $uuid, $name)
+let $result := state:query-property-state ($state, $uuid, $decoded-name)
+(:
+let $dummy := xdmp:log (fn:concat ("query-node-state: uri=", $uri, ", uuid=", $uuid, ", name=", $decoded-name, ", result=", xdmp:quote ($result)))
+:)
+return $result

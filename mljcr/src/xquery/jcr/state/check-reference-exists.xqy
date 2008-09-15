@@ -10,4 +10,9 @@ declare variable $uuid external;
 
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
-state:check-reference-exists ($state, $uuid)
+let $result := state:check-reference-exists ($state, $uuid)
+(:
+let $dummy := xdmp:log (fn:concat ("check-reference-exists: uri=", $uri, ", uuid=", $uuid, ", result=", $result))
+:)
+
+return $result

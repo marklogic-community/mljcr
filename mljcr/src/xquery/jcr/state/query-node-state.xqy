@@ -10,4 +10,8 @@ declare variable $uuid external;
 
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
-state:query-node-state ($state, $uuid)
+let $result := state:query-node-state ($state, $uuid)
+(:
+let $dummy := xdmp:log (fn:concat ("query-node-state: uri=", $uri, ", uuid=", $uuid, ", result=", xdmp:quote ($result)))
+:)
+return $result
