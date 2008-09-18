@@ -472,7 +472,7 @@ public class MarkLogicFileSystem implements FileSystem
 			return null;
 		}
 
-System.out.println ("Node load: " + rs.itemAt (0).asString());
+//System.out.println ("Node load: " + rs.itemAt (0).asString());
 
 		return rs.next().asInputStream();
 	}
@@ -491,7 +491,7 @@ System.out.println ("Node load: " + rs.itemAt (0).asString());
 			return null;
 		}
 
-System.out.println ("Property load: " + rs.itemAt (0).asString());
+//System.out.println ("Property load: " + rs.itemAt (0).asString());
 
 		return rs.next().asInputStream();
 	}
@@ -509,7 +509,7 @@ System.out.println ("Property load: " + rs.itemAt (0).asString());
 			return null;
 		}
 
-System.out.println ("Refs load: " + rs.itemAt (0).asString());
+//System.out.println ("Refs load: " + rs.itemAt (0).asString());
 
 		return rs.next().asInputStream();
 	}

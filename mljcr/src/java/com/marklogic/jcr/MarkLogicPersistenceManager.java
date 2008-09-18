@@ -525,9 +525,9 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		sb.append ("</").append (CHANGE_LIST_ELEMENT).append (">\n");
 
-		System.out.println ("=========================================");
-		System.out.println (sb.toString ());
-		System.out.println ("=========================================");
+//		System.out.println ("=========================================");
+//		System.out.println (sb.toString ());
+//		System.out.println ("=========================================");
 
 		try {
 			contextFS.updateState (workspaceDocUri, sb.toString());
