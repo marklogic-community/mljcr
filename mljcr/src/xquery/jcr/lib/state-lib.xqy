@@ -175,14 +175,21 @@ declare private function new-property ($prop as element(property))
 	$prop
 };
 
+declare private function update-property ($prop as element(property),
+	$deltas as element(change-list))
+	as element(property)*
+{
+	if (fn:exists ($deltas/modified-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
+	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name])
+	else $prop
+};
+
 declare private function prune-property ($prop as element(property),
 	$deltas as element(change-list))
 	as element(property)*
 {
 	if (fn:exists ($deltas/deleted-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
 	then delete-node-property ($prop)
-	else if (fn:exists ($deltas/modified-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
-	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name])
 	else $prop
 };
 
@@ -196,34 +203,57 @@ declare private function prune-references ($node-id as attribute(uuid),
 };
 
 
-declare private function process-node ($node as element(node),
+declare private function update-node ($node as element(node),
 	$deltas as element(change-list))
 	as element(node)?
 {
 	(: need to recurse down to handle deleted binary nodes :)
 	(: note function mapping :)
 	let $node-id := $node/@uuid
-	let $child-nodes := (process-node ($node/node, $deltas),
-		process-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas))
-	let $child-properties := (prune-property ($node/property, $deltas),
+	let $child-nodes := (update-node ($node/node, $deltas),
+		update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas))
+	let $child-properties := (update-property ($node/property, $deltas),
 		new-property ($deltas/added-states/property[@parentUUID = $node-id]))
 	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
 	return
-	if ($deltas/deleted-states/node[@uuid] = $node-id)
-	then ()
-	else
 	<node>{
 		let $replace-node := $deltas/modified-states/node[@uuid = $node-id]
+		let $name-attr := if ($node/@name)
+			then $node/@name
+			else attribute { "name" } { find-node-name ($deltas, $node-id) }
 		let $node := if ($replace-node) then $replace-node else $node
 		return
 		(
-			if ($node/@name) then () else attribute { "name" } { find-node-name ($deltas, $node-id) },
+			if ($node/@name) then () else $name-attr,
 			$node/@*,
 			$node/mixinTypes,
 			$child-properties,
 			$child-nodes,
 			$child-refs
 		)
+	}</node>
+};
+
+declare private function prune-node ($node as element(node),
+	$deltas as element(change-list))
+	as element(node)?
+{
+	(: need to recurse down to handle deleted binary nodes :)
+	(: note function mapping :)
+	let $node-id := $node/@uuid
+	let $child-nodes := prune-node ($node/node, $deltas)
+	let $child-properties := prune-property ($node/property, $deltas)
+	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
+	return
+	if (fn:exists ($deltas/deleted-states/node[@uuid = $node-id]))
+	then ()
+	else
+	<node>{
+		$node/@*,
+		$node/mixinTypes,
+		$child-properties,
+		$child-nodes,
+		$child-refs
 	}</node>
 };
 
@@ -238,16 +268,34 @@ declare private function parentless-new-nodes ($state as element(workspace),
 	return $new-node
 };
 
-(: Returns a new workspace node with deltas applied :)
-declare function apply-state-updates ($state as element(workspace),
+declare private function apply-updates ($state as element(workspace),
 	$deltas as element(change-list))
 	as element(workspace)
 {
 	<workspace>{
 		$state/@*,
-		process-node ($state/node, $deltas),
-		process-node (parentless-new-nodes ($state, $deltas), $deltas)
+		update-node ($state/node, $deltas),
+		update-node (parentless-new-nodes ($state, $deltas), $deltas)
 	}</workspace>
+};
+
+
+declare (: private :) function prune-deleted ($state as element(workspace),
+	$deltas as element(change-list))
+	as element(workspace)
+{
+	<workspace>{
+		$state/@*,
+		prune-node ($state/node, $deltas)
+	}</workspace>
+};
+
+(: Returns a new workspace node with deltas applied :)
+declare function apply-state-updates ($state as element(workspace),
+	$deltas as element(change-list))
+	as element(workspace)
+{
+	apply-updates (prune-deleted ($state, $deltas), $deltas)
 };
 
 
@@ -266,7 +314,8 @@ declare function check-node-exists ($state as element(workspace), $id as xs:stri
 declare function query-node-state ($state as element(workspace), $id as xs:string)
 	as element(node)?
 {
-	let $node := $state//node[fn:string(@uuid) = $id]
+	let $node as element(node)? := $state//node[fn:string(@uuid) = $id]
+let $dummy := xdmp:log (fn:concat ("query-node-state: uuid=", $id, ", node=", xdmp:quote ($node)), "debug")
 
 	return
 	if (fn:empty ($node))
