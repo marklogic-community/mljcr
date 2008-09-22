@@ -43,12 +43,13 @@ declare function local:save-debug-history ($old-state as element(workspace),
 	)
 };
 
-(:
-xdmp:node-replace ($state, state:apply-state-updates ($state, $deltas))
-:)
 
 let $new-state as element(workspace) := state:apply-state-updates ($state, $deltas)
 let $dummy := if ($save-debug-history) then local:save-debug-history ($state, $new-state, $deltas) else ()
 
 return
 xdmp:node-replace ($state, $new-state)
+
+(:
+xdmp:node-replace ($state, state:apply-state-updates ($state, $deltas))
+:)

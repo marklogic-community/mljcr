@@ -315,7 +315,6 @@ declare function query-node-state ($state as element(workspace), $id as xs:strin
 	as element(node)?
 {
 	let $node as element(node)? := $state//node[fn:string(@uuid) = $id]
-let $dummy := xdmp:log (fn:concat ("query-node-state: uuid=", $id, ", node=", xdmp:quote ($node)), "debug")
 
 	return
 	if (fn:empty ($node))
@@ -354,7 +353,7 @@ declare function query-property-state ($state as element(workspace),
 	$id as xs:string, $name as xs:string)
 	as element(property)?
 {
-	$state/node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name]
+	$state//node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name]
 };
 
 (: =============================================================== :)
