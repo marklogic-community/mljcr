@@ -202,6 +202,17 @@ declare private function prune-references ($node-id as attribute(uuid),
 	else $refs
 };
 
+declare private function external-node ($existing-nodes as element(node)*,
+	$candidate as element(node), $parent-id as xs:string)
+{
+	if (fn:exists ($existing-nodes[@uuid = $candidate/@uuid]))
+	then ()
+	else
+	<node extref="true">{
+		$candidate/@*,
+		attribute { "parentUUID" } { $parent-id }
+	}</node>
+};
 
 declare private function update-node ($node as element(node),
 	$deltas as element(change-list))
@@ -212,6 +223,9 @@ declare private function update-node ($node as element(node),
 	let $node-id := $node/@uuid
 	let $child-nodes := (update-node ($node/node, $deltas),
 		update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas))
+	let $added-external-nodes := external-node ($child-nodes,
+		$deltas/(added-states|modified-states)/node[@uuid = $node-id]/nodes/node,
+		fn:string ($node-id))
 	let $child-properties := (update-property ($node/property, $deltas),
 		new-property ($deltas/added-states/property[@parentUUID = $node-id]))
 	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
@@ -229,6 +243,7 @@ declare private function update-node ($node as element(node),
 			$node/mixinTypes,
 			$child-properties,
 			$child-nodes,
+			$added-external-nodes,
 			$child-refs
 		)
 	}</node>
@@ -308,13 +323,13 @@ declare function apply-state-updates ($state as element(workspace),
 declare function check-node-exists ($state as element(workspace), $id as xs:string)
 	as xs:boolean
 {
-	fn:exists ($state//node[fn:string(@uuid) = $id])
+	fn:exists ($state//node[@uuid = $id][fn:not(@extref)])
 };
 
 declare function query-node-state ($state as element(workspace), $id as xs:string)
 	as element(node)?
 {
-	let $node as element(node)? := $state//node[fn:string(@uuid) = $id]
+	let $node as element(node)? := $state//node[@uuid = $id][fn:not(@extref)]
 
 	return
 	if (fn:empty ($node))
