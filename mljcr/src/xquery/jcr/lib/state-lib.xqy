@@ -24,144 +24,10 @@ declare private function find-node-name ($deltas as element(change-list),
 	fn:string ($deltas//node/nodes/node[@uuid = $id]/@name)
 };
 
-(: True if a property is on the delete list :)
-declare private function property-deleted ($prop as element(property),
-	$deltas as element(change-list))
-	as xs:boolean
-{
-	fn:exists ($deltas/deleted-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name])
-};
-
-(: True if a property is on the modified list :)
-declare private function property-modified ($prop as element(property),
-	$deltas as element(change-list))
-	as xs:boolean
-{
-	fn:exists ($deltas/modified-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name])
-};
-
 (: Delete a property.  Delete the blob file for Binary properties,
    otherwise do nothing.
  :)
 declare private function delete-property ($prop as element(property))
-	as empty-sequence()
-{
-	(: TODO: delete blob if type = Binary :)
-	()
-};
-
-
-(: Process the properties for a node, applying deltas as appropriate :)
-declare private function process-properties ($node as element(node),
-	$deltas as element(change-list))
-	as element(property)*
-{
-	for $prop in $node/property
-	return
-	if (property-deleted ($prop, $deltas))
-	then delete-property ($prop)
-	else $prop
-	,
-	$deltas/added-states/property[@parentUUID = $node/@uuid]
-};
-
-
-(: Given a list of change-list nodes, construct new state nodes
-   and return them as a sequence.  Recursively calls itself to
-   build children added in the same transaction.
- :)
-declare private function add-new-nodes ($nodes as element(node)*,
-	$deltas as element(change-list))
-	as element(node)*
-{
-let $dummy := xdmp:log (fn:concat ("add-new-nodes=", fn:count ($nodes)))
-	let $added := $deltas/added-states
-
-	for $node in $nodes
-	let $id := fn:string ($node/@uuid)
-let $dummy := xdmp:log (fn:concat ("  add node uuid=", fn:string ($id)))
-	return
-	<node>{
-		attribute { "name" } { find-node-name ($deltas, $id) },
-		$node/@*,
-		$node/mixinTypes,
-		$added/property[@parentUUID = $id],
-		add-new-nodes ($added/node[@parentUUID = $id], $deltas),
-(:$node/nodes,:)
-		for $i in $node/nodes/node
-		where fn:empty ($deltas/added-states/node[@uuid = $i/@uuid])
-		return $i,
-		$deltas/modified-refs/references[@targetId = $id]/reference
-		(: TODO: move blobs from temp location, set type :)
-	}</node>
-
-};
-
-(: Produces one node element, either copying or building a new one by
-   applying the deltas
- :)
-declare private function process-one-node ($n as element(node),
-	$deltas as element(change-list))
-	as element(node)
-{
-let $dummy := xdmp:log (fn:concat ("process-one-node=", fn:string ($n/@uuid)))
-	let $node-name-attr := $n/@name
-	let $replace-node := $deltas/modified-states/node[@uuid = $n/@uuid]
-	let $node := if ($replace-node) then $replace-node else $n
-	let $node-id := $node/@uuid
-	return
-	<node>{
-		if ($node/@name) then () else $node-name-attr,
-		$node/@*,
-		$node/mixinTypes,
-		process-properties ($node, $deltas),
-		process-nodes ($n/node, $deltas),
-		add-new-nodes ($deltas/added-states/node[@parentUUID = $node-id], $deltas),
-(:$node/nodes,:)
-		for $i in $node/nodes/node
-		let $id := $i/@uuid
-		where fn:empty (($n/node[@uuid = $id], $deltas/added-states/node[@uuid = $id]))
-		return $i,
-		if (fn:exists ($deltas/modified-refs/references[@targetId = $node-id]/reference))
-		then $deltas/modified-refs/references[@targetId = $node-id]/reference
-		else $n/references
-	}</node>
-};
-
-(: Iterates over a sequence of node elements and makes the changes
-   that apply to each.
- :)
-declare private function process-nodes ($nodes as element(node)*,
-	$deltas as element(change-list))
-	as element(node)*
-{
-let $dummy := xdmp:log (fn:concat ("process-nodes=", fn:count ($nodes)))
-	for $node in $nodes
-	return
-	if ($deltas/deleted-states/node[@uuid] = $node/@uuid)
-	then ()
-	else process-one-node ($node, $deltas)
-};
-
-(: Returns a new workspace node with deltas applied :)
-declare private function old-apply-state-updates ($state as element(workspace),
-	$deltas as element(change-list))
-	as element(workspace)
-{
-let $dummy := xdmp:log ("apply-state-updates")
-return
-	<workspace>{
-		process-nodes ($state/node, $deltas),
-		add-new-nodes ($deltas/added-states/node[@parentUUID = ""], $deltas)
-	}</workspace>
-};
-
-(: ========= :)
-(: ========= :)
-(: ========= :)
-
-(: TODO: Rename me :)
-declare private function delete-node-property ($prop as element(property))
 	as empty-sequence()
 {
 	(: TODO: delete blob if type = Binary :)
@@ -189,7 +55,7 @@ declare private function prune-property ($prop as element(property),
 	as element(property)*
 {
 	if (fn:exists ($deltas/deleted-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
-	then delete-node-property ($prop)
+	then delete-property ($prop)
 	else $prop
 };
 
