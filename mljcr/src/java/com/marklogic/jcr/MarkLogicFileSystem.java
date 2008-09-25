@@ -39,6 +39,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -122,6 +123,10 @@ public class MarkLogicFileSystem implements FileSystem
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
 		log.info ("getInputStream: filePath=" + uri);
+
+		if (filePath.endsWith (MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID)) {
+			return new ByteArrayInputStream (new byte [0]);
+		}
 
 		ResultSequence rs = runModule (GET_DOC_MODULE, var);
 
