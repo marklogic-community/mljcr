@@ -26,12 +26,16 @@ import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.fs.FileSystemPathUtil;
+import org.apache.jackrabbit.core.fs.FileSystemResource;
 import org.apache.jackrabbit.core.fs.RandomAccessOutputStream;
 import org.apache.jackrabbit.core.state.NodeReferencesId;
+import org.apache.jackrabbit.core.value.BLOBFileValue;
+import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.util.TransientFileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,9 +43,10 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,6 +62,8 @@ public class MarkLogicFileSystem implements FileSystem
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
+
+	private static final String BLOB_TX_PATH = "data";
 
 	// bean properties
 	private String contentSourceUrl = null;
@@ -425,10 +432,10 @@ public class MarkLogicFileSystem implements FileSystem
 
 	private static final String UPDATE_STATE_MODULE = STATE + "update-state.xqy";
 
-	public void updateState (String uri, String deltas) throws FileSystemException
+	public void updateState (String uri, String deltasUri) throws FileSystemException
 	{
 		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("deltas-str"), ValueFactory.newXSString (deltas));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("deltas-uri"), ValueFactory.newXSString (deltasUri));
 
 		runModule (UPDATE_STATE_MODULE, var1, var2);
 	}
@@ -517,6 +524,44 @@ public class MarkLogicFileSystem implements FileSystem
 //System.out.println ("Refs load: " + rs.itemAt (0).asString());
 
 		return rs.next().asInputStream();
+	}
+
+	// ------------------------------------------------------------
+
+	public String storeContentList (String changeList, String txId,
+		List contentList, MarkLogicBlobStore blobStore)
+		throws Exception
+	{
+		ContentCreateOptions options = ContentCreateOptions.newBinaryInstance();
+		Content [] blobs = new Content [contentList.size() + 1];
+		String changeListUri = uriRoot + "/" + BLOB_TX_PATH + "/" + txId + "/change-list.xml";
+
+		blobs [0] = ContentFactory.newContent (changeListUri, changeList, ContentCreateOptions.newXmlInstance());
+
+		int i = 1;
+
+		for (Iterator it = contentList.iterator(); it.hasNext();) {
+			PropertyBlob blob = (PropertyBlob) it.next();
+			BLOBFileValue blobVal = blob.getBlobFileValue();
+			String uri = uriRoot + "/" + BLOB_TX_PATH + blob.getBlobId();
+			Content content = new SemiBufferedContent (uri, options, blobVal.getStream(), 100 * 1024);
+
+			blobs [i++] = content;
+		}
+
+		Session session = contentSource.newSession();
+
+		session.insertContent (blobs);
+
+		// FIXME: Move this out and update with new IDs
+		for (Iterator it = contentList.iterator(); it.hasNext();) {
+			PropertyBlob blob = (PropertyBlob) it.next();
+			FileSystemResource fsRes = blobStore.getResource (blob.getBlobId());
+			blob.getPropertyState().getValues() [blob.getValueIndex()] = InternalValue.create (fsRes);
+			blob.getBlobFileValue().discard();
+		}
+
+		return changeListUri;
 	}
 
 	// ------------------------------------------------------------
@@ -662,5 +707,4 @@ public class MarkLogicFileSystem implements FileSystem
 	}
 
 	// ------------------------------------------------------------
-
 }

@@ -26,8 +26,8 @@ import org.apache.jackrabbit.core.state.NodeReferencesId;
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.util.DOMWalker;
-import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
+import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.util.Text;
 import org.slf4j.Logger;
@@ -43,6 +43,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Random;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Date;
+import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * <code>XMLPersistenceManager</code> is a <code>FileSystem</code>-based
@@ -97,19 +104,20 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 //	private static final String NODEREFSFILENAME = "references.xml";
 
-	private boolean initialized = false;
-
-	private MarkLogicFileSystem contextFS;
-	private FileSystem itemStateFS;
-	private MarkLogicBlobStore blobStore;
-
-	private final PMAdapter pmAdapter;
-
 	private static final String JCR_NAMESPACE = "http://marklogic.com/jcr";
 	private static final String CHANGE_LIST_ELEMENT = "change-list";
 	private static final String workspaceDocUri = "/state.xml";
 	private static final String workspaceStateTemplate =
 		"<workspace xmlns=\"" + JCR_NAMESPACE + "\" version=\"1.0\"/>";
+
+	private volatile boolean initialized = false;
+
+	private final Random random = new Random (System.currentTimeMillis());
+
+	private MarkLogicFileSystem contextFS;
+	private MarkLogicBlobStore blobStore;
+
+	private final PMAdapter pmAdapter;
 
 	// ---------------------------------------------------------
 
@@ -138,7 +146,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 
 		contextFS = (MarkLogicFileSystem) context.getFileSystem();
-		itemStateFS = new BasedFileSystem(context.getFileSystem(), "/data");
+		FileSystem itemStateFS = new BasedFileSystem (context.getFileSystem(), "/data");
 		blobStore = new MarkLogicBlobStore (itemStateFS);
 
 		insureStateDoc (contextFS, workspaceDocUri, workspaceStateTemplate);
@@ -447,6 +455,17 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 //		throw new ItemStateException (msg, e);
 	}
 
+	// =============================================================
+
+	private String generateTxId()
+	{
+		Calendar cal = new GregorianCalendar();
+		cal.setTime (new Date());
+		DateFormat df = new SimpleDateFormat ("yyyyMMdd-HHmmss-");
+
+		return "tx-" + df.format (new Date()) + random.nextInt (1000000);
+	}
+
 	/** @noinspection UseOfSystemOutOrSystemErr*/
 	public void store (ChangeLog changeLog) throws ItemStateException
 	{
@@ -455,6 +474,9 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		// assign unique name to change list XML
 		// insert all into temp dir
 		// invoke module to process them and delete
+
+		String txId = generateTxId();
+		List contentList = new ArrayList (16);
 
 		StringBuffer sb = new StringBuffer();
 
@@ -490,7 +512,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 				formatElement ((NodeState) state, sb);
 			} else {
 				// FIXME: encode blobs inline?
-				formatElement ((PropertyState) state, sb);
+				formatElement ((PropertyState) state, txId, contentList, sb);
 			}
 		}
 
@@ -506,7 +528,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 				formatElement ((NodeState) state, sb);
 			} else {
 				// FIXME: encode blobs inline?
-				formatElement ((PropertyState) state, sb);
+				formatElement ((PropertyState) state, txId, contentList, sb);
 			}
 		}
 
@@ -525,82 +547,22 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		sb.append ("</").append (CHANGE_LIST_ELEMENT).append (">\n");
 
-//		System.out.println ("=========================================");
-//		System.out.println (sb.toString ());
-//		System.out.println ("=========================================");
+		String changeListUri = null;
 
 		try {
-			contextFS.updateState (workspaceDocUri, sb.toString());
+			changeListUri = contextFS.storeContentList (sb.toString(), txId, contentList, blobStore);
+		} catch (Exception e) {
+			throw new ItemStateException ("Inserting property blobs: " + e, e);
+		}
+
+		try {
+			contextFS.updateState (workspaceDocUri, changeListUri);
 		} catch (FileSystemException e) {
 			throw new ItemStateException ("Updating state: " + e, e);
 		}
-
-		// ================
-
-
-//		Iterator iter = changeLog.deletedStates ();
-//		while (iter.hasNext ()) {
-//			ItemState state = (ItemState) iter.next ();
-//			if (state.isNode ()) {
-//				destroy ((NodeState) state);
-//			} else {
-//				destroy ((PropertyState) state);
-//			}
-//		}
-//		iter = changeLog.addedStates ();
-//		while (iter.hasNext ()) {
-//			ItemState state = (ItemState) iter.next ();
-//			if (state.isNode ()) {
-//				store ((NodeState) state);
-//			} else {
-//				store ((PropertyState) state);
-//			}
-//		}
-//		iter = changeLog.modifiedStates ();
-//		while (iter.hasNext ()) {
-//			ItemState state = (ItemState) iter.next ();
-//			if (state.isNode ()) {
-//				store ((NodeState) state);
-//			} else {
-//				store ((PropertyState) state);
-//			}
-//		}
-//		iter = changeLog.modifiedRefs ();
-//		while (iter.hasNext ()) {
-//			NodeReferences refs = (NodeReferences) iter.next ();
-//			if (refs.hasReferences ()) {
-//				store (refs);
-//			} else {
-//				if (exists (refs.getId ())) {
-//					destroy (refs);
-//				}
-//			}
-//		}
 	}
 
 	// ---------------------------------------------------------
-
-	/**
-	 * {@inheritDoc}
-	 */
-//	private void store (NodeState state) throws ItemStateException
-//	{
-//		if (!initialized) {
-//			throw new IllegalStateException ("not initialized");
-//		}
-//
-//		StringBuffer sb = new StringBuffer();
-//
-//		formatElement (state, sb);
-//
-//		//noinspection UseOfSystemOutOrSystemErr
-////		System.out.println ("Node state:\n========\n" + sb.toString());
-//
-//		persistItem (buildNodeFilePath (state.getNodeId()), sb.toString());
-//
-//		//noinspection UseOfSystemOutOrSystemErr
-////		System.out.println ("========");
-//	}
 
 	private void formatElement (NodeState state, StringBuffer sb)
 	{
@@ -648,29 +610,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("</").append (NODE_ELEMENT).append (">\n");
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-//	private void store (PropertyState state) throws ItemStateException
-//	{
-//		if (!initialized) {
-//			throw new IllegalStateException ("not initialized");
-//		}
-//
-//		StringBuffer sb = new StringBuffer();
-//
-//		formatElement (state, sb);
-//
-//		//noinspection UseOfSystemOutOrSystemErr
-////		System.out.println ("Property state:\n========\n" + sb.toString());
-//
-//		persistItem (buildPropFilePath (state.getPropertyId()), sb.toString());
-//
-//		//noinspection UseOfSystemOutOrSystemErr
-////		System.out.println ("========");
-//	}
-
-	private void formatElement (PropertyState state, StringBuffer sb)
+	private void formatElement (PropertyState state, String txId, List contentList, StringBuffer sb)
 		throws ItemStateException
 	{
 		int type = state.getType();
@@ -707,49 +647,64 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 			if (type == PropertyType.BINARY) {
 				try {
-					// put binary value in BLOB store
 					BLOBFileValue blobVal = val.getBLOBFileValue();
-					String blobId = blobStore.createId (state.getPropertyId(), i);
 					long blobLen = blobVal.getLength();
+					String blobId = (blobLen == 0)
+						? blobId = MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID
+						: "/" + txId + blobStore.createId (state.getPropertyId(), i);
 
-					if (blobLen == 0) {
-						blobId = MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID;
-					} else {
-						InputStream in = blobVal.getStream();
-						try {
-							blobStore.put (blobId, in, blobLen);
-						} finally {
-							try {
-								in.close();
-							} catch (IOException e) {
-								// ignore
-							}
-						}
+					if (blobLen != 0) {
+						contentList.add (new PropertyBlob (state, i, blobVal, blobId));
 					}
-					// store id of BLOB as property value
+
 					sb.append (blobId);
 
-					// replace value instance with value backed by resource
-					// in BLOB store and discard old value instance (e.g. temp file)
-					if (blobStore instanceof ResourceBasedBLOBStore) {
-						// optimization: if the BLOB store is resource-based
-						// retrieve the resource directly rather than having
-						// to read the BLOB from an input stream
-						FileSystemResource fsRes = blobStore.getResource (blobId);
-						values[i] = InternalValue.create (fsRes);
-					} else {
-						InputStream in = blobStore.get (blobId);
-						try {
-							values[i] = InternalValue.create (in);
-						} finally {
-							try {
-								in.close ();
-							} catch (IOException e) {
-								// ignore
-							}
-						}
-					}
-					blobVal.discard();
+
+
+
+
+//					// put binary value in BLOB store
+//					BLOBFileValue blobVal = val.getBLOBFileValue();
+//					long blobLen = blobVal.getLength();
+//
+//					if (blobLen == 0) {
+//						blobId = MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID;
+//					} else {
+//						InputStream in = blobVal.getStream();
+//						try {
+//							blobStore.put (blobId, in, blobLen);
+//						} finally {
+//							try {
+//								in.close();
+//							} catch (IOException e) {
+//								// ignore
+//							}
+//						}
+//					}
+//					// store id of BLOB as property value
+//					sb.append (blobId);
+//
+//					// replace value instance with value backed by resource
+//					// in BLOB store and discard old value instance (e.g. temp file)
+//					if (blobStore instanceof ResourceBasedBLOBStore) {
+//						// optimization: if the BLOB store is resource-based
+//						// retrieve the resource directly rather than having
+//						// to read the BLOB from an input stream
+//						FileSystemResource fsRes = blobStore.getResource (blobId);
+//						values[i] = InternalValue.create (fsRes);
+//					} else {
+//						InputStream in = blobStore.get (blobId);
+//						try {
+//							values[i] = InternalValue.create (in);
+//						} finally {
+//							try {
+//								in.close ();
+//							} catch (IOException e) {
+//								// ignore
+//							}
+//						}
+//					}
+//					blobVal.discard();
 				} catch (Exception e) {
 					throw new ItemStateException ("Cannot store BLOB : " + e, e);
 				}
@@ -763,22 +718,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("\t</").append (VALUES_ELEMENT).append (">\n");
 		sb.append ("</").append (PROPERTY_ELEMENT).append (">\n");
 	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-//	private void store (NodeReferences refs) throws ItemStateException
-//	{
-//		if (!initialized) {
-//			throw new IllegalStateException ("not initialized");
-//		}
-//
-//		StringBuffer sb = new StringBuffer();
-//
-//		formatElement (refs, sb);
-//
-//		persistItem (buildNodeReferencesFilePath (refs.getId()), sb.toString());
-//	}
 
 	private void formatElement (NodeReferences refs, StringBuffer sb)
 	{
@@ -800,152 +739,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("</").append (NODEREFERENCES_ELEMENT).append (">\n");
 	}
 
-//	private void persistItem (String path, String xml)
-//		throws ItemStateException
-//	{
-//		FileSystemResource file = new FileSystemResource (itemStateFS, path);
-//
-//		try {
-//			file.makeParentDirs();
-//			OutputStream os = file.getOutputStream();
-//			Writer writer = null;
-//
-//			String encoding = DEFAULT_ENCODING;
-//			try {
-//				writer = new BufferedWriter (new OutputStreamWriter (os, encoding));
-//			} catch (UnsupportedEncodingException e) {
-//				// should never get here!
-//				OutputStreamWriter osw = new OutputStreamWriter (os);
-//				encoding = osw.getEncoding();
-//				writer = new BufferedWriter (osw);
-//			}
-//
-//			writer.write (xml);
-//			writer.close ();
-//		} catch (Exception e) {
-//			String msg = "failed to write item state: " + path;
-//			log.error (msg);
-//			throw new ItemStateException (msg, e);
-//		}
-//	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-//	private void destroy (NodeState state) throws ItemStateException
-//	{
-//		if (!initialized) {
-//			throw new IllegalStateException ("not initialized");
-//		}
-//
-//		NodeId id = state.getNodeId ();
-//		String nodeFilePath = buildNodeFilePath (id);
-//		FileSystemResource nodeFile = new FileSystemResource (itemStateFS, nodeFilePath);
-//
-//		try {
-//			if (nodeFile.exists()) {
-//				// delete resource and prune empty parent folders
-//				nodeFile.delete (true);
-//			}
-//		} catch (FileSystemException fse) {
-//			String msg = "failed to delete node state: " + id;
-//			log.debug (msg);
-//			throw new ItemStateException (msg, fse);
-//		}
-//	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-//	private void destroy (PropertyState state) throws ItemStateException
-//	{
-//		if (!initialized) {
-//			throw new IllegalStateException ("not initialized");
-//		}
-//
-//		// delete binary values (stored as files)
-//		InternalValue[] values = state.getValues ();
-//		if (values != null) {
-//			for (int i = 0; i < values.length; i++) {
-//				InternalValue val = values[i];
-//				if (val != null) {
-//					if (val.getType () == PropertyType.BINARY) {
-//						BLOBFileValue blobVal = val.getBLOBFileValue ();
-//						// delete blob file and prune empty parent folders
-//						blobVal.delete (true);
-//					}
-//				}
-//			}
-//		}
-//		// delete property file
-//		String propFilePath = buildPropFilePath (state.getPropertyId ());
-//		FileSystemResource propFile = new FileSystemResource (itemStateFS, propFilePath);
-//		try {
-//			if (propFile.exists ()) {
-//				// delete resource and prune empty parent folders
-//				propFile.delete (true);
-//			}
-//		} catch (FileSystemException fse) {
-//			String msg = "failed to delete property state: " + state.getParentId () + "/" + state.getName ();
-//			log.debug (msg);
-//			throw new ItemStateException (msg, fse);
-//		}
-//	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-//	private void destroy (NodeReferences refs) throws ItemStateException
-//	{
-//		if (!initialized) {
-//			throw new IllegalStateException ("not initialized");
-//		}
-//
-//		NodeReferencesId id = refs.getId ();
-//		String refsFilePath = buildNodeReferencesFilePath (id);
-//		FileSystemResource refsFile = new FileSystemResource (itemStateFS, refsFilePath);
-//		try {
-//			if (refsFile.exists()) {
-//				// delete resource and prune empty parent folders
-//				refsFile.delete (true);
-//			}
-//		} catch (FileSystemException fse) {
-//			String msg = "failed to delete references: " + id;
-//			log.debug (msg);
-//			throw new ItemStateException (msg, fse);
-//		}
-//	}
-
-	// ----------------------------------------------------------
-	// ----------------------------------------------------------
-
-//	/**
-//	 * Builds the path of the node folder for the given node identifier
-//	 * based on the configured node path template.
-//	 *
-//	 * @param id node identifier
-//	 * @return node folder path
-//	 */
-//	private String buildNodeFolderPath (NodeId id)
-//	{
-//		return id.getUUID().toString();
-//	}
-
-//	private String buildPropFilePath (PropertyId id)
-//	{
-//		return buildNodeFolderPath (id.getParentId()) + "/" +
-//			FileSystemPathUtil.escapeName (id.getName().toString()) + ".xml";
-//	}
-
-//	private String buildNodeFilePath (NodeId id)
-//	{
-//		return buildNodeFolderPath (id) + "/" + NODEFILENAME;
-//	}
-
-//	private String buildNodeReferencesFilePath (NodeReferencesId id)
-//	{
-//		return buildNodeFolderPath (id.getTargetId ()) + "/" + NODEREFSFILENAME;
-//	}
 
 	private void readState (DOMWalker walker, NodeState state)
 		throws ItemStateException
@@ -1091,7 +884,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 								// retrieve the resource directly rather than having
 								// to read the BLOB from an input stream
 								FileSystemResource fsRes =
-									((ResourceBasedBLOBStore) blobStore).getResource (content);
+									blobStore.getResource (content);
 								values.add (InternalValue.create (fsRes));
 							} else {
 								InputStream in = blobStore.get (content);
@@ -1162,4 +955,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		writer.flush();
 		writer.close();
 	}
+
+	// --------------------------------------------------------------
+
 }
