@@ -63,8 +63,6 @@ public class MarkLogicFileSystem implements FileSystem
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
 
-	private static final String BLOB_TX_PATH = "data";
-
 	// bean properties
 	private String contentSourceUrl = null;
 	private String uriRoot = null;
@@ -430,16 +428,6 @@ public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 
-	private static final String UPDATE_STATE_MODULE = STATE + "update-state.xqy";
-
-	public void updateState (String uri, String deltasUri) throws FileSystemException
-	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("deltas-uri"), ValueFactory.newXSString (deltasUri));
-
-		runModule (UPDATE_STATE_MODULE, var1, var2);
-	}
-
 	private static final String CHECK_NODE_EXISTS_MODULE = STATE + "check-node-exists.xqy";
 
 	public boolean itemExists (String uri, NodeId nodeId) throws FileSystemException
@@ -528,40 +516,57 @@ public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 
-	public String storeContentList (String changeList, String txId,
-		List contentList, MarkLogicBlobStore blobStore)
-		throws Exception
+	private static final String UPDATE_STATE_MODULE = STATE + "update-state.xqy";
+
+	public void applyStateUpdate (String workspaceDocUri, String changeListPath,
+		String deltas, List contentList)
+		throws FileSystemException
 	{
 		ContentCreateOptions options = ContentCreateOptions.newBinaryInstance();
 		Content [] blobs = new Content [contentList.size() + 1];
-		String changeListUri = uriRoot + "/" + BLOB_TX_PATH + "/" + txId + "/change-list.xml";
+		String changeListUri = uriRoot + changeListPath;
 
-		blobs [0] = ContentFactory.newContent (changeListUri, changeList, ContentCreateOptions.newXmlInstance());
+		blobs [0] = ContentFactory.newContent (changeListUri, deltas, ContentCreateOptions.newXmlInstance());
 
 		int i = 1;
 
 		for (Iterator it = contentList.iterator(); it.hasNext();) {
 			PropertyBlob blob = (PropertyBlob) it.next();
 			BLOBFileValue blobVal = blob.getBlobFileValue();
-			String uri = uriRoot + "/" + BLOB_TX_PATH + blob.getBlobId();
-			Content content = new SemiBufferedContent (uri, options, blobVal.getStream(), 100 * 1024);
+			String uri = uriRoot + blob.getBlobId();
 
-			blobs [i++] = content;
+			try {
+				blobs [i++] = new SemiBufferedContent (uri, options, blobVal.getStream(), 100 * 1024);
+			} catch (Exception e) {
+				throw new FileSystemException ("Preparing blob inserts: " + e, e);
+			}
 		}
 
-		Session session = contentSource.newSession();
+		try {
+			contentSource.newSession().insertContent (blobs);
+		} catch (RequestException e) {
+			throw new FileSystemException ("Inserting transaction data: " + e, e);
+		}
 
-		session.insertContent (blobs);
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("state-doc-uri"), ValueFactory.newXSString (fullPath (workspaceDocUri)));
+		XdmVariable var2 = ValueFactory.newVariable (new XName ("workspace-root"), ValueFactory.newXSString (uriRoot));
+		XdmVariable var3 = ValueFactory.newVariable (new XName ("deltas-uri"), ValueFactory.newXSString (changeListUri));
 
-		// FIXME: Move this out and update with new IDs
+		// TODO: catch result and update values
+		runModule (UPDATE_STATE_MODULE, var1, var2, var3);
+
 		for (Iterator it = contentList.iterator(); it.hasNext();) {
 			PropertyBlob blob = (PropertyBlob) it.next();
-			FileSystemResource fsRes = blobStore.getResource (blob.getBlobId());
-			blob.getPropertyState().getValues() [blob.getValueIndex()] = InternalValue.create (fsRes);
+			FileSystemResource fsRes = new FileSystemResource (this, blob.getBlobId());
+
+			try {
+				blob.getPropertyState().getValues() [blob.getValueIndex()] = InternalValue.create (fsRes);
+			} catch (IOException e) {
+				throw new FileSystemException ("Updating PropertyState blob value: " + e, e);
+			}
+
 			blob.getBlobFileValue().discard();
 		}
-
-		return changeListUri;
 	}
 
 	// ------------------------------------------------------------
@@ -573,7 +578,9 @@ public class MarkLogicFileSystem implements FileSystem
 
 	private String fullPath (String relPath)
 	{
-		return (uriRoot + relPath);
+		String sep = (uriRoot.endsWith ("/") || relPath.startsWith ("/")) ? "" : "/";
+
+		return (uriRoot + sep + relPath);
 	}
 
 	private String fullDirPath (String relPath)
