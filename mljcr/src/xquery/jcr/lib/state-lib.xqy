@@ -7,9 +7,44 @@ import module namespace jcrfslib="http://marklogic.com/jcr/fs" at "fs-lib.xqy";
 
 declare default element namespace "http://marklogic.com/jcr";
 
-declare variable $STATE_DOC_NAME := "state.xml";
-declare variable $BINARY_NODES_SUBROOT := "/data";
+(: keep this is sync with Java :)
 declare variable $MAGIC_EMPTY_BLOB_ID := "@=-empty-=@";
+
+declare variable $save-debug-history := fn:false();
+
+(: =============================================================== :)
+(: Debug functions to save update history :)
+
+declare private function get-counter ($uri as xs:string) as xs:string
+{
+	let $prev-number as xs:integer? := xs:integer (fn:doc ($uri)/counter)
+	let $number := if (fn:exists ($prev-number)) then ($prev-number + 1) else 1
+	let $dummy := xdmp:document-insert ($uri, <counter>{$number}</counter>)
+	return
+	if ($number < 10)
+	then fn:concat ("00", $number)
+	else if ($number < 100)
+	then fn:concat ("0", $number)
+	else fn:string ($number)
+};
+
+declare private function save-debug-history ($uri-root as xs:string,
+	$old-state as element(workspace), $pruned as element(workspace),
+	$new-state as element(workspace), $deltas as element(change-list))
+{
+	let $base-uri := fn:concat ($uri-root, "/history/")
+	let $counter-uri := fn:concat ($base-uri, "history-counter.xml")
+	let $number := get-counter ($counter-uri)
+	let $history-uri := fn:concat ($base-uri, "state-history-", $number, ".xml")
+	return xdmp:document-insert ($history-uri,
+		<history uri="{$history-uri}">
+			<before>{$old-state}</before>
+			<pruned>{$pruned}</pruned>
+			<deltas>{$deltas}</deltas>
+			<after>{$new-state}</after>
+		</history>
+	)
+};
 
 (: =============================================================== :)
 
@@ -18,8 +53,14 @@ declare variable $MAGIC_EMPTY_BLOB_ID := "@=-empty-=@";
    It deletes node/properties, adds new ones and makes changes to
    existing ones.
    This does a recursive descent over the existing workspace state
-   document and produces another one, which replaces the old one.
+   document and produces a new one.
  :)
+
+declare private function binary-node-path ($uri-root as xs:string,
+	$prop as element(property))
+{
+	fn:concat ($uri-root, fn:string ($prop/values/value))
+};
 
 (: Find a node's name by looking it up by id in the change list.
    When added, it should appear as a child entry for some other
@@ -41,9 +82,7 @@ declare private function delete-property ($prop as element(property), $uri-root 
 	then
 		if (fn:string ($prop/values/value) = $MAGIC_EMPTY_BLOB_ID)
 		then ()
-		else
-			let $uri := fn:concat ($uri-root, $BINARY_NODES_SUBROOT, fn:string ($prop/values/value))
-			return jcrfslib:delete-and-prune-dirs ($uri)
+		else jcrfslib:delete-and-prune-dirs (binary-node-path ($uri-root, $prop))
 	else ()
 };
 
@@ -53,6 +92,9 @@ declare private function delete-property ($prop as element(property), $uri-root 
 declare private function new-property ($prop as element(property))
 	as element(property)
 {
+
+
+
 	(: TODO: handle binary properties, move/re-insert document, generate proper path :)
 	$prop
 };
@@ -213,12 +255,11 @@ declare private function apply-updates ($state as element(workspace),
 	}</workspace>
 };
 
-
 (: Recurse down the workspace state tree and prune out deleted nodes.
    Pruning nodes implies pruning contained properties, which may cause
    document deletions.
  :)
-declare (: private :) function prune-deleted ($state as element(workspace),
+declare private function prune-deleted ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
@@ -233,7 +274,29 @@ declare function apply-state-updates ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
-	apply-updates (prune-deleted ($state, $deltas, $uri-root), $deltas)
+	let $pruned := prune-deleted ($state, $deltas, $uri-root)
+	let $new-state := apply-updates ($pruned, $deltas)
+	let $dummy := if ($save-debug-history) then save-debug-history ($uri-root, $state, $pruned, $new-state, $deltas) else ()
+
+	return $new-state
+};
+
+(: =============================================================== :)
+
+declare function find-new-blob-uris ($state as element(workspace),
+	$deltas as element(change-list))
+{
+	for $prop in $deltas/(added-states|modified-states)/property[@type = "Binary"]
+	let $new-prop := $state//property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]
+	return
+	xdmp:log (
+	xdmp:quote (
+	<foo>
+		<parentUUID>{fn:string ($new-prop/@parentUUID)}</parentUUID>
+		<name>{fn:string ($new-prop/@name)}</name>
+		<path>{fn:string ($new-prop/values/value)}</path>
+	</foo>)
+	, "info")
 };
 
 (: =============================================================== :)
