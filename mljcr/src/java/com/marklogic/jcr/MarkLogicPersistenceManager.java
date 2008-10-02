@@ -100,7 +100,9 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	private static final String PROPERTYID_ATTRIBUTE = "propertyId";
 
 	private static final String CHANGE_LIST_ELEMENT = "change-list";
+	private static final String TX_DIR_ELEMENT = "tx-dir";
 	private static final String DATA_DIR_ELEMENT = "data-dir";
+	private static final String TXID_ELEMENT = "tx-id";
 
 	private static final String JCR_NAMESPACE = "http://marklogic.com/jcr";
 	private static final String workspaceStateTemplate =
@@ -508,9 +510,17 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("<").append (CHANGE_LIST_ELEMENT);
 		sb.append (" xmlns=\"").append (JCR_NAMESPACE).append ("\">\n");
 
+		sb.append ("\t<").append (TXID_ELEMENT).append (">");
+		sb.append (txId);
+		sb.append ("</").append (TXID_ELEMENT).append (">\n");
+
+		sb.append ("\t<").append (TX_DIR_ELEMENT).append (">");
+		sb.append (BLOB_TX_DIR);
+		sb.append ("</").append (TX_DIR_ELEMENT).append (">\n");
+
 		sb.append ("\t<").append (DATA_DIR_ELEMENT).append (">");
 		sb.append (BLOB_DATA_DIR);
-		sb.append ("\t</").append (DATA_DIR_ELEMENT).append (">");
+		sb.append ("</").append (DATA_DIR_ELEMENT).append (">\n");
 
 		sb.append ("\t<").append ("deleted-states").append (">\n");
 
@@ -576,6 +586,11 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("\t</").append ("modified-refs").append (">\n");
 
 		sb.append ("</").append (CHANGE_LIST_ELEMENT).append (">\n");
+
+
+//System.out.println ("========================================");
+//System.out.println (sb.toString());
+//System.out.println ("========================================");
 
 		String deltas = sb.toString();
 		String deltasDocPath = txDirRootString (txId) + changeListDocName;
@@ -950,9 +965,10 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 	}
 
-	private void insureStateDoc (FileSystem fs, String uri, String template)
+	private void insureStateDoc (FileSystem fs, String stateDocName, String template)
 		throws FileSystemException, IOException
 	{
+		String uri = "/" + stateDocName;
 		if (fs.exists (uri)) return;
 
 		Writer writer = new OutputStreamWriter (fs.getOutputStream (uri));

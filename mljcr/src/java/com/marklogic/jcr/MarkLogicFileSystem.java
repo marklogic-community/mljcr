@@ -45,8 +45,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -552,12 +554,37 @@ public class MarkLogicFileSystem implements FileSystem
 		XdmVariable var2 = ValueFactory.newVariable (new XName ("workspace-root"), ValueFactory.newXSString (uriRoot));
 		XdmVariable var3 = ValueFactory.newVariable (new XName ("deltas-uri"), ValueFactory.newXSString (changeListUri));
 
-		// TODO: catch result and update values
-		runModule (UPDATE_STATE_MODULE, var1, var2, var3);
+		ResultSequence rs = runModule (UPDATE_STATE_MODULE, var1, var2, var3);
+		Map blobMap = new HashMap (rs.size());
+
+		if (rs.size() != contentList.size()) {
+			throw new FileSystemException ("Blob list size mismatch: content=" + contentList.size() + ", rs=" + rs.size());
+		}
+
+		while (rs.hasNext()) {
+			String blobPathItem = rs.next().asString();
+			String [] strings = blobPathItem.split ("\\|");
+
+			if (strings.length != 3) throw new FileSystemException ("Bad blob path item: " + blobPathItem);
+
+			blobMap.put (strings [0] +"|" + strings [1], strings [2]);
+System.out.println ("  rs: uuid=" + strings [0] + ", name=" + strings [1] + ", path=" + strings [2]);
+		}
 
 		for (Iterator it = contentList.iterator(); it.hasNext();) {
 			PropertyBlob blob = (PropertyBlob) it.next();
-			FileSystemResource fsRes = new FileSystemResource (this, blob.getBlobId());
+			String hashKey = blob.getPropertyHashKey();
+			String newBlobPath = (String) blobMap.get (hashKey);
+
+System.out.println ("blob: uuid=" + blob.getPropertyState ().getParentId ().getUUID ().toString () +
+	", name=" + blob.getPropertyState ().getName ().toString () +
+	", path=" + blob.getBlobId () + ", newpath=" + newBlobPath);
+
+			if (newBlobPath == null) throw new FileSystemException ("Missing blob path: " + blob.getPropertyHashKey());
+
+			blobMap.remove (hashKey);
+
+			FileSystemResource fsRes = new FileSystemResource (this, newBlobPath);
 
 			try {
 				blob.getPropertyState().getValues() [blob.getValueIndex()] = InternalValue.create (fsRes);
@@ -567,6 +594,14 @@ public class MarkLogicFileSystem implements FileSystem
 
 			blob.getBlobFileValue().discard();
 		}
+
+if (contentList.size() != 0) {
+	System.out.println ("deltas:\n" + deltas);
+	System.out.flush();
+}
+
+
+		if (blobMap.size () != 0) throw new FileSystemException ("Blob map inconsistency: size=" + blobMap.size());
 	}
 
 	// ------------------------------------------------------------

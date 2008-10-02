@@ -28,23 +28,27 @@ class PropertyBlob
 		this.valueIndex = valueIndex;
 	}
 
+	public String getPropertyHashKey()
+	{
+		return propertyState.getParentId().getUUID().toString() + "|" + propertyState.getName().toString();
+	}
 
-	public PropertyState getPropertyState ()
+	public PropertyState getPropertyState()
 	{
 		return propertyState;
 	}
 
-	public BLOBFileValue getBlobFileValue ()
+	public BLOBFileValue getBlobFileValue()
 	{
 		return blobFileValue;
 	}
 
-	public String getBlobId ()
+	public String getBlobId()
 	{
 		return blobId;
 	}
 
-	public int getValueIndex ()
+	public int getValueIndex()
 	{
 		return valueIndex;
 	}
