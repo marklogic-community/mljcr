@@ -189,7 +189,7 @@ declare private function update-property ($prop as element(property),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(property)*
 {
-	if (fn:exists ($deltas/modified-states/property[@parrentUUID = $prop/@parentUUID][@name = $prop/@name]))
+	if (fn:exists ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]))
 	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name], $deltas, $uri-root)
 	else $prop
 };
