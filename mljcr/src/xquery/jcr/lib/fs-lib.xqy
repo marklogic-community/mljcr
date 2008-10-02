@@ -78,7 +78,7 @@ declare private function parent-dir-uri ($uri as xs:string) as xs:string?
 	else $parent-uri
 };
 
-declare private function prune-dir ($uri as xs:string, $max-children) as empty-sequence()
+declare function prune-dir ($uri as xs:string, $max-children) as empty-sequence()
 {
 	let $my-parent-uri := parent-dir-uri ($uri)
 	let $parent-count := if (fn:empty ($my-parent-uri)) then ($max-children + 1) else directory-child-count ($my-parent-uri)
