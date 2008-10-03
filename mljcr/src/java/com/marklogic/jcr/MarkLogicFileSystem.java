@@ -568,7 +568,7 @@ public class MarkLogicFileSystem implements FileSystem
 			if (strings.length != 3) throw new FileSystemException ("Bad blob path item: " + blobPathItem);
 
 			blobMap.put (strings [0] +"|" + strings [1], strings [2]);
-System.out.println ("  rs: uuid=" + strings [0] + ", name=" + strings [1] + ", path=" + strings [2]);
+//System.out.println ("  rs: uuid=" + strings [0] + ", name=" + strings [1] + ", path=" + strings [2]);
 		}
 
 		for (Iterator it = contentList.iterator(); it.hasNext();) {
@@ -576,9 +576,9 @@ System.out.println ("  rs: uuid=" + strings [0] + ", name=" + strings [1] + ", p
 			String hashKey = blob.getPropertyHashKey();
 			String newBlobPath = (String) blobMap.get (hashKey);
 
-System.out.println ("blob: uuid=" + blob.getPropertyState ().getParentId ().getUUID ().toString () +
-	", name=" + blob.getPropertyState ().getName ().toString () +
-	", path=" + blob.getBlobId () + ", newpath=" + newBlobPath);
+//System.out.println ("blob: uuid=" + blob.getPropertyState ().getParentId ().getUUID ().toString () +
+//	", name=" + blob.getPropertyState ().getName ().toString () +
+//	", path=" + blob.getBlobId () + ", newpath=" + newBlobPath);
 
 			if (newBlobPath == null) throw new FileSystemException ("Missing blob path: " + blob.getPropertyHashKey());
 
@@ -594,12 +594,6 @@ System.out.println ("blob: uuid=" + blob.getPropertyState ().getParentId ().getU
 
 			blob.getBlobFileValue().discard();
 		}
-
-if (contentList.size() != 0) {
-	System.out.println ("deltas:\n" + deltas);
-	System.out.flush();
-}
-
 
 		if (blobMap.size () != 0) throw new FileSystemException ("Blob map inconsistency: size=" + blobMap.size());
 	}
