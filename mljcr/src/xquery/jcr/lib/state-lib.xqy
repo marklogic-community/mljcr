@@ -92,7 +92,7 @@ declare private function delete-property ($prop as element(property), $uri-root 
 	then
 		if (is-empty-blob ($prop))
 		then ()
-		else jcrfslib:delete-and-prune-dirs (binary-node-path ($uri-root, $prop))
+		else jcrfslib:delete-and-prune-dirs (binary-node-path ($uri-root, $prop), 2)
 	else ()
 };
 
@@ -112,7 +112,7 @@ declare private function insert-as-xml ($blob as binary(), $root as xs:string,
 {
 	let $blob-path := fn:concat ($blob-path-root, ".xml")
 	let $uri := fn:concat ($root, $blob-path)
-	let $xml := xdmp:unquote ($blob, "", "repair-full")/element()
+	let $xml as element() := xdmp:unquote (xs:hexBinary (xs:string ($blob)), "", "repair-full")/element()
 
 	return (xdmp:document-insert ($uri, $xml), $blob-path)
 };
@@ -123,7 +123,11 @@ declare private function insert-as-text ($blob as binary(), $root as xs:string,
 {
 	let $blob-path := fn:concat ($blob-path-root, ".txt")
 	let $uri := fn:concat ($root, $blob-path)
-	let $txt as xs:string := xs:string ($blob)
+	let $txt as text() := text { xs:hexBinary (xs:string ($blob)) }
+(:
+let $dummy := xdmp:log (fn:concat ("Inserted text: ", $txt))
+:)
+let $dummy := fn:error()   (: disable for now :)
 
 	return (xdmp:document-insert ($uri, $txt), $blob-path)
 };
@@ -365,7 +369,7 @@ declare function apply-state-updates ($state as element(workspace),
 
 (: =============================================================== :)
 
-declare function find-new-blob-uris ($state as element(workspace),
+declare function gather-new-blob-uris ($state as element(workspace),
 	$deltas as element(change-list))
 {
 	for $prop in $deltas/(added-states|modified-states)/property[@type = "Binary"]

@@ -78,21 +78,27 @@ declare private function parent-dir-uri ($uri as xs:string) as xs:string?
 	else $parent-uri
 };
 
-declare function prune-dir ($uri as xs:string, $max-children) as empty-sequence()
+declare private function prune-dir ($uri as xs:string, $max-children as xs:integer,
+	$max-parents as xs:integer)
+	as empty-sequence()
 {
+	if ($max-parents le 0)
+	then ()
+	else
 	let $my-parent-uri := parent-dir-uri ($uri)
 	let $parent-count := if (fn:empty ($my-parent-uri)) then ($max-children + 1) else directory-child-count ($my-parent-uri)
 	return
 	if ($parent-count le $max-children)
-	then prune-dir ($my-parent-uri, 1)
+	then prune-dir ($my-parent-uri, 1, $max-parents - 1)
 	else xdmp:directory-delete ($uri)
 };
 
-declare function delete-and-prune-dirs ($uri as xs:string) as empty-sequence()
+declare function delete-and-prune-dirs ($uri as xs:string, $max-parents as xs:integer)
+	as empty-sequence()
 {
 	let $parent-dir-uri := parent-dir-uri ($uri)
 	return
 	if (directory-child-count ($parent-dir-uri) gt 1)
 	then xdmp:document-delete ($uri)
-	else prune-dir ($parent-dir-uri, 1)
+	else prune-dir ($parent-dir-uri, 1, $max-parents)
 };

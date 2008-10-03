@@ -21,7 +21,7 @@ let $new-state := state:apply-state-updates ($state, $deltas, $workspace-root)
 
 return
 (
-	state:find-new-blob-uris ($new-state, $deltas),
+	state:gather-new-blob-uris ($new-state, $deltas),
 	xdmp:node-replace ($state, $new-state),
-	jcrfslib:prune-dir ($tx-tmp-dir, 999999)
+	xdmp:directory-delete ($tx-tmp-dir)
 )
