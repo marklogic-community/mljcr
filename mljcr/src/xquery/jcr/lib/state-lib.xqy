@@ -112,7 +112,7 @@ declare private function insert-as-xml ($blob as binary(), $root as xs:string,
 {
 	let $blob-path := fn:concat ($blob-path-root, ".xml")
 	let $uri := fn:concat ($root, $blob-path)
-	let $xml as element() := xdmp:unquote (xs:hexBinary (xs:string ($blob)), "", "repair-full")/element()
+	let $xml as element() := xdmp:unquote (xdmp:quote ($blob), "", "repair-full")/element()
 
 	return (xdmp:document-insert ($uri, $xml), $blob-path)
 };
@@ -123,11 +123,7 @@ declare private function insert-as-text ($blob as binary(), $root as xs:string,
 {
 	let $blob-path := fn:concat ($blob-path-root, ".txt")
 	let $uri := fn:concat ($root, $blob-path)
-	let $txt as text() := text { xs:hexBinary (xs:string ($blob)) }
-(:
-let $dummy := xdmp:log (fn:concat ("Inserted text: ", $txt))
-:)
-let $dummy := fn:error()   (: disable for now :)
+	let $txt as text() := text { xdmp:quote ($blob) }
 
 	return (xdmp:document-insert ($uri, $txt), $blob-path)
 };
