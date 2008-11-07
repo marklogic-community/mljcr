@@ -70,6 +70,7 @@ public class MarkLogicFileSystem implements FileSystem
 	private String uriRoot = null;
 
 	private ContentSource contentSource = null;
+	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
 
 	// ------------------------------------------------------------
 	// bean properties set by RepositoryConfig object
@@ -131,7 +132,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 		log.info ("getInputStream: filePath=" + uri);
 
-		if (filePath.endsWith (MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID)) {
+		if (filePath.endsWith (MAGIC_EMPTY_BLOB_ID)) {
 			return new ByteArrayInputStream (new byte [0]);
 		}
 
@@ -232,7 +233,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public boolean exists (String path) throws FileSystemException
 	{
-		if (path.endsWith (MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID)) {
+		if (path.endsWith (MAGIC_EMPTY_BLOB_ID)) {
 			return true;
 		}
 
@@ -276,7 +277,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public long length (String filePath) throws FileSystemException
 	{
-		if (filePath.endsWith (MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID)) {
+		if (filePath.endsWith (MAGIC_EMPTY_BLOB_ID)) {
 			return 0;
 		}
 

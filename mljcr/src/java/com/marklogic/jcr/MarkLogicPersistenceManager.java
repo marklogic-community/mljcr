@@ -690,7 +690,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 					BLOBFileValue blobVal = val.getBLOBFileValue();
 					long blobLen = blobVal.getLength();
 					String blobId = (blobLen == 0)
-						? blobId = MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID
+						? blobId = MarkLogicFileSystem.MAGIC_EMPTY_BLOB_ID
 						: createBlobPath (state.getPropertyId(), txId);
 
 					if (blobLen != 0) {

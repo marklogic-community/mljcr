@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
  */
 public class MarkLogicBlobStore extends FileSystemBLOBStore
 {
-	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
 
 	/**
 	 * Creates a new <code>FileSystemBLOBStore</code> instance.
@@ -53,7 +52,7 @@ public class MarkLogicBlobStore extends FileSystemBLOBStore
 
 	public InputStream get (String blobId) throws Exception
 	{
-		if ( ! MAGIC_EMPTY_BLOB_ID.equals (blobId)) {
+		if ( ! MarkLogicFileSystem.MAGIC_EMPTY_BLOB_ID.equals (blobId)) {
 			return super.get (blobId);
 		}
 
