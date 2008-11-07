@@ -13,14 +13,10 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ron
- * Date: Apr 9, 2008
- * Time: 5:31:14 PM
+ * This class is defunct, don't use it.
  */
-public class MarkLogicBlobStore extends FileSystemBLOBStore
+class MarkLogicBlobStore extends FileSystemBLOBStore
 {
-
 	/**
 	 * Creates a new <code>FileSystemBLOBStore</code> instance.
 	 *
