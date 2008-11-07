@@ -2,7 +2,7 @@
  * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
  */
 
-package com.marklogic.jcr.compat;
+package com.marklogic.jcr.persistence;
 
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
@@ -39,7 +39,7 @@ public class PMAdapter14 implements PMAdapter
 
 	public void addName (Set set, String name)
 	{
-		set.add (factory.create (name));	
+		set.add (factory.create (name));
 	}
 
 	public boolean sameNodeTypeName (NodeState state, String name)

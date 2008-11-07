@@ -2,9 +2,8 @@
  * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
  */
 
-package com.marklogic.jcr;
+package com.marklogic.jcr.persistence;
 
-import com.marklogic.jcr.compat.PMAdapter;
 import com.marklogic.jcr.fs.MarkLogicFileSystem;
 import com.marklogic.jcr.fs.PropertyBlob;
 
