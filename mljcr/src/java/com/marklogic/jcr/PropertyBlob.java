@@ -13,7 +13,7 @@ import org.apache.jackrabbit.core.value.BLOBFileValue;
 * Date: Sep 29, 2008
 * Time: 2:51:43 PM
 */
-class PropertyBlob
+public class PropertyBlob
 {
 	private final PropertyState propertyState;
 	private final BLOBFileValue blobFileValue;
