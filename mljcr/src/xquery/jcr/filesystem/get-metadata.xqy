@@ -4,4 +4,6 @@ import module namespace jcrfslib="http://marklogic.com/jcr/fs" at "../lib/fs-lib
 
 declare variable $uri external;
 
-jcrfslib:uri-exists ($uri)
+if (jcrfslib:uri-exists ($uri))
+then (jcrfslib:doc-length ($uri), 0, jcrfslib:is-directory ($uri))
+else ()

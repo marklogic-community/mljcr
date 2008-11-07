@@ -27,6 +27,14 @@ declare private function dir-uri ($uri as xs:string) as xs:string
 	else fn:concat ($uri, "/")
 };
 
+declare function uri-exists ($uri as xs:string) as xs:boolean
+{
+	let $dir-uri := fn:concat ($uri, '/')
+
+	return
+	fn:exists (fn:doc ($uri)) or fn:exists (xdmp:document-properties ($dir-uri)//prop:directory)
+};
+
 declare function is-directory ($uri as xs:string) as xs:boolean
 {
         let $dir-uri := dir-uri ($uri)
