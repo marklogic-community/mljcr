@@ -32,8 +32,6 @@ import org.apache.jackrabbit.core.state.NodeReferencesId;
 import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.util.TransientFileFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -48,6 +46,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Created by IntelliJ IDEA.
@@ -59,7 +59,8 @@ import java.util.Map;
 public class MarkLogicFileSystem implements FileSystem
 {
 	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
-	private static final Logger log = LoggerFactory.getLogger (MarkLogicFileSystem.class);
+//	private static final Logger log = LoggerFactory.getLogger (MarkLogicFileSystem.class);
+	private static final Logger log = Logger.getLogger (MarkLogicFileSystem.class.getName());
 
 	private static final int DEFUALT_METADATA_CACHE_SIZE = 256;
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
@@ -147,10 +148,14 @@ public class MarkLogicFileSystem implements FileSystem
 		FileMetaData meta = metaDataCache.get (path);
 
 		if (meta != null) {
+			log.info ("getFileMetaData: found in cache, path=" + path);
+
 			return meta;
 		}
 
 		if (path.endsWith (MAGIC_EMPTY_BLOB_ID)) {
+			log.info ("getFileMetaData: creating dummy metadata object, path=" + path);
+
 			meta = new FileMetaData (0, 0, false);
 
 			metaDataCache.put (path, meta);
@@ -158,12 +163,16 @@ public class MarkLogicFileSystem implements FileSystem
 			return meta;
 		}
 
+		log.info ("getFileMetaData: querying for metadata, path=" + path);
+
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
 		ResultSequence rs = runModule (GET_METADATA_MODULE, var);
 
 		if (rs.size() == 0) {
+			log.info ("getFileMetaData: does not exist in DB, path=" + path);
+
 			return null;
 		}
 
@@ -174,6 +183,8 @@ public class MarkLogicFileSystem implements FileSystem
 		meta = new FileMetaData (size, lastModified, isDir);
 
 		metaDataCache.put (path, meta);
+
+		log.info ("getFileMetaData: added to cache, path=" + path);
 
 		return meta;
 	}
@@ -262,7 +273,7 @@ public class MarkLogicFileSystem implements FileSystem
 			};
 		} catch (Exception e) {
 		    String msg = "Failed to open output stream to file: " + filePath;
-		    log.error (msg, e);
+		    log.log (Level.SEVERE, msg, e);
 		    throw new FileSystemException (msg, e);
 		}
 	}
@@ -507,8 +518,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public void deleteFolder (String folderPath) throws FileSystemException
 	{
-		// FIXME: purge children?  Purge entire cache?
-		metaDataCache.remove (folderPath);
+		metaDataCache.clear();
 
 		log.info ("deleteFolder: folderPath=" + folderPath);
 

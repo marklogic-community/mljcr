@@ -30,8 +30,6 @@ import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.util.Text;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.jcr.PropertyType;
 
@@ -50,6 +48,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * <code>XMLPersistenceManager</code> is a <code>FileSystem</code>-based
@@ -59,7 +59,7 @@ import java.util.Set;
  */
 abstract public class MarkLogicPersistenceManager implements PersistenceManager
 {
-	private static final Logger log = LoggerFactory.getLogger (MarkLogicPersistenceManager.class);
+	private static final Logger log = Logger.getLogger (MarkLogicPersistenceManager.class.getName());
 
 	/**
 	 * hexdigits for toString
@@ -196,7 +196,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			return contextFS.itemExists (workspaceDocName, id);
 		} catch (FileSystemException e) {
 			String msg = "failed to check existence of item state: " + id + ", msg=" + e;
-			log.debug (msg, e);
+			log.log (Level.FINE, msg, e);
 			throw new ItemStateException (msg, e);
 		}
 
@@ -232,7 +232,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			return contextFS.itemExists (workspaceDocName, id);
 		} catch (FileSystemException e) {
 			String msg = "failed to check existence of item state: " + id;
-			log.error (msg, e);
+			log.log (Level.SEVERE, msg, e);
 			throw new ItemStateException (msg, e);
 		}
 
@@ -268,7 +268,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			return contextFS.itemExists (workspaceDocName, id);
 		} catch (FileSystemException e) {
 			String msg = "failed to check existence of item state: " + id + ", msg=" + e;
-			log.debug (msg, e);
+			log.log (Level.FINE, msg, e);
 			throw new ItemStateException (msg, e);
 		}
 
@@ -328,7 +328,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			// fall through
 		}
 		String msg = "failed to read node state: " + id;
-		log.debug (msg);
+		log.fine (msg);
 		throw new ItemStateException (msg, e);
 	}
 
@@ -374,7 +374,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			// fall through
 		}
 		String msg = "failed to read property state: " + id.toString();
-		log.debug (msg);
+		log.fine (msg);
 		throw new ItemStateException (msg, e);
 	}
 
@@ -420,7 +420,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			// fall through
 		}
 		String msg = "failed to read node state: " + id;
-		log.debug (msg);
+		log.fine (msg);
 		throw new ItemStateException (msg, e);
 
 
@@ -788,13 +788,13 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		if (!walker.getName ().equals (NODE_ELEMENT)) {
 			String msg = "invalid serialization format (unexpected element: "
 				+ walker.getName () + ")";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 		// check uuid
 		if (!state.getNodeId ().getUUID ().toString ().equals (walker.getAttribute (UUID_ATTRIBUTE))) {
 			String msg = "invalid serialized state: uuid mismatch";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 		// check nodetype
@@ -802,7 +802,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		if ( ! pmAdapter.sameNodeTypeName (state, ntName)) {
 			String msg = "invalid serialized state: nodetype mismatch";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 
@@ -862,20 +862,20 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		if (!walker.getName ().equals (PROPERTY_ELEMENT)) {
 			String msg = "invalid serialization format (unexpected element: "
 				+ walker.getName () + ")";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 		// check name
 		if ( ! pmAdapter.samePropertyName (state, walker.getAttribute (NAME_ATTRIBUTE))) {
 			String msg = "invalid serialized state: name mismatch";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 		// check parentUUID
 		NodeId parentId = NodeId.valueOf (walker.getAttribute (PARENTUUID_ATTRIBUTE));
 		if (!parentId.equals (state.getParentId ())) {
 			String msg = "invalid serialized state: parentUUID mismatch";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 
@@ -922,7 +922,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 							values.add (InternalValue.create (fsRes));
 						} catch (Exception e) {
 							String msg = "error while reading serialized binary value";
-							log.debug (msg);
+							log.fine (msg);
 							throw new ItemStateException (msg, e);
 						}
 					} else {
@@ -931,7 +931,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 					}
 				} else {
 					// empty non-STRING value
-					log.warn (state.getPropertyId() + ": ignoring empty value of type "
+					log.info (state.getPropertyId() + ": ignoring empty value of type "
 						+ PropertyType.nameFromValue (type));
 				}
 			}
@@ -947,13 +947,13 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		// first do some paranoid sanity checks
 		if (!walker.getName ().equals (NODEREFERENCES_ELEMENT)) {
 			String msg = "invalid serialization format (unexpected element: " + walker.getName () + ")";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 		// check targetId
 		if (!refs.getId ().equals (NodeReferencesId.valueOf (walker.getAttribute (TARGETID_ATTRIBUTE)))) {
 			String msg = "invalid serialized state: targetId  mismatch";
-			log.debug (msg);
+			log.fine (msg);
 			throw new ItemStateException (msg);
 		}
 
@@ -980,5 +980,4 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	}
 
 	// --------------------------------------------------------------
-
 }
