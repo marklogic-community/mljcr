@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -59,18 +58,22 @@ import java.util.Map;
  */
 public class MarkLogicFileSystem implements FileSystem
 {
+	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
 	private static final Logger log = LoggerFactory.getLogger (MarkLogicFileSystem.class);
 
+	private static final int DEFUALT_METADATA_CACHE_SIZE = 256;
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
 
+	private FileMetaDataLruCache metaDataCache = null;
+
 	// bean properties
 	private String contentSourceUrl = null;
 	private String uriRoot = null;
+	private int metaDataCacheSize = DEFUALT_METADATA_CACHE_SIZE;
 
 	private ContentSource contentSource = null;
-	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
 
 	// ------------------------------------------------------------
 	// bean properties set by RepositoryConfig object
@@ -99,6 +102,16 @@ public class MarkLogicFileSystem implements FileSystem
 		}
 	}
 
+	public FileMetaDataLruCache getMetaDataCache ()
+	{
+		return metaDataCache;
+	}
+
+	public void setMetaDataCache (FileMetaDataLruCache metaDataCache)
+	{
+		this.metaDataCache = metaDataCache;
+	}
+
 	// ------------------------------------------------------------
 
 	public void init() throws FileSystemException
@@ -114,6 +127,8 @@ public class MarkLogicFileSystem implements FileSystem
 			throw new FileSystemException ("Cannot create ContentSource: " + e, e);
 		}
 
+		metaDataCache = new FileMetaDataLruCache (metaDataCacheSize);
+
 		// TODO: fetch db metadata, check modules setup, store modules?
 		// TODO: create/check repo dir?
 	}
@@ -122,6 +137,48 @@ public class MarkLogicFileSystem implements FileSystem
 	{
 		// TODO: anything to do here?
 	}
+
+	// ------------------------------------------------------------
+
+	private static final String GET_METADATA_MODULE = FS + "get-metadata.xqy";
+
+	private FileMetaData getFileMetaData (String path) throws FileSystemException
+	{
+		FileMetaData meta = metaDataCache.get (path);
+
+		if (meta != null) {
+			return meta;
+		}
+
+		if (path.endsWith (MAGIC_EMPTY_BLOB_ID)) {
+			meta = new FileMetaData (0, 0, false);
+
+			metaDataCache.put (path, meta);
+
+			return meta;
+		}
+
+		String uri = fullPath (path);
+		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+
+		ResultSequence rs = runModule (GET_METADATA_MODULE, var);
+
+		if (rs.size() == 0) {
+			return null;
+		}
+
+		long size = ((XSInteger) ((rs.next ().getItem ()))).asPrimitiveLong();
+		long lastModified = ((XSInteger) ((rs.next ().getItem ()))).asPrimitiveLong();
+		boolean isDir = ((XSBoolean) ((rs.next ().getItem ()))).asPrimitiveBoolean();
+
+		meta = new FileMetaData (size, lastModified, isDir);
+
+		metaDataCache.put (path, meta);
+
+		return meta;
+	}
+
+	// ------------------------------------------------------------
 
 	private static final String GET_DOC_MODULE = FS + "get-doc.xqy";
 
@@ -147,6 +204,8 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public OutputStream getOutputStream (String filePath) throws FileSystemException
 	{
+		metaDataCache.remove (filePath);
+
 		final String uri = fullPath (filePath);
 
 		log.info ("getOutputStream: filePath=" + uri);
@@ -212,6 +271,8 @@ public class MarkLogicFileSystem implements FileSystem
 	public RandomAccessOutputStream getRandomAccessOutputStream (String filePath)
 		throws FileSystemException, UnsupportedOperationException
 	{
+		metaDataCache.remove (filePath);
+
 		log.info ("getRandomAccessOutputStream: filePath=" + filePath);
 
 		throw new FileSystemException ("NOT IMPL");
@@ -221,6 +282,8 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public void createFolder (String folderPath) throws FileSystemException
 	{
+		metaDataCache.remove (folderPath);
+
 		String uri = fullDirPath (folderPath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
@@ -229,105 +292,142 @@ public class MarkLogicFileSystem implements FileSystem
 		runModule (CREATE_FOLDER_MODULE, var);
 	}
 
-	private static final String EXISTS_MODULE = FS + "exists.xqy";
+//	private static final String EXISTS_MODULE = FS + "exists.xqy";
 
 	public boolean exists (String path) throws FileSystemException
 	{
-		if (path.endsWith (MAGIC_EMPTY_BLOB_ID)) {
-			return true;
-		}
+		FileMetaData meta = getFileMetaData (path);
 
-		String uri = fullPath (path);
-		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-
-		log.info ("exists: checking for uri=" + uri);
-		boolean result = runBinaryModule (EXISTS_MODULE, var);
-		log.info ("exists: String path=" + uri + ", result=" + result);
-
-		return result;
+		return (meta != null);
+//
+//		String uri = fullPath (path);
+//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+//
+//		log.info ("exists: checking for uri=" + uri);
+//		boolean result = runBinaryModule (EXISTS_MODULE, var);
+//		log.info ("exists: String path=" + uri + ", result=" + result);
+//
+//		return result;
 	}
 
-	private static final String IS_FILE_MODULE = FS + "is-file.xqy";
+//	private static final String IS_FILE_MODULE = FS + "is-file.xqy";
 
 	public boolean isFile (String path) throws FileSystemException
 	{
-		String uri = fullPath (path);
-		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+		FileMetaData meta = getFileMetaData (path);
 
-		boolean result = runBinaryModule (IS_FILE_MODULE, var);
-		log.info ("isFile: String path=" + uri + ", result=" + result);
+		if ((meta == null) || meta.isDirectory()) {
+			return false;
+		}
 
-		return result;
+		return true;
+
+//		String uri = fullPath (path);
+//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+//
+//		boolean result = runBinaryModule (IS_FILE_MODULE, var);
+//		log.info ("isFile: String path=" + uri + ", result=" + result);
+//
+//		return result;
 	}
 
-	private static final String IS_FOLDER_MODULE = FS + "is-folder.xqy";
+//	private static final String IS_FOLDER_MODULE = FS + "is-folder.xqy";
 
 	public boolean isFolder (String path) throws FileSystemException
 	{
-		String uri = fullPath (path);
-		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+		FileMetaData meta = getFileMetaData (path);
 
-		boolean result = runBinaryModule (IS_FOLDER_MODULE, var);
-		log.info ("isFolder: String path=" + uri + ", result=" + result);
+		if ((meta == null) || (! meta.isDirectory())) {
+			return false;
+		}
 
-		return result;
+		return true;
+
+
+//		String uri = fullPath (path);
+//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+//
+//		boolean result = runBinaryModule (IS_FOLDER_MODULE, var);
+//		log.info ("isFolder: String path=" + uri + ", result=" + result);
+//
+//		return result;
 	}
 
-	private static final String DOC_LENGTH_MODULE = FS + "doc-length.xqy";
+//	private static final String DOC_LENGTH_MODULE = FS + "doc-length.xqy";
 
 	public long length (String filePath) throws FileSystemException
 	{
-		if (filePath.endsWith (MAGIC_EMPTY_BLOB_ID)) {
-			return 0;
+		FileMetaData meta = getFileMetaData (filePath);
+
+		if (meta == null) {
+			return -1;
 		}
 
-		String uri = fullPath (filePath);
-		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+		return meta.getSize();
 
-		int length = runIntModule (DOC_LENGTH_MODULE, var);
 
-		log.info ("length: filePath=" + uri + ", length=" + length);
 
-		return fetchFile (uri).length;
+//		if (filePath.endsWith (MAGIC_EMPTY_BLOB_ID)) {
+//			return 0;
+//		}
+//
+//		String uri = fullPath (filePath);
+//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+//
+//		int length = runIntModule (DOC_LENGTH_MODULE, var);
+//
+//		log.info ("length: filePath=" + uri + ", length=" + length);
+//
+//		return fetchFile (uri).length;
 	}
 
-	private byte [] fetchFile (String uri) throws FileSystemException
-	{
-		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-		ResultSequence rs = runModule (GET_DOC_MODULE, var);
-
-		if ( ! rs.hasNext()) {
-			throw new FileSystemException ("Document does not exist: " + uri);
-		}
-
-		InputStream in = rs.next().asInputStream();
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte [] buffer = new byte [1024];
-		int rc;
-
-		try {
-			while ((rc = in.read (buffer)) != -1) {
-				out.write (buffer, 0, rc);
-			}
-
-			in.close();
-			out.flush();
-		} catch (IOException e) {
-			throw new FileSystemException ("Cannot fetch file (" + uri + "): " + e, e);
-		}
-
-		return out.toByteArray();
-	}
+//	private byte [] fetchFile (String uri) throws FileSystemException
+//	{
+//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
+//		ResultSequence rs = runModule (GET_DOC_MODULE, var);
+//
+//		if ( ! rs.hasNext()) {
+//			throw new FileSystemException ("Document does not exist: " + uri);
+//		}
+//
+//		InputStream in = rs.next().asInputStream();
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		byte [] buffer = new byte [1024];
+//		int rc;
+//
+//		try {
+//			while ((rc = in.read (buffer)) != -1) {
+//				out.write (buffer, 0, rc);
+//			}
+//
+//			in.close();
+//			out.flush();
+//		} catch (IOException e) {
+//			throw new FileSystemException ("Cannot fetch file (" + uri + "): " + e, e);
+//		}
+//
+//		return out.toByteArray();
+//	}
 
 	public long lastModified (String path) throws FileSystemException
 	{
-		log.info ("lastModified: folderPath=" + path);
+		FileMetaData meta = getFileMetaData (path);
 
-		throw new FileSystemException ("NOT IMPL");
+		if (meta == null) {
+			return -1;
+		}
+
+		return meta.getLastModified();
+
+//		log.info ("lastModified: folderPath=" + path);
+//
+//		throw new FileSystemException ("NOT IMPL");
 	}
 
 	public void touch (String filePath) throws FileSystemException
 	{
+		metaDataCache.remove (filePath);
+
 		log.info ("touch: folderPath=" + filePath);
 
 		throw new FileSystemException ("NOT IMPL");
@@ -393,6 +493,8 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public void deleteFile (String filePath) throws FileSystemException
 	{
+		metaDataCache.remove (filePath);
+
 		log.info ("deleteFile: folderPath=" + filePath);
 
 		String uri = fullPath (filePath);
@@ -405,6 +507,9 @@ public class MarkLogicFileSystem implements FileSystem
 
 	public void deleteFolder (String folderPath) throws FileSystemException
 	{
+		// FIXME: purge children?  Purge entire cache?
+		metaDataCache.remove (folderPath);
+
 		log.info ("deleteFolder: folderPath=" + folderPath);
 
 		String uri = fullPath (folderPath);
@@ -733,15 +838,15 @@ public class MarkLogicFileSystem implements FileSystem
 		return runBinaryModule (module, var, null, null);
 	}
 
-	private int runIntModule (String module, XdmVariable var)
-		throws FileSystemException
-	{
-		ResultSequence rs = runModule (module, var);
-		ResultItem item = rs.next();
-		XSInteger intVal = (XSInteger) item.getItem();
-
-		return intVal.asPrimitiveInt();
-	}
+//	private int runIntModule (String module, XdmVariable var)
+//		throws FileSystemException
+//	{
+//		ResultSequence rs = runModule (module, var);
+//		ResultItem item = rs.next();
+//		XSInteger intVal = (XSInteger) item.getItem();
+//
+//		return intVal.asPrimitiveInt();
+//	}
 
 	// ------------------------------------------------------------
 }
