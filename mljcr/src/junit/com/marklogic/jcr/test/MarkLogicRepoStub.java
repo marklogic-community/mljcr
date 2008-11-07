@@ -4,6 +4,8 @@
 
 package com.marklogic.jcr.test;
 
+import com.marklogic.io.LogFormatter;
+
 import org.apache.jackrabbit.core.RepositoryImpl;
 import org.apache.jackrabbit.core.WorkspaceImpl;
 import org.apache.jackrabbit.core.config.ConfigurationException;
@@ -15,10 +17,10 @@ import org.xml.sax.InputSource;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.NamespaceRegistry;
+import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 import java.io.FileInputStream;
@@ -28,6 +30,9 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -50,6 +55,14 @@ public class MarkLogicRepoStub extends RepositoryStub
 	public MarkLogicRepoStub (Properties env)
 	{
 		super (env);
+
+		Logger logger = Logger.getLogger ("com.marklogic.jcr");
+
+		Handler handler = new ConsoleHandler();
+
+		handler.setFormatter (new LogFormatter());
+		logger.addHandler (handler);
+		logger.setUseParentHandlers (false);
 	}
 
 	public Repository getRepository() throws RepositoryStubException
