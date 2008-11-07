@@ -2,7 +2,7 @@
  * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
  */
 
-package com.marklogic.jcr;
+package com.marklogic.jcr.query;
 
 import org.apache.jackrabbit.core.query.AbstractQueryHandler;
 import org.apache.jackrabbit.core.query.ExecutableQuery;
