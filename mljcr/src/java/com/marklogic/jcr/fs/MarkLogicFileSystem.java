@@ -54,25 +54,27 @@ import java.util.logging.Level;
  * User: ron
  * Date: Apr 4, 2008
  * Time: 8:24:03 PM
- * @noinspection ClassWithTooManyMethods
+ * @noinspection ClassWithTooManyMethods,OverlyComplexClass
  */
 public class MarkLogicFileSystem implements FileSystem
 {
 	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
-//	private static final Logger log = LoggerFactory.getLogger (MarkLogicFileSystem.class);
 	private static final Logger log = Logger.getLogger (MarkLogicFileSystem.class.getName());
 
 	private static final int DEFUALT_METADATA_CACHE_SIZE = 256;
+	private static final int DEFUALT_ITEMSTATE_CACHE_SIZE = 64;
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
 
 	private FileMetaDataLruCache metaDataCache = null;
+	private ItemStateLruCache itemStateCache = null;
 
 	// bean properties
 	private String contentSourceUrl = null;
 	private String uriRoot = null;
 	private int metaDataCacheSize = DEFUALT_METADATA_CACHE_SIZE;
+	private int itemStateCacheSize = DEFUALT_ITEMSTATE_CACHE_SIZE;
 
 	private ContentSource contentSource = null;
 
@@ -129,6 +131,7 @@ public class MarkLogicFileSystem implements FileSystem
 		}
 
 		metaDataCache = new FileMetaDataLruCache (metaDataCacheSize);
+		itemStateCache = new ItemStateLruCache (itemStateCacheSize);
 
 		// TODO: fetch db metadata, check modules setup, store modules?
 		// TODO: create/check repo dir?
@@ -303,122 +306,56 @@ public class MarkLogicFileSystem implements FileSystem
 		runModule (CREATE_FOLDER_MODULE, var);
 	}
 
-//	private static final String EXISTS_MODULE = FS + "exists.xqy";
-
 	public boolean exists (String path) throws FileSystemException
 	{
 		FileMetaData meta = getFileMetaData (path);
 
-		return (meta != null);
-//
-//		String uri = fullPath (path);
-//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-//
-//		log.info ("exists: checking for uri=" + uri);
-//		boolean result = runBinaryModule (EXISTS_MODULE, var);
-//		log.info ("exists: String path=" + uri + ", result=" + result);
-//
-//		return result;
-	}
+		log.info ("exists: path=" + path + ": " + (meta != null));
 
-//	private static final String IS_FILE_MODULE = FS + "is-file.xqy";
+		return (meta != null);
+	}
 
 	public boolean isFile (String path) throws FileSystemException
 	{
 		FileMetaData meta = getFileMetaData (path);
 
 		if ((meta == null) || meta.isDirectory()) {
+			log.info ("isFile: path=" + path + ": false");
 			return false;
 		}
 
+		log.info ("isFile: path=" + path + ": true");
+
 		return true;
-
-//		String uri = fullPath (path);
-//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-//
-//		boolean result = runBinaryModule (IS_FILE_MODULE, var);
-//		log.info ("isFile: String path=" + uri + ", result=" + result);
-//
-//		return result;
 	}
-
-//	private static final String IS_FOLDER_MODULE = FS + "is-folder.xqy";
 
 	public boolean isFolder (String path) throws FileSystemException
 	{
 		FileMetaData meta = getFileMetaData (path);
 
 		if ((meta == null) || (! meta.isDirectory())) {
+			log.info ("isFolder: path=" + path + ": false");
 			return false;
 		}
 
+		log.info ("isFolder: path=" + path + ": true");
+
 		return true;
-
-
-//		String uri = fullPath (path);
-//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-//
-//		boolean result = runBinaryModule (IS_FOLDER_MODULE, var);
-//		log.info ("isFolder: String path=" + uri + ", result=" + result);
-//
-//		return result;
 	}
-
-//	private static final String DOC_LENGTH_MODULE = FS + "doc-length.xqy";
 
 	public long length (String filePath) throws FileSystemException
 	{
 		FileMetaData meta = getFileMetaData (filePath);
 
 		if (meta == null) {
+			log.info ("length: path=" + filePath + ": does not exist, returning -1");
 			return -1;
 		}
 
+		log.info ("length: path=" + filePath + ": " + meta.getSize());
+
 		return meta.getSize();
-
-
-
-//		if (filePath.endsWith (MAGIC_EMPTY_BLOB_ID)) {
-//			return 0;
-//		}
-//
-//		String uri = fullPath (filePath);
-//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-//
-//		int length = runIntModule (DOC_LENGTH_MODULE, var);
-//
-//		log.info ("length: filePath=" + uri + ", length=" + length);
-//
-//		return fetchFile (uri).length;
 	}
-
-//	private byte [] fetchFile (String uri) throws FileSystemException
-//	{
-//		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
-//		ResultSequence rs = runModule (GET_DOC_MODULE, var);
-//
-//		if ( ! rs.hasNext()) {
-//			throw new FileSystemException ("Document does not exist: " + uri);
-//		}
-//
-//		InputStream in = rs.next().asInputStream();
-//		ByteArrayOutputStream out = new ByteArrayOutputStream();
-//		byte [] buffer = new byte [1024];
-//		int rc;
-//
-//		try {
-//			while ((rc = in.read (buffer)) != -1) {
-//				out.write (buffer, 0, rc);
-//			}
-//
-//			in.close();
-//			out.flush();
-//		} catch (IOException e) {
-//			throw new FileSystemException ("Cannot fetch file (" + uri + "): " + e, e);
-//		}
-//
-//		return out.toByteArray();
-//	}
 
 	public long lastModified (String path) throws FileSystemException
 	{
@@ -429,10 +366,6 @@ public class MarkLogicFileSystem implements FileSystem
 		}
 
 		return meta.getLastModified();
-
-//		log.info ("lastModified: folderPath=" + path);
-//
-//		throw new FileSystemException ("NOT IMPL");
 	}
 
 	public void touch (String filePath) throws FileSystemException
@@ -545,91 +478,156 @@ public class MarkLogicFileSystem implements FileSystem
 	}
 
 	// ------------------------------------------------------------
+	// ------------------------------------------------------------
 
-	private static final String CHECK_NODE_EXISTS_MODULE = STATE + "check-node-exists.xqy";
-
-	public boolean itemExists (String uri, NodeId nodeId) throws FileSystemException
+	private SerializedItemState findItemState (String key)
 	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+		SerializedItemState state = itemStateCache.get (key);
 
-		return runBinaryModule (CHECK_NODE_EXISTS_MODULE, var1, var2);
+		if (state == null) {
+			log.info ("(" + key + "): not in cache");
+			return null;
+		}
+
+		log.info ("(" + key + "): found in cache");
+
+		return state;
 	}
 
-	private static final String CHECK_PROP_EXISTS_MODULE = STATE + "check-property-exists.xqy";
-
-	public boolean itemExists (String uri, PropertyId propertyId) throws FileSystemException
+	private void clearItemStateCache()
 	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (propertyId.getParentId().getUUID().toString()));
-		XdmVariable var3 = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (propertyId.getName().toString())));
-
-		return runBinaryModule (CHECK_PROP_EXISTS_MODULE, var1, var2, var3);
+		log.info ("clearing item state cache");
+		itemStateCache.clear();
 	}
 
-	private static final String CHECK_REF_EXISTS_MODULE = STATE + "check-reference-exists.xqy";
-
-	public boolean itemExists (String uri, NodeReferencesId referencesId) throws FileSystemException
+	private String nodeHashKey (NodeId nodeId)
 	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (referencesId.getTargetId().getUUID().toString()));
+		return nodeId.getUUID().toString();
+	}
 
-		return runBinaryModule (CHECK_REF_EXISTS_MODULE, var1, var2);
+	private String propertyHashKey (PropertyId propertyId)
+	{
+		return propertyId.getParentId().getUUID().toString() + "|" + propertyId.getName();
+	}
+
+	private String referencesHashKey (NodeId nodeId)
+	{
+		return "refs-" + nodeHashKey (nodeId);
+	}
+
+	public SerializedItemState cachedItemState (String hashKey, String moduleName,
+		XdmVariable uri, XdmVariable uuid, XdmVariable name)
+		throws FileSystemException
+	{
+		SerializedItemState state = findItemState (hashKey);
+
+		if (state != null) {
+			return state;
+		}
+
+		ResultSequence rs = runModule (moduleName, uri, uuid, name);
+
+		if (rs.size() == 0) {
+			log.info ("uri=" + hashKey + " not found in repo");
+			return null;
+		}
+
+		log.info ("uri=" + hashKey + ", was found in repo");
+
+		try {
+			state = new SerializedItemState (hashKey, rs.next().asInputStream());
+		} catch (IOException e) {
+			throw new FileSystemException (e.getMessage(), e);
+		}
+
+		itemStateCache.put (hashKey, state);
+
+		return state;
 	}
 
 	private static final String QUERY_NODE_STATE_MODULE = STATE + "query-node-state.xqy";
 
-	public InputStream nodeStateAsStream (String uri, NodeId nodeId) throws FileSystemException
+	public SerializedItemState getNodeState (String uri, NodeId nodeId) throws FileSystemException
 	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+		String hashKey = nodeHashKey (nodeId);
+		String fullPathUri = fullPath (uri);
+		XdmVariable uriVar = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPathUri));
+		XdmVariable uuid = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
 
-		ResultSequence rs = runModule (QUERY_NODE_STATE_MODULE, var1, var2);
-
-		if (rs.size() == 0) {
-			return null;
-		}
-
-//System.out.println ("Node load: " + rs.itemAt (0).asString());
-
-		return rs.next().asInputStream();
+		return cachedItemState (hashKey, QUERY_NODE_STATE_MODULE, uriVar, uuid, null);
 	}
 
 	private static final String QUERY_PROP_STATE_MODULE = STATE + "query-property-state.xqy";
 
-	public InputStream propertyStateAsStream (String uri, PropertyId propertyId) throws FileSystemException
+	public SerializedItemState getPropertyState (String uri, PropertyId propertyId) throws FileSystemException
 	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (propertyId.getParentId().getUUID().toString()));
-		XdmVariable var3 = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (propertyId.getName().toString())));
+		String hashKey = propertyHashKey (propertyId);
+		String fullPathUri = fullPath (uri);
+		XdmVariable uriVar = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPathUri));
+		XdmVariable uuid = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (propertyId.getParentId().getUUID().toString()));
+		XdmVariable name = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (propertyId.getName().toString())));
 
-		ResultSequence rs = runModule (QUERY_PROP_STATE_MODULE, var1, var2, var3);
-
-		if (rs.size() == 0) {
-			return null;
-		}
-
-//System.out.println ("Property load: " + rs.itemAt (0).asString());
-
-		return rs.next().asInputStream();
+		return cachedItemState (hashKey, QUERY_PROP_STATE_MODULE, uriVar, uuid, name);
 	}
 
 	private static final String QUERY_REFS_STATE_MODULE = STATE + "query-references-state.xqy";
 
+	public SerializedItemState getReferencesState (String uri, NodeId nodeId) throws FileSystemException
+	{
+		String hashKey = referencesHashKey (nodeId);
+		String fullPathUri = fullPath (uri);
+		XdmVariable uriVar = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPathUri));
+		XdmVariable uuid = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+
+		return cachedItemState (hashKey, QUERY_REFS_STATE_MODULE, uriVar, uuid, null);
+	}
+
+	public boolean itemExists (String uri, NodeId nodeId) throws FileSystemException
+	{
+		boolean result = getNodeState (uri, nodeId) != null;
+
+		log.info ("(node): uri=" + fullPath (uri) + ", uuid=" + nodeId.getUUID().toString());
+
+		return result;
+	}
+
+	public boolean itemExists (String uri, PropertyId propertyId) throws FileSystemException
+	{
+		boolean result = getPropertyState (uri, propertyId) != null;
+
+		log.info ("(property): uri=" + fullPath (uri) + ", uuid=" + propertyId.getParentId().getUUID().toString());
+
+		return result;
+	}
+
+	public boolean itemExists (String uri, NodeReferencesId referencesId) throws FileSystemException
+	{
+		boolean result = getReferencesState (uri, referencesId.getTargetId()) != null;
+
+		log.info ("(references): uri=" + fullPath (uri) + ", uuid=" + referencesId.getTargetId().getUUID().toString());
+
+		return result;
+	}
+
+	public InputStream nodeStateAsStream (String uri, NodeId nodeId) throws FileSystemException
+	{
+		SerializedItemState state = getNodeState (uri, nodeId);
+
+		return (state == null) ? null : state.getInputStream();
+	}
+
+	public InputStream propertyStateAsStream (String uri, PropertyId propertyId) throws FileSystemException
+	{
+		SerializedItemState state = getPropertyState (uri, propertyId);
+
+		return (state == null) ? null : state.getInputStream();
+	}
+
 	public InputStream referencesStateAsStream (String uri, NodeId nodeId) throws FileSystemException
 	{
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPath (uri)));
-		XdmVariable var2 = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (nodeId.getUUID().toString()));
+		SerializedItemState state = getReferencesState (uri, nodeId);
 
-		ResultSequence rs = runModule (QUERY_REFS_STATE_MODULE, var1, var2);
-
-		if (rs.size() == 0) {
-			return null;
-		}
-
-//System.out.println ("Refs load: " + rs.itemAt (0).asString());
-
-		return rs.next().asInputStream();
+		return (state == null) ? null : state.getInputStream();
 	}
 
 	// ------------------------------------------------------------
@@ -640,6 +638,12 @@ public class MarkLogicFileSystem implements FileSystem
 		String deltas, List contentList)
 		throws FileSystemException
 	{
+		clearItemStateCache();
+
+		String fullWsDocUri = fullPath (workspaceDocUri);
+
+		log.info ("applyStateUpdate(start): workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
+
 		ContentCreateOptions options = ContentCreateOptions.newBinaryInstance();
 		Content [] blobs = new Content [contentList.size() + 1];
 		String changeListUri = uriRoot + changeListPath;
@@ -666,7 +670,7 @@ public class MarkLogicFileSystem implements FileSystem
 			throw new FileSystemException ("Inserting transaction data: " + e, e);
 		}
 
-		XdmVariable var1 = ValueFactory.newVariable (new XName ("state-doc-uri"), ValueFactory.newXSString (fullPath (workspaceDocUri)));
+		XdmVariable var1 = ValueFactory.newVariable (new XName ("state-doc-uri"), ValueFactory.newXSString (fullWsDocUri));
 		XdmVariable var2 = ValueFactory.newVariable (new XName ("workspace-root"), ValueFactory.newXSString (uriRoot));
 		XdmVariable var3 = ValueFactory.newVariable (new XName ("deltas-uri"), ValueFactory.newXSString (changeListUri));
 
@@ -712,6 +716,8 @@ public class MarkLogicFileSystem implements FileSystem
 		}
 
 		if (blobMap.size () != 0) throw new FileSystemException ("Blob map inconsistency: size=" + blobMap.size());
+
+		log.info ("applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
 	}
 
 	// ------------------------------------------------------------
@@ -777,22 +783,6 @@ public class MarkLogicFileSystem implements FileSystem
 		return false;
 	}
 
-//	private ResultSequence runRequest (String query, XdmVariable var)
-//		throws FileSystemException
-//	{
-//		Session session = contentSource.newSession();
-//		Request request = session.newAdhocQuery (query);
-//
-//		request.setVariable (var);
-//
-//		try {
-//			return (session.submitRequest (request));
-//		} catch (RequestException e) {
-//			throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
-//		}
-//
-//	}
-
 	private ResultSequence runModule (String module, XdmVariable var1,
 		XdmVariable var2, XdmVariable var3)
 		throws FileSystemException
@@ -812,13 +802,6 @@ public class MarkLogicFileSystem implements FileSystem
 
 	}
 
-	private ResultSequence runModule (String module, XdmVariable var1,
-		XdmVariable var2)
-		throws FileSystemException
-	{
-		return runModule (module, var1, var2, null);
-	}
-
 	private ResultSequence runModule (String module, XdmVariable var)
 		throws FileSystemException
 	{
@@ -836,27 +819,11 @@ public class MarkLogicFileSystem implements FileSystem
 		return bool.asPrimitiveBoolean();
 	}
 
-	private boolean runBinaryModule (String module, XdmVariable var1, XdmVariable var2)
-		throws FileSystemException
-	{
-		return runBinaryModule (module, var1, var2, null);
-	}
-
 	private boolean runBinaryModule (String module, XdmVariable var)
 		throws FileSystemException
 	{
 		return runBinaryModule (module, var, null, null);
 	}
-
-//	private int runIntModule (String module, XdmVariable var)
-//		throws FileSystemException
-//	{
-//		ResultSequence rs = runModule (module, var);
-//		ResultItem item = rs.next();
-//		XSInteger intVal = (XSInteger) item.getItem();
-//
-//		return intVal.asPrimitiveInt();
-//	}
 
 	// ------------------------------------------------------------
 }
