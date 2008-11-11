@@ -356,9 +356,12 @@ declare function apply-state-updates ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
+let $dummy := xdmp:log ("apply-state-updates: start, pruning deleted")
 	let $pruned := prune-deleted ($state, $deltas, $uri-root)
+let $dummy := xdmp:log ("apply-state-updates: applying updates")
 	let $new-state := apply-updates ($pruned, $deltas, $uri-root)
 	let $dummy := if ($save-debug-history) then save-debug-history ($uri-root, $state, $pruned, $new-state, $deltas) else ()
+let $dummy := xdmp:log ("apply-state-updates: done")
 
 	return $new-state
 };
