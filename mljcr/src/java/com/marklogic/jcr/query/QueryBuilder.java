@@ -18,6 +18,7 @@ import org.apache.jackrabbit.core.query.RelationQueryNode;
 import org.apache.jackrabbit.core.query.OrderQueryNode;
 import org.apache.jackrabbit.core.query.DerefQueryNode;
 import org.apache.jackrabbit.core.query.PropertyFunctionQueryNode;
+import org.apache.jackrabbit.spi.Name;
 
 import javax.jcr.query.Query;
 
@@ -45,14 +46,26 @@ public class QueryBuilder implements QueryNodeVisitor
 		return (Query) root.accept (this, null);
 	}
 
+	public QueryRootNode getRootNode()
+	{
+		return root;
+	}
+
 	// --------------------------------------------------------------
 	// Implementation of QueryNodeVisitor interface
 
 	public Object visit (QueryRootNode node, Object data)
 	{
 		log.info (node.getClass().getName());
-		log.info ("  order=" + ((node.getOrderNode () == null) ? "NULL" :  node.getOrderNode().toString()));
+		log.info ("  order=" + ((node.getOrderNode () == null) ? "NONE" :  node.getOrderNode().toString()));
 		log.info ("  abs=" + node.getLocationNode().isAbsolute());
+
+		Name [] names = node.getSelectProperties ();
+
+		for (int i = 0; i < names.length; i++) {
+			Name name = names[i];
+			log.info ("    selprop(" + i + ")=" + name.toString());
+		}
 
 		// FIXME: This is not real
 		if (node.getLocationNode() != null) {
@@ -148,7 +161,10 @@ public class QueryBuilder implements QueryNodeVisitor
 		log.info ("  predcount=" + node.getPredicates ().length);
 		log.info ("  incldescendents=" + node.getIncludeDescendants ());
 
+
+		log.info ("  calling acceptOperands");
 		node.acceptOperands (this, data);
+		log.info ("  back from acceptOperands");
 
 		return data;
 	}

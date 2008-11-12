@@ -14,6 +14,7 @@ import org.apache.jackrabbit.core.query.QueryNodeFactory;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.InvalidQueryException;
+import javax.jcr.query.Query;
 
 import java.util.logging.Logger;
 
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 public class QueryImpl implements ExecutableQuery
 {
 	private static final Logger log = Logger.getLogger (QueryImpl.class.getName());
-	private final QueryRootNode root;
+	private final QueryBuilder queryBuilder;
 	private final ItemManager itemMgr;
 
 	public QueryImpl (SessionImpl session, ItemManager itemMgr, String statement,
@@ -36,18 +37,20 @@ public class QueryImpl implements ExecutableQuery
 	{
 		this.itemMgr = itemMgr;
 
-		this.root = QueryParser.parse (statement, language,
+		QueryRootNode root = QueryParser.parse (statement, language,
 			session.getNamePathResolver(), queryNodeFactory);
+		queryBuilder = new QueryBuilder (root);
 	}
 
 	public QueryResult execute (long offset, long limit)
 		throws RepositoryException
 	{
-		log.info ("Executing query: \n" + root.dump());
+		log.info ("Executing query: \n" + queryBuilder.getRootNode().dump());
 
-		QueryBuilder builder = new QueryBuilder (root);
+		Query query = queryBuilder.createQuery();
 
-		builder.createQuery();
+		QueryResult result = query.execute();
+		
 
 		throw new RepositoryException ("NOT YET IMPLEMENTED");
 	}
