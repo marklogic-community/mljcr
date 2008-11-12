@@ -25,13 +25,13 @@ import java.util.logging.Logger;
  * Date: Nov 11, 2008
  * Time: 3:07:43 PM
  */
-public class QueryImpl implements ExecutableQuery
+public class MLQueryImpl implements ExecutableQuery
 {
-	private static final Logger log = Logger.getLogger (QueryImpl.class.getName());
+	private static final Logger log = Logger.getLogger (MLQueryImpl.class.getName());
 	private final QueryBuilder queryBuilder;
 	private final ItemManager itemMgr;
 
-	public QueryImpl (SessionImpl session, ItemManager itemMgr, String statement,
+	public MLQueryImpl (SessionImpl session, ItemManager itemMgr, String statement,
 		String language, QueryNodeFactory queryNodeFactory)
 		throws InvalidQueryException
 	{
@@ -42,6 +42,9 @@ public class QueryImpl implements ExecutableQuery
 		queryBuilder = new QueryBuilder (root);
 	}
 
+	// -------------------------------------------------------------
+	// Implementation of ExecutableQuery
+
 	public QueryResult execute (long offset, long limit)
 		throws RepositoryException
 	{
@@ -50,7 +53,7 @@ public class QueryImpl implements ExecutableQuery
 		Query query = queryBuilder.createQuery();
 
 		QueryResult result = query.execute();
-		
+
 
 		throw new RepositoryException ("NOT YET IMPLEMENTED");
 	}
