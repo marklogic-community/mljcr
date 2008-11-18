@@ -16,13 +16,7 @@
  */
 package org.apache.jackrabbit.test.api.nodetype;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Comparator;
+import org.apache.jackrabbit.test.AbstractJCRTest;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -36,7 +30,13 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.OnParentVersionAction;
 
-import org.apache.jackrabbit.test.AbstractJCRTest;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * <code>PredefinedNodeTypeTest</code> tests if the implemented predefined node
@@ -212,7 +212,7 @@ public class PredefinedNodeTypeTest extends AbstractJCRTest {
             Reader reader = new InputStreamReader(
                     getClass().getClassLoader().getResourceAsStream(resource));
             for (int ch = reader.read(); ch != -1; ch = reader.read()) {
-                spec.append((char) ch);
+                if (ch != '\r') spec.append((char) ch);
             }
 
             NodeType type = manager.getNodeType(name);

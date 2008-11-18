@@ -19,12 +19,12 @@ package org.apache.jackrabbit.test.api.observation;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
+
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.TimeUnit;
-import java.io.PrintWriter;
 
 /**
  * Utility class for <code>Event</code> retrieval with an
@@ -96,16 +96,29 @@ public class EventResult implements EventListener {
      * <code>EventIterator</code>.
      * @return <code>EventIterator</code>.
      */
-    public EventIterator getEventIterator(long wait) {
-        try {
-            if (sync.tryLock (wait, TimeUnit.MILLISECONDS)) {
-                // result ready
-                return events;
-            }
-        } catch (InterruptedException e) {
-            log.println("Interrupted while waiting for EventIterator");
-        }
-        return null;
+    public EventIterator getEventIterator (long wait)
+    {
+	long now = System.currentTimeMillis ();
+	long maxTicks = now + wait;
+
+	while ((events == null) && (now < maxTicks)) {
+		try {
+			synchronized (sync) {
+				sync.wait (maxTicks - now);
+			}
+
+			//		System.out.println ("getEventIterator: trying lock");
+		//            if (sync.tryLock (wait, TimeUnit.MILLISECONDS)) {
+		//		    System.out.println ("getEventIterator: obtained lock, returning " + events);
+		//		// result ready
+		//                return events;
+		//            }
+		} catch (InterruptedException e) {
+			log.println ("Interrupted while waiting for EventIterator");
+		}
+	}
+
+	return events;
     }
 
     //--------------------< EventListener >-------------------------------------
@@ -116,8 +129,11 @@ public class EventResult implements EventListener {
      * @param events the events.
      */
     public void onEvent(EventIterator events) {
-        this.events = events;
-        sync.unlock();
+	this.events = events;
+//        sync.unlock();
+	    synchronized (sync) {
+		    sync.notifyAll();
+	    }
     }
 
     /**

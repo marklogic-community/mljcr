@@ -18,43 +18,43 @@ package org.apache.jackrabbit.test.api;
 
 import org.apache.jackrabbit.test.AbstractJCRTest;
 import org.apache.xerces.util.XMLChar;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.ContentHandler;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
-import javax.jcr.Session;
-import javax.jcr.Workspace;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
 import javax.jcr.Item;
+import javax.jcr.NamespaceRegistry;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
-import javax.jcr.PropertyType;
 import javax.jcr.PropertyIterator;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
-import java.util.Stack;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Enumeration;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import javax.jcr.Workspace;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.stream.StreamSource;
+
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Stack;
 
 /**
  * <code>ExportDocViewTest</code> tests the two Session methods :
@@ -585,7 +585,24 @@ public class ExportDocViewTest extends AbstractJCRTest {
             assertEquals("Uri of prefix " + prefix + "is not exported correctly.",
                     nsr.getURI(prefix), URI);
         }
-        assertEquals("Not all namespace declarations are exported.",
+
+//	    System.out.println ("Namespaces:");
+//	    for (Iterator it = nameSpaces.keySet().iterator(); it.hasNext ();) {
+//		    String key = (String) it.next ();
+//		    String value = nameSpaces.getProperty (key);
+//
+//		    System.out.println ("  key: " + key + ", value: " + value);
+//	    }
+//
+//	    System.out.println ("NSR:");
+//	    String [] prefixes = nsr.getPrefixes ();
+//	    for (int i = 0; i < prefixes.length; i++) {
+//		    String prefix = prefixes[i];
+//		    String value = nsr.getURI (prefixes [i]);
+//		    System.out.println ("  key: " + prefix + ", value: " + value);
+//	    }
+
+	assertEquals("Not all namespace declarations are exported.",
                 nameSpaces.size(), nsr.getPrefixes().length - 1);
     }
 
@@ -1110,7 +1127,15 @@ public class ExportDocViewTest extends AbstractJCRTest {
             for (int i = 0; i < attrs.getLength(); i++) {
                 Attr attribute = (Attr) attrs.item(i);
 
-                if (xmlnsURI.equals(attribute.getNamespaceURI())) {
+		if ((attribute.getNamespaceURI() == null)
+		    && (attribute.getLocalName() == null)
+		    && xmlnsPrefix.equals (attribute.getName()))
+		{
+			nsAttrs.put ("", "");
+			continue;
+		}
+
+		if (xmlnsURI.equals(attribute.getNamespaceURI())) {
                     String localName = attribute.getLocalName();
                     // empty prefix
                     if (xmlnsPrefix.equals(localName)) {

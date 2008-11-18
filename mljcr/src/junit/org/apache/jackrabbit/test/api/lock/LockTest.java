@@ -484,7 +484,8 @@ public class LockTest extends AbstractJCRTest {
         // assert: lock must be alive
         assertTrue("lock must be alive", lock.isLive());
 
-        // assert: refresh must fail, since lock is still alive
+	// FIXME: This test is broken, refresh() should not throw an exception
+	// assert: refresh must fail, since lock is still alive
         try {
             lock.refresh();
             fail("refresh must fail, since lock is still alive");

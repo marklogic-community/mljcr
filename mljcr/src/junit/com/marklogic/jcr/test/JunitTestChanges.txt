@@ -1,0 +1,15 @@
+
+The following JSR-170 TCK junit tests were changed:
+
+src/junit/org/apache/jackrabbit/test/api/nodetype/PredefinedNodeTypeTest.java
+	Suppress \r chars when loading data
+
+src/junit/org/apache/jackrabbit/test/api/ExportDocViewTest.java
+	Deal with empty namespace declarations
+
+src/junit/org/apache/jackrabbit/test/api/lock/LockTest.java
+	Add comment: lock.refresh() should not throw an exception
+
+src/junit/org/apache/jackrabbit/test/api/observation/EventResult.java
+	Badly broken rendezvous code for thread synchronization
+
