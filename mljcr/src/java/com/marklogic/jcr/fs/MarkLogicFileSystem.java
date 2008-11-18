@@ -143,6 +143,7 @@ public class MarkLogicFileSystem implements FileSystem
 	}
 
 	// ------------------------------------------------------------
+	// Implementation of FileSystem interface
 
 	private static final String GET_METADATA_MODULE = FS + "get-metadata.xqy";
 
@@ -479,6 +480,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 	// ------------------------------------------------------------
+	// Caching related stuff
 
 	private SerializedItemState findItemState (String key)
 	{
@@ -515,7 +517,7 @@ public class MarkLogicFileSystem implements FileSystem
 		return "refs-" + nodeHashKey (nodeId);
 	}
 
-	public SerializedItemState cachedItemState (String hashKey, String moduleName,
+	private SerializedItemState cachedItemState (String hashKey, String moduleName,
 		XdmVariable uri, XdmVariable uuid, XdmVariable name)
 		throws FileSystemException
 	{
@@ -544,6 +546,8 @@ public class MarkLogicFileSystem implements FileSystem
 
 		return state;
 	}
+
+	// ----------------------------------------------------------------
 
 	private static final String QUERY_NODE_STATE_MODULE = STATE + "query-node-state.xqy";
 
@@ -631,6 +635,7 @@ public class MarkLogicFileSystem implements FileSystem
 	}
 
 	// ------------------------------------------------------------
+	// MArk Logic extensions for updating workspace state
 
 	private static final String UPDATE_STATE_MODULE = STATE + "update-state.xqy";
 

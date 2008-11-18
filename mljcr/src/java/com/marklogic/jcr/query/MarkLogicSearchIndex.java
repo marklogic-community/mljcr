@@ -81,7 +81,7 @@ public class MarkLogicSearchIndex extends AbstractQueryHandler
 	{
 		log.info ("lang=" + language + ", stmt=" + statement);
 
-		return new MLQueryImpl (session, itemMgr, statement, language, getQueryNodeFactory());
+		return new MLExecutableQuery (session, itemMgr, statement, language, getQueryNodeFactory());
 	}
 
 	protected DefaultQueryNodeFactory getQueryNodeFactory() {

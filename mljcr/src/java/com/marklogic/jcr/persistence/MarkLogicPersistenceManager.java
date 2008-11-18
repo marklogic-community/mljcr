@@ -105,9 +105,11 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	private static final String DATA_DIR_ELEMENT = "data-dir";
 	private static final String TXID_ELEMENT = "tx-id";
 
+	private static final String MLJCR_VERSION = "1.0";
 	private static final String JCR_NAMESPACE = "http://marklogic.com/jcr";
 	private static final String workspaceStateTemplate =
-		"<workspace xmlns=\"" + JCR_NAMESPACE + "\" version=\"1.0\"/>";
+		"<workspace xmlns=\"" + JCR_NAMESPACE +
+		"\" version=\"" + MLJCR_VERSION + "\" ";
 
 	private static final String workspaceDocName = "state.xml";
 	private static final String changeListDocName = "change-list.xml";
@@ -117,8 +119,9 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 	private volatile boolean initialized = false;
 	private final Random random = new Random (System.currentTimeMillis());
-	private MarkLogicFileSystem contextFS;
 	private final PMAdapter pmAdapter;
+	private MarkLogicFileSystem contextFS;
+	private String collections = null;
 
 	// ---------------------------------------------------------
 
@@ -129,6 +132,23 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	public MarkLogicPersistenceManager (PMAdapter pmAdapter)
 	{
 		this.pmAdapter = pmAdapter;
+	}
+
+	// ---------------------------------------------------------
+
+	public String getCollections()
+	{
+		return collections;
+	}
+
+	/**
+	 * A comma separated list of collection names for documents
+	 * in this Workspace.
+	 * @param collections A string containing a comma-separated list of names.
+	 */
+	public void setCollections (String collections)
+	{
+		this.collections = collections;
 	}
 
 	//---------------------------------------------------< PersistenceManager >
@@ -148,7 +168,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		contextFS = (MarkLogicFileSystem) context.getFileSystem();
 
-		insureStateDoc (contextFS, workspaceDocName, workspaceStateTemplate);
+		insureStateDoc (contextFS, workspaceDocName, workspaceStateTemplate, collections);
 
 		contextFS.getUriRoot ();
 
@@ -966,7 +986,8 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 	}
 
-	private void insureStateDoc (FileSystem fs, String stateDocName, String template)
+	private void insureStateDoc (FileSystem fs, String stateDocName,
+		String template, String collectionName)
 		throws FileSystemException, IOException
 	{
 		String uri = "/" + stateDocName;
@@ -975,6 +996,14 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		Writer writer = new OutputStreamWriter (fs.getOutputStream (uri));
 
 		writer.write (template);
+
+		if (collectionName != null) {
+			writer.write (" collections=\"");
+			writer.write (collectionName);
+			writer.write ("\"");
+		}
+
+		writer.write ("/>");
 		writer.flush();
 		writer.close();
 	}

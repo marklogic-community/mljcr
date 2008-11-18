@@ -25,21 +25,19 @@ import java.util.logging.Logger;
  * Date: Nov 11, 2008
  * Time: 3:07:43 PM
  */
-public class MLQueryImpl implements ExecutableQuery
+public class MLExecutableQuery implements ExecutableQuery
 {
-	private static final Logger log = Logger.getLogger (MLQueryImpl.class.getName());
-	private final QueryBuilder queryBuilder;
-	private final ItemManager itemMgr;
+	private static final Logger log = Logger.getLogger (MLExecutableQuery.class.getName());
+	private final MLQueryBuilder queryBuilder;
 
-	public MLQueryImpl (SessionImpl session, ItemManager itemMgr, String statement,
+	public MLExecutableQuery (SessionImpl session, ItemManager itemMgr, String statement,
 		String language, QueryNodeFactory queryNodeFactory)
 		throws InvalidQueryException
 	{
-		this.itemMgr = itemMgr;
-
 		QueryRootNode root = QueryParser.parse (statement, language,
 			session.getNamePathResolver(), queryNodeFactory);
-		queryBuilder = new QueryBuilder (root);
+
+		queryBuilder = new MLQueryBuilder (root, session, itemMgr, statement, language);
 	}
 
 	// -------------------------------------------------------------
@@ -50,11 +48,8 @@ public class MLQueryImpl implements ExecutableQuery
 	{
 		log.info ("Executing query: \n" + queryBuilder.getRootNode().dump());
 
-		Query query = queryBuilder.createQuery();
+		Query query = queryBuilder.createQuery (offset, limit);
 
-		QueryResult result = query.execute();
-
-
-		throw new RepositoryException ("NOT YET IMPLEMENTED");
+		return query.execute();
 	}
 }
