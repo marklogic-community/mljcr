@@ -107,52 +107,54 @@ declare private function blob-path-root ($data-dir as xs:string,
 };
 
 declare private function insert-as-xml ($blob as binary(), $root as xs:string,
-	$blob-path-root as xs:string)
+	$blob-path-root as xs:string, $collections-seq as xs:string*)
 	as xs:string
 {
 	let $blob-path := fn:concat ($blob-path-root, ".xml")
 	let $uri := fn:concat ($root, $blob-path)
 	let $xml as element() := xdmp:unquote (xdmp:quote ($blob), "", "repair-full")/element()
 
-	return (xdmp:document-insert ($uri, $xml), $blob-path)
+	return (xdmp:document-insert ($uri, $xml, (), $collections-seq), $blob-path)
 };
 
 declare private function insert-as-text ($blob as binary(), $root as xs:string,
-	$blob-path-root as xs:string)
+	$blob-path-root as xs:string, $collections-seq as xs:string*)
 	as xs:string
 {
 	let $blob-path := fn:concat ($blob-path-root, ".txt")
 	let $uri := fn:concat ($root, $blob-path)
 	let $txt as text() := text { xdmp:quote ($blob) }
 
-	return (xdmp:document-insert ($uri, $txt), $blob-path)
+	return (xdmp:document-insert ($uri, $txt, (), $collections-seq), $blob-path)
 };
 
 declare private function insert-as-binary ($blob as binary(), $root as xs:string,
-	$blob-path-root as xs:string)
+	$blob-path-root as xs:string, $collections-seq as xs:string*)
 	as xs:string
 {
 	let $blob-path := fn:concat ($blob-path-root, ".bin")
 	let $uri := fn:concat ($root, $blob-path)
 
-	return (xdmp:document-insert ($uri, $blob), $blob-path)
+	return (xdmp:document-insert ($uri, $blob, (), $collections-seq), $blob-path)
 };
 
 declare private function rename-blob ($blob as binary(), $prop as element(property),
+	$collections as xs:string?,
 	$uri-root as xs:string, $data-dir as xs:string, $tx-id as xs:string)
 	as xs:string
 {
 	let $new-rel-uri := blob-path-root ($data-dir, $tx-id, $prop)
 	let $new-uri-root := fn:concat ($uri-root, $new-rel-uri)
+	let $collections-seq as xs:string* := fn:tokenize ($collections, "\s*,\s*")
 
 	return
 	try {
-		insert-as-xml ($blob, $uri-root, $new-rel-uri)
+		insert-as-xml ($blob, $uri-root, $new-rel-uri, $collections-seq)
 	} catch ($e) {
 		try {
-			insert-as-text ($blob, $uri-root, $new-rel-uri)
+			insert-as-text ($blob, $uri-root, $new-rel-uri, $collections-seq)
 		} catch ($e) {
-			insert-as-binary ($blob, $uri-root, $new-rel-uri)
+			insert-as-binary ($blob, $uri-root, $new-rel-uri, $collections-seq)
 		}
 	}
 };
@@ -161,7 +163,7 @@ declare private function rename-blob ($blob as binary(), $prop as element(proper
    it's of type binary.  For binary properties, a document may be created.
  :)
 declare private function new-property ($prop as element(property),
-	$deltas as element(change-list), $uri-root as xs:string)
+	$deltas as element(change-list), $collections as xs:string?, $uri-root as xs:string)
 	as element(property)
 {
 	if (($prop/@type ne "Binary") or (is-empty-blob ($prop)))
@@ -170,7 +172,7 @@ declare private function new-property ($prop as element(property),
 
 	let $old-blob-uri := binary-node-path ($uri-root, $prop)
 	let $tx-blob := fn:doc ($old-blob-uri)/binary()
-	let $new-blob-uri := rename-blob ($tx-blob, $prop, $uri-root,
+	let $new-blob-uri := rename-blob ($tx-blob, $prop, $collections, $uri-root,
 		fn:string ($deltas/data-dir), fn:string ($deltas/tx-id))
 	return
 	<property>
@@ -186,11 +188,11 @@ declare private function new-property ($prop as element(property),
    document to be replaced.  If not modified, return the orginal element.
  :)
 declare private function update-property ($prop as element(property),
-	$deltas as element(change-list), $uri-root as xs:string)
+	$deltas as element(change-list), $collections as xs:string?, $uri-root as xs:string)
 	as element(property)*
 {
 	if (fn:exists ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]))
-	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name], $deltas, $uri-root)
+	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name], $deltas, $collections, $uri-root)
 	else $prop
 };
 
@@ -261,18 +263,18 @@ declare private function parentless-new-nodes ($state as element(workspace),
    Note function mapping.
  :)
 declare private function update-node ($node as element(node),
-	$deltas as element(change-list), $uri-root as xs:string)
+	$deltas as element(change-list), $collections as xs:string?, $uri-root as xs:string)
 	as element(node)?
 {
 	(: note function mapping :)
 	let $node-id := $node/@uuid
-	let $child-nodes := (update-node ($node/node, $deltas, $uri-root),
-		update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas, $uri-root))
+	let $child-nodes := (update-node ($node/node, $deltas, $collections, $uri-root),
+		update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas, $collections, $uri-root))
 	let $added-external-nodes := external-node ($child-nodes,
 		$deltas/(added-states|modified-states)/node[@uuid = $node-id]/nodes/node,
 		fn:string ($node-id))
-	let $child-properties := (update-property ($node/property, $deltas, $uri-root),
-		new-property ($deltas/added-states/property[@parentUUID = $node-id], $deltas, $uri-root))
+	let $child-properties := (update-property ($node/property, $deltas, $collections, $uri-root),
+		new-property ($deltas/added-states/property[@parentUUID = $node-id], $deltas, $collections, $uri-root))
 	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
 	return
 	<node>{
@@ -332,8 +334,8 @@ declare private function apply-updates ($state as element(workspace),
 {
 	<workspace>{
 		$state/@*,
-		update-node ($state/node, $deltas, $uri-root),
-		update-node (parentless-new-nodes ($state, $deltas), $deltas, $uri-root)
+		update-node ($state/node, $deltas, fn:string ($state/@collections), $uri-root),
+		update-node (parentless-new-nodes ($state, $deltas), $deltas, fn:string ($state/@collections), $uri-root)
 	}</workspace>
 };
 
@@ -356,12 +358,18 @@ declare function apply-state-updates ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
+(:
 let $dummy := xdmp:log ("apply-state-updates: start, pruning deleted")
+:)
 	let $pruned := prune-deleted ($state, $deltas, $uri-root)
+(:
 let $dummy := xdmp:log ("apply-state-updates: applying updates")
+:)
 	let $new-state := apply-updates ($pruned, $deltas, $uri-root)
 	let $dummy := if ($save-debug-history) then save-debug-history ($uri-root, $state, $pruned, $new-state, $deltas) else ()
+(:
 let $dummy := xdmp:log ("apply-state-updates: done")
+:)
 
 	return $new-state
 };
