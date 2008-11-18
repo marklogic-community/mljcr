@@ -2,10 +2,7 @@
  * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
  */
 
-package com.marklogic.jcr;
-
-import com.marklogic.jcr.persistence.PMAdapter13;
-import com.marklogic.jcr.persistence.MarkLogicPersistenceManager;
+package com.marklogic.jcr.persistence;
 
 /**
  * Created by IntelliJ IDEA.
