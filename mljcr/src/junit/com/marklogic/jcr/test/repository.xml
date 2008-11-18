@@ -81,7 +81,8 @@
             class: FQN of class implementing the PersistenceManager interface
         -->
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager14">
-        </PersistenceManager>
+		<param name="collections" value="jcr-${wsp.name}"/>
+	</PersistenceManager>
 	<SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex">
 	</SearchIndex>
     </Workspace>
