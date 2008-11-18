@@ -2,13 +2,11 @@
  * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
  */
 
-package com.marklogic.jcr.compat;
+package com.marklogic.jcr.persistence;
 
-import com.marklogic.jcr.persistence.PMAdapter;
-
+import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
-import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.name.QName;
 
 import java.util.Set;
