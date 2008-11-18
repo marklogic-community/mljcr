@@ -4,6 +4,8 @@
 
 package com.marklogic.jcr.compat;
 
+import com.marklogic.jcr.persistence.PMAdapter;
+
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.NodeId;

@@ -5,6 +5,7 @@
 package com.marklogic.jcr;
 
 import com.marklogic.jcr.compat.PMAdapter13;
+import com.marklogic.jcr.persistence.MarkLogicPersistenceManager;
 
 /**
  * Created by IntelliJ IDEA.
