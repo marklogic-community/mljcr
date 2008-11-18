@@ -18,7 +18,8 @@
 		<param name="uriRoot" value="${wsp.home}"/>
 		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
-        <PersistenceManager class="com.marklogic.jcr.MarkLogicPersistenceManager13">
+        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
+		<param name="collections" value="jcr-${wsp.name}"/>
         </PersistenceManager>
     </Workspace>
     <Versioning rootPath="${rep.home}/version">
@@ -26,7 +27,7 @@
             <param name="uriRoot" value="${rep.home}/version" />
 		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
-        <PersistenceManager class="com.marklogic.jcr.MarkLogicPersistenceManager13">
+        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
         </PersistenceManager>
     </Versioning>
 </Repository>
