@@ -5,6 +5,7 @@
 package com.marklogic.jcr.persistence;
 
 import org.apache.jackrabbit.core.NodeId;
+import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.name.QName;
@@ -19,14 +20,39 @@ import java.util.Set;
  */
 public class PMAdapter13 implements PMAdapter
 {
+	public NodeState newNodeState (NodeId id)
+	{
+		return new NodeState (id, null, null, NodeState.STATUS_NEW, false);
+	}
+
 	public void setNodeTypeName (NodeState state, String name)
 	{
 		state.setNodeTypeName (QName.valueOf (name));
 	}
 
+	public String getTypeNameAsString (NodeState state)
+	{
+		return state.getNodeTypeName().toString();
+	}
+
 	public void addPropertyName (NodeState state, String name)
 	{
 		state.addPropertyName (QName.valueOf (name));
+	}
+
+	public String getPropertyStateNameAsString (PropertyState state)
+	{
+		return state.getName().toString();
+	}
+
+	public String getChildNodeEntryAsString (NodeState.ChildNodeEntry entry)
+	{
+		return entry.getName().toString();
+	}
+
+	public String getPropertyIdNameAsString (PropertyId propId)
+	{
+		return propId.getName().toString();
 	}
 
 	public void addChildNodeEntry (NodeState state, String childName, NodeId nodeId)

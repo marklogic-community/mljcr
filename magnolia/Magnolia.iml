@@ -2,7 +2,7 @@
 <module version="4" relativePaths="true" type="J2EE_WEB_MODULE">
   <component name="AppServerSpecificValidatorsManager" />
   <component name="ModuleRootManager" />
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_4" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/buildtmp/classes" />
     <exclude-output />
     <exploded url="file://$MODULE_DIR$/buildtmp/exploded-webapp" />
@@ -581,16 +581,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../mljcr/src/java" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/../mljcr/buildtmp/classes" />
+          <root url="jar://$MODULE_DIR$/src/webroot/WEB-INF/lib/mljcr.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -601,8 +592,8 @@
   <component name="WebModuleBuildComponent">
     <setting name="EXPLODED_URL" value="file://$MODULE_DIR$/buildtmp/exploded-webapp" />
     <setting name="EXPLODED_ENABLED" value="true" />
-    <setting name="JAR_URL" value="file://" />
-    <setting name="JAR_ENABLED" value="false" />
+    <setting name="JAR_URL" value="file://$MODULE_DIR$/buildtmp/Magnolia.war" />
+    <setting name="JAR_ENABLED" value="true" />
     <setting name="SYNC_EXPLODED_DIR" value="true" />
     <setting name="BUILD_MODULE_ON_FRAME_DEACTIVATION" value="false" />
     <setting name="BUILD_EXTERNAL_DEPENDENCIES" value="false" />
@@ -845,6 +836,11 @@
       <url>jar://$MODULE_DIR$/src/webroot/WEB-INF/lib/mail-1.4.jar!/</url>
     </containerElement>
     <containerElement type="library" level="module">
+      <attribute name="method" value="1" />
+      <attribute name="URI" value="/WEB-INF/lib/mljcr.jar" />
+      <url>jar://$MODULE_DIR$/src/webroot/WEB-INF/lib/mljcr.jar!/</url>
+    </containerElement>
+    <containerElement type="library" level="module">
       <attribute name="method" value="0" />
       <attribute name="URI" value="/WEB-INF/lib/nekohtml-0.9.4.jar" />
       <url>jar://$MODULE_DIR$/src/webroot/WEB-INF/lib/nekohtml-0.9.4.jar!/</url>
@@ -918,16 +914,6 @@
       <attribute name="method" value="0" />
       <attribute name="URI" value="/WEB-INF/lib/xercesImpl-2.8.1.jar" />
       <url>jar://$MODULE_DIR$/src/webroot/WEB-INF/lib/xercesImpl-2.8.1.jar!/</url>
-    </containerElement>
-    <containerElement type="library" level="module">
-      <attribute name="method" value="1" />
-      <attribute name="URI" value="/WEB-INF/classes" />
-      <url>file://$MODULE_DIR$/../mljcr/buildtmp/classes</url>
-    </containerElement>
-    <containerElement type="library" level="module">
-      <attribute name="method" value="1" />
-      <attribute name="URI" value="/WEB-INF/classes" />
-      <url>file://$MODULE_DIR$/../mljcr/src/java</url>
     </containerElement>
     <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/src/webroot/WEB-INF/web.xml" optional="false" version="2.4" />
     <webroots>
