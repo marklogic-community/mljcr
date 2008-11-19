@@ -2,9 +2,11 @@
 <module version="4" relativePaths="true" type="J2EE_WEB_MODULE">
   <component name="AppServerSpecificValidatorsManager" />
   <component name="ModuleRootManager" />
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="true">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/buildtmp/classes" />
     <exclude-output />
     <exploded url="file://$MODULE_DIR$/buildtmp/exploded-webapp" />
+    <output-test url="file://$MODULE_DIR$/buildtmp/classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/webroot" isTestSource="false" />
     </content>
@@ -536,10 +538,6 @@
     <containerElement type="library" name="Tomcat5.5" level="application_server_libraries">
       <attribute name="method" value="0" />
       <attribute name="URI" value="&lt;N/A&gt;" />
-    </containerElement>
-    <containerElement type="library" name="xcc" level="project">
-      <attribute name="method" value="1" />
-      <attribute name="URI" value="/WEB-INF/lib" />
     </containerElement>
     <containerElement type="library" name="xercesImpl-2.8.1" level="project">
       <attribute name="method" value="0" />
