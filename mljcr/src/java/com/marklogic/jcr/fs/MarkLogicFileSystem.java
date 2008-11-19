@@ -20,6 +20,7 @@ import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
 import com.marklogic.xcc.types.XSInteger;
 import com.marklogic.xcc.types.XdmVariable;
+import com.marklogic.jcr.persistence.PMAdapter;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
@@ -56,7 +57,7 @@ import java.util.logging.Level;
  * Time: 8:24:03 PM
  * @noinspection ClassWithTooManyMethods,OverlyComplexClass
  */
-public class MarkLogicFileSystem implements FileSystem
+abstract public class MarkLogicFileSystem implements FileSystem
 {
 	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
 	private static final Logger log = Logger.getLogger (MarkLogicFileSystem.class.getName());
@@ -66,6 +67,7 @@ public class MarkLogicFileSystem implements FileSystem
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
+	private final PMAdapter pmAdapter;
 
 	private FileMetaDataLruCache metaDataCache = null;
 	private ItemStateLruCache itemStateCache = null;
@@ -77,6 +79,13 @@ public class MarkLogicFileSystem implements FileSystem
 	private int itemStateCacheSize = DEFUALT_ITEMSTATE_CACHE_SIZE;
 
 	private ContentSource contentSource = null;
+
+	// ------------------------------------------------------------
+
+	public MarkLogicFileSystem (PMAdapter pmAdapter)
+	{
+		this.pmAdapter = pmAdapter;
+	}
 
 	// ------------------------------------------------------------
 	// bean properties set by RepositoryConfig object
@@ -91,7 +100,7 @@ public class MarkLogicFileSystem implements FileSystem
 		this.contentSourceUrl = contentSourceUrl;
 	}
 
-	public String getUriRoot ()
+	public String getUriRoot()
 	{
 		return uriRoot;
 	}
@@ -509,7 +518,7 @@ public class MarkLogicFileSystem implements FileSystem
 
 	private String propertyHashKey (PropertyId propertyId)
 	{
-		return propertyId.getParentId().getUUID().toString() + "|" + propertyId.getName();
+		return propertyId.getParentId().getUUID().toString() + "|" + pmAdapter.getPropertyIdNameAsString (propertyId);
 	}
 
 	private String referencesHashKey (NodeId nodeId)
@@ -569,7 +578,7 @@ public class MarkLogicFileSystem implements FileSystem
 		String fullPathUri = fullPath (uri);
 		XdmVariable uriVar = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (fullPathUri));
 		XdmVariable uuid = ValueFactory.newVariable (new XName ("uuid"), ValueFactory.newXSString (propertyId.getParentId().getUUID().toString()));
-		XdmVariable name = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (propertyId.getName().toString())));
+		XdmVariable name = ValueFactory.newVariable (new XName ("name"), ValueFactory.newXSString (FileSystemPathUtil.escapeName (pmAdapter.getPropertyIdNameAsString (propertyId))));
 
 		return cachedItemState (hashKey, QUERY_PROP_STATE_MODULE, uriVar, uuid, name);
 	}

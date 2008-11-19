@@ -28,7 +28,6 @@ import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.util.DOMWalker;
 import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
-import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.util.Text;
 
 import javax.jcr.PropertyType;
@@ -48,8 +47,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <code>XMLPersistenceManager</code> is a <code>FileSystem</code>-based
@@ -178,14 +177,14 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	/**
 	 * {@inheritDoc}
 	 */
-	public NodeState createNew(NodeId id) {
-	    return new NodeState(id, null, null, NodeState.STATUS_NEW, false);
+	public NodeState createNew (NodeId id) {
+		return pmAdapter.newNodeState (id);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public PropertyState createNew(PropertyId id) {
+	public PropertyState createNew (PropertyId id) {
 	    return new PropertyState(id, PropertyState.STATUS_NEW, false);
 	}
 
@@ -210,8 +209,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			throw new IllegalStateException ("not initialized");
 		}
 
-//		boolean result;
-
 		try {
 			return contextFS.itemExists (workspaceDocName, id);
 		} catch (FileSystemException e) {
@@ -219,22 +216,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			log.log (Level.FINE, msg, e);
 			throw new ItemStateException (msg, e);
 		}
-
-//		try {
-//			String nodeFilePath = buildNodeFilePath (id);
-//			FileSystemResource nodeFile = new FileSystemResource (itemStateFS, nodeFilePath);
-//			boolean tmp = nodeFile.exists();
-//
-//			if (tmp != result) {
-//				throw new ItemStateException ("BLECH result=" + result + ", tmp=" + tmp);
-//			}
-//
-//			return tmp;
-//		} catch (FileSystemException fse) {
-//			String msg = "failed to check existence of item state: " + id;
-//			log.debug (msg);
-//			throw new ItemStateException (msg, fse);
-//		}
 	}
 
 	/**
@@ -246,8 +227,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			throw new IllegalStateException ("not initialized");
 		}
 
-//		boolean result;
-
 		try {
 			return contextFS.itemExists (workspaceDocName, id);
 		} catch (FileSystemException e) {
@@ -255,22 +234,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			log.log (Level.SEVERE, msg, e);
 			throw new ItemStateException (msg, e);
 		}
-
-//		try {
-//			String propFilePath = buildPropFilePath (id);
-//			FileSystemResource propFile = new FileSystemResource (itemStateFS, propFilePath);
-//			boolean tmp = propFile.exists();
-//
-//			if (tmp != result) {
-//				throw new ItemStateException ("BLECH result=" + result + ", tmp=" + tmp);
-//			}
-//
-//			return tmp;
-//		} catch (FileSystemException fse) {
-//			String msg = "failed to check existence of item state: " + id;
-//			log.error (msg, fse);
-//			throw new ItemStateException (msg, fse);
-//		}
 	}
 
 	/**
@@ -291,16 +254,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			log.log (Level.FINE, msg, e);
 			throw new ItemStateException (msg, e);
 		}
-
-//		try {
-//			String refsFilePath = buildNodeReferencesFilePath (id);
-//			FileSystemResource refsFile = new FileSystemResource (itemStateFS, refsFilePath);
-//			return refsFile.exists ();
-//		} catch (FileSystemException fse) {
-//			String msg = "failed to check existence of references: " + id;
-//			log.debug (msg);
-//			throw new ItemStateException (msg, fse);
-//		}
 	}
 
 	/**
@@ -315,14 +268,8 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 
 		Exception e = null;
-//		String nodeFilePath = buildNodeFilePath (id);
 
 		try {
-//			if (!itemStateFS.isFile (nodeFilePath)) {
-//				throw new NoSuchItemStateException (id.toString());
-//			}
-//			InputStream in = itemStateFS.getInputStream (nodeFilePath);
-
 			InputStream in = contextFS.nodeStateAsStream (workspaceDocName, id);
 
 			if (in == null) {
@@ -364,14 +311,8 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 
 		Exception e = null;
-//		String propFilePath = buildPropFilePath (id);
 
 		try {
-//			if (!itemStateFS.isFile (propFilePath)) {
-//				throw new NoSuchItemStateException (id.toString ());
-//			}
-//			InputStream in = itemStateFS.getInputStream (propFilePath);
-
 			InputStream in = contextFS.propertyStateAsStream (workspaceDocName, id);
 
 			if (in == null) {
@@ -409,14 +350,8 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		}
 
 		Exception e = null;
-//		String nodeFilePath = buildNodeFilePath (id);
 
 		try {
-//			if (!itemStateFS.isFile (nodeFilePath)) {
-//				throw new NoSuchItemStateException (id.toString());
-//			}
-//			InputStream in = itemStateFS.getInputStream (nodeFilePath);
-
 			InputStream in = contextFS.referencesStateAsStream (workspaceDocName, id.getTargetId());
 
 			if (in == null) {
@@ -442,36 +377,6 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		String msg = "failed to read node state: " + id;
 		log.fine (msg);
 		throw new ItemStateException (msg, e);
-
-
-
-//		Exception e = null;
-//		String refsFilePath = buildNodeReferencesFilePath (id);
-//		try {
-//			if (!itemStateFS.isFile (refsFilePath)) {
-//				throw new NoSuchItemStateException (id.toString ());
-//			}
-//
-//			InputStream in = itemStateFS.getInputStream (refsFilePath);
-//
-//			try {
-//				DOMWalker walker = new DOMWalker (in);
-//				NodeReferences refs = new NodeReferences (id);
-//				readState (walker, refs);
-//				return refs;
-//			} finally {
-//				in.close ();
-//			}
-//		} catch (IOException ioe) {
-//			e = ioe;
-//			// fall through
-//		} catch (FileSystemException fse) {
-//			e = fse;
-//			// fall through
-//		}
-//		String msg = "failed to load references: " + id;
-//		log.debug (msg);
-//		throw new ItemStateException (msg, e);
 	}
 
 	// =============================================================
@@ -556,7 +461,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 				sb.append ("\t\t<property parentUUID=\"");
 				sb.append (state.getParentId().getUUID().toString());
 				sb.append ("\" name=\"");
-				sb.append (Text.encodeIllegalXMLCharacters (((PropertyState) state).getName().toString()));
+				sb.append (Text.encodeIllegalXMLCharacters (pmAdapter.getPropertyStateNameAsString ((PropertyState) state)));
 				sb.append ("\"/>\n");
 			}
 		}
@@ -632,7 +537,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append (PARENTUUID_ATTRIBUTE).append ("=\"").append ((state.getParentId () == null ? "" : state.getParentId().getUUID().toString())).append ("\" ");
 		sb.append (DEFINITIONID_ATTRIBUTE).append ("=\"").append (state.getDefinitionId().toString()).append ("\" ");
 		sb.append (MODCOUNT_ATTRIBUTE).append ("=\"").append (state.getModCount()).append ("\" ");
-		sb.append (NODETYPE_ATTRIBUTE).append ("=\"").append (Text.encodeIllegalXMLCharacters (state.getNodeTypeName().toString())).append ("\">\n");
+		sb.append (NODETYPE_ATTRIBUTE).append ("=\"").append (Text.encodeIllegalXMLCharacters (pmAdapter.getTypeNameAsString (state))).append ("\">\n");
 
 		// mixin types
 		sb.append ("<").append (MIXINTYPES_ELEMENT).append (">\n");
@@ -648,10 +553,11 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 		sb.append ("<").append (PROPERTIES_ELEMENT).append (">\n");
 		for (Iterator it = state.getPropertyNames ().iterator (); it.hasNext ();)
 		{
-			Name propName = (Name) it.next ();
+//			Name propName = (Name) it.next ();
+			String propName = it.next().toString();
 			sb.append ("<").append (PROPERTY_ELEMENT).append (" ");
 			sb.append (NAME_ATTRIBUTE).append ("=\"");
-			sb.append (Text.encodeIllegalXMLCharacters (propName.toString())).append ("\">\n");
+			sb.append (Text.encodeIllegalXMLCharacters (propName)).append ("\">\n");
 			sb.append ("</").append (PROPERTY_ELEMENT).append (">\n");
 		}
 		sb.append ("</").append (PROPERTIES_ELEMENT).append (">\n");
@@ -663,7 +569,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			NodeState.ChildNodeEntry entry = (NodeState.ChildNodeEntry) it.next();
 			sb.append ("<").append (NODE_ELEMENT).append (" ");
 			sb.append (NAME_ATTRIBUTE).append ("=\"");
-			sb.append (Text.encodeIllegalXMLCharacters (entry.getName ().toString ())).append ("\" ");
+			sb.append (Text.encodeIllegalXMLCharacters (pmAdapter.getChildNodeEntryAsString (entry))).append ("\" ");
 			sb.append (UUID_ATTRIBUTE).append ("=\"").append (entry.getId().getUUID().toString()).append ("\">\n");
 			sb.append ("</").append (NODE_ELEMENT).append (">\n");
 		}
@@ -686,7 +592,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		sb.append ("<").append (PROPERTY_ELEMENT).append (" ");
 		sb.append (NAME_ATTRIBUTE).append ("=\"");
-		sb.append (Text.encodeIllegalXMLCharacters (state.getName().toString())).append ("\" ");
+		sb.append (Text.encodeIllegalXMLCharacters (pmAdapter.getPropertyStateNameAsString (state))).append ("\" ");
 		sb.append (PARENTUUID_ATTRIBUTE).append ("=\"").append (state.getParentId().getUUID()).append ("\" ");
 		sb.append (MULTIVALUED_ATTRIBUTE).append ("=\"").append (Boolean.toString (state.isMultiValued())).append ("\" ");
 		sb.append (DEFINITIONID_ATTRIBUTE).append ("=\"").append (state.getDefinitionId().toString()).append ("\" ");

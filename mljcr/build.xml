@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+  -->
+<project name="MarkLogicJcr" default="all">
+	<tstamp><format property="date-string" pattern="MMMM dd, yyyy"/></tstamp>
+	<property name="dist.dir" value="../dist"/>
+
+	<property name="java.source" value="src/java"/>
+	<property name="junit.source" value="src/junit"/>
+	<property name="buildtmp" value="buildtmp"/>
+	<property name="compiled.classes.dir" value="${buildtmp}/classes"/>
+	<property name="products" value="deliverable"/>
+	<property name="jar.name" value="mljcr.jar"/>
+
+	<property name="output.jar" value="${products}/${jar.name}"/>
+
+	<property name="javac.nowarn" value="on"/>		<!-- on | off -->
+	<property name="compile.debug.symbols.flag" value="true"/>	<!-- on | off -->
+
+	<property name="jar.excluded.classes"
+		  value="org/**,**/test/*"/>
+
+
+	<target name="init">
+		<mkdir dir="${buildtmp}"/>
+		<mkdir dir="${compiled.classes.dir}"/>
+		<mkdir dir="${products}"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${buildtmp}"/>
+	</target>
+
+	<target name="cleanest" depends="clean">
+		<delete dir="${products}"/>
+	</target>
+
+	<path id="compile.classpath">
+		<pathelement path="${compiled.classes.dir}"/>
+		<pathelement path="${dist.dir}/jcr-1.0.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-core-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-jcr-commons-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-commons-1.4.jar"/>
+		<pathelement path="${dist.dir}/xcc.jar"/>
+	</path>
+
+	<target name="compile" depends="init">
+		<javac classpathref="compile.classpath" srcdir="${java.source}"
+			destdir="${compiled.classes.dir}" deprecation="on"
+			debug="${compile.debug.symbols.flag}" failonerror="on"
+			nowarn="${javac.nowarn}"
+			source="1.4" target="1.4">
+		</javac>
+	</target>
+
+	<target name="make.jar" depends="compile">
+		<jar jarfile="${output.jar}" basedir="${compiled.classes.dir}"
+		     excludes="${jar.excluded.classes}">
+			<manifest>
+				<section name="MLJcr">
+					<attribute name="Vendor" value="Mark Logic Corporation"/>
+					<attribute name="Description" value="Mark Lofic JCR Implementation"/>
+					<attribute name="Component" value="MLJCR"/>
+					<attribute name="Build-Version" value="0.1"/>
+					<attribute name="Build-Date" value="${date-string}"/>
+				</section>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="package" depends="make.jar">
+
+	</target>
+
+	<target name="all" depends="package"/>
+</project>

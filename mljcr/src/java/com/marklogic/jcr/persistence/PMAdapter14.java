@@ -7,6 +7,7 @@ package com.marklogic.jcr.persistence;
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.NodeId;
+import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.spi.NameFactory;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 
@@ -22,9 +23,34 @@ public class PMAdapter14 implements PMAdapter
 {
 	private final NameFactory factory = NameFactoryImpl.getInstance();
 
+	public NodeState newNodeState (NodeId id)
+	{
+		return new NodeState (id, null, null, NodeState.STATUS_NEW, false);
+	}
+
 	public void setNodeTypeName (NodeState state, String name)
 	{
 		state.setNodeTypeName (factory.create (name));
+	}
+
+	public String getTypeNameAsString (NodeState state)
+	{
+		return state.getNodeTypeName().toString();
+	}
+
+	public String getPropertyStateNameAsString (PropertyState state)
+	{
+		return state.getName().toString();
+	}
+
+	public String getChildNodeEntryAsString (NodeState.ChildNodeEntry entry)
+	{
+		return entry.getName().toString();
+	}
+
+	public String getPropertyIdNameAsString (PropertyId propId)
+	{
+		return propId.getName().toString();
 	}
 
 	public void addPropertyName (NodeState state, String name)
