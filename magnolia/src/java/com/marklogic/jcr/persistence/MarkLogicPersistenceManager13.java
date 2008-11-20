@@ -4,6 +4,8 @@
 
 package com.marklogic.jcr.persistence;
 
+import com.marklogic.jcr.compat.PMAdapter13;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ron

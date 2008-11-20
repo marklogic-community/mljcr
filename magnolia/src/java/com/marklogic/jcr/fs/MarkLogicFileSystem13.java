@@ -4,7 +4,7 @@
 
 package com.marklogic.jcr.fs;
 
-import com.marklogic.jcr.persistence.PMAdapter13;
+import com.marklogic.jcr.compat.PMAdapter13;
 
 /**
  * Created by IntelliJ IDEA.

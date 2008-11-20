@@ -21,6 +21,10 @@
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
 		<param name="collections" value="jcr-${wsp.name}"/>
         </PersistenceManager>
+<!--
+	<SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex">
+	</SearchIndex>
+-->
     </Workspace>
     <Versioning rootPath="${rep.home}/version">
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
