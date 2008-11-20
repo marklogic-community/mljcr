@@ -4,6 +4,8 @@
 
 package com.marklogic.jcr.persistence;
 
+import com.marklogic.jcr.compat.PMAdapter14;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ron
@@ -14,6 +16,6 @@ public class MarkLogicPersistenceManager14 extends MarkLogicPersistenceManager
 {
 	public MarkLogicPersistenceManager14()
 	{
-		super (new PMAdapter14());
+		super (new PMAdapter14 ());
 	}
 }

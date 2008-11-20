@@ -2,7 +2,7 @@
  * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
  */
 
-package com.marklogic.jcr.persistence;
+package com.marklogic.jcr.compat;
 
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;

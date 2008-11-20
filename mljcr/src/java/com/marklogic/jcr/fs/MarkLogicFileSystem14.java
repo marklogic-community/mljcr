@@ -4,7 +4,7 @@
 
 package com.marklogic.jcr.fs;
 
-import com.marklogic.jcr.persistence.PMAdapter14;
+import com.marklogic.jcr.compat.PMAdapter14;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,6 +16,6 @@ public class MarkLogicFileSystem14 extends MarkLogicFileSystem
 {
 	public MarkLogicFileSystem14()
 	{
-		super (new PMAdapter14());
+		super (new PMAdapter14 ());
 	}
 }

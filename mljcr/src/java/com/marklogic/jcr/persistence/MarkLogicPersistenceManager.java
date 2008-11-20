@@ -6,6 +6,7 @@ package com.marklogic.jcr.persistence;
 
 import com.marklogic.jcr.fs.MarkLogicFileSystem;
 import com.marklogic.jcr.fs.PropertyBlob;
+import com.marklogic.jcr.compat.PMAdapter;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;

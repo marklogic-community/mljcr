@@ -42,6 +42,9 @@
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-jcr-commons-1.4.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-1.4.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-commons-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-j2ee-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-jcr-servlet-1.4.jar"/>
+		<pathelement path="${dist.dir}/servlet-api.jar"/>
 		<pathelement path="${dist.dir}/xcc.jar"/>
 	</path>
 

@@ -20,7 +20,7 @@ import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
 import com.marklogic.xcc.types.XSInteger;
 import com.marklogic.xcc.types.XdmVariable;
-import com.marklogic.jcr.persistence.PMAdapter;
+import com.marklogic.jcr.compat.PMAdapter;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
