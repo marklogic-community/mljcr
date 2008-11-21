@@ -4,6 +4,7 @@
 
 package com.marklogic.jcr.fs;
 
+import com.marklogic.jcr.compat.PMAdapter;
 import com.marklogic.xcc.Content;
 import com.marklogic.xcc.ContentCreateOptions;
 import com.marklogic.xcc.ContentFactory;
@@ -20,11 +21,9 @@ import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
 import com.marklogic.xcc.types.XSInteger;
 import com.marklogic.xcc.types.XdmVariable;
-import com.marklogic.jcr.compat.PMAdapter;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
-import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.fs.FileSystemPathUtil;
 import org.apache.jackrabbit.core.fs.FileSystemResource;
@@ -47,8 +46,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,10 +56,9 @@ import java.util.logging.Level;
  * Time: 8:24:03 PM
  * @noinspection ClassWithTooManyMethods,OverlyComplexClass
  */
-abstract public class AbstractMLFileSystem implements FileSystem
+abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 {
-	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
-	private static final Logger logger = Logger.getLogger (AbstractMLFileSystem.class.getName());
+	private static final Logger logger = Logger.getLogger (MarkLogicFileSystem.class.getName());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
 	private final Level logLevel;
@@ -118,7 +116,7 @@ abstract public class AbstractMLFileSystem implements FileSystem
 		}
 	}
 
-	public FileMetaDataLruCache getMetaDataCache ()
+	public FileMetaDataLruCache getMetaDataCache()
 	{
 		return metaDataCache;
 	}

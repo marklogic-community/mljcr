@@ -4,9 +4,9 @@
 
 package com.marklogic.jcr.persistence;
 
-import com.marklogic.jcr.fs.AbstractMLFileSystem;
-import com.marklogic.jcr.fs.PropertyBlob;
 import com.marklogic.jcr.compat.PMAdapter;
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+import com.marklogic.jcr.fs.PropertyBlob;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
@@ -120,7 +120,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	private volatile boolean initialized = false;
 	private final Random random = new Random (System.currentTimeMillis());
 	private final PMAdapter pmAdapter;
-	private AbstractMLFileSystem contextFS;
+	private MarkLogicFileSystem contextFS;
 	private String collections = null;
 
 	// ---------------------------------------------------------
@@ -162,15 +162,15 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			throw new IllegalStateException ("Already initialized");
 		}
 
-		if ( ! (context.getFileSystem() instanceof AbstractMLFileSystem)) {
+		if ( ! (context.getFileSystem() instanceof MarkLogicFileSystem)) {
 			throw new IllegalArgumentException ("Must be used with MarkLogicFileSystem");
 		}
 
-		contextFS = (AbstractMLFileSystem) context.getFileSystem();
+		contextFS = (MarkLogicFileSystem) context.getFileSystem();
 
 		insureStateDoc (contextFS, workspaceDocName, workspaceStateTemplate, collections);
 
-		contextFS.getUriRoot ();
+		contextFS.getUriRoot();
 
 		initialized = true;
 	}
@@ -618,7 +618,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 					BLOBFileValue blobVal = val.getBLOBFileValue();
 					long blobLen = blobVal.getLength();
 					String blobId = (blobLen == 0)
-						? blobId = AbstractMLFileSystem.MAGIC_EMPTY_BLOB_ID
+						? blobId = MarkLogicFileSystem.MAGIC_EMPTY_BLOB_ID
 						: createBlobPath (state.getPropertyId(), txId);
 
 					if (blobLen != 0) {
