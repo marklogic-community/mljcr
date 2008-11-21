@@ -7,9 +7,7 @@ package com.marklogic.jcr.query;
 import org.apache.jackrabbit.core.ItemManager;
 import org.apache.jackrabbit.core.SessionImpl;
 import org.apache.jackrabbit.core.query.ExecutableQuery;
-import org.apache.jackrabbit.core.query.QueryParser;
 import org.apache.jackrabbit.core.query.QueryRootNode;
-import org.apache.jackrabbit.core.query.QueryNodeFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
@@ -17,6 +15,7 @@ import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Mark Logic-specific implementation of ExecutableQuery
@@ -27,7 +26,9 @@ import java.util.logging.Logger;
  */
 public class MLExecutableQuery implements ExecutableQuery
 {
-	private static final Logger log = Logger.getLogger (MLExecutableQuery.class.getName());
+	private static final Logger logger = Logger.getLogger (MLExecutableQuery.class.getName());
+	private static final String DEFAULT_LOG_LEVEL = "FINE";
+	private final Level logLevel;
 	private final MLQueryBuilder queryBuilder;
 
 	public MLExecutableQuery (SessionImpl session, ItemManager itemMgr, String statement,
@@ -35,6 +36,8 @@ public class MLExecutableQuery implements ExecutableQuery
 		throws InvalidQueryException
 	{
 		queryBuilder = new MLQueryBuilder (root, session, itemMgr, statement, language);
+		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+		logLevel = Level.parse (levelName);
 	}
 
 	// -------------------------------------------------------------
@@ -43,7 +46,7 @@ public class MLExecutableQuery implements ExecutableQuery
 	public QueryResult execute (long offset, long limit)
 		throws RepositoryException
 	{
-		log.info ("Executing query: \n" + queryBuilder.getRootNode().dump());
+		logger.log (logLevel, "Executing query: \n" + queryBuilder.getRootNode().dump());
 
 		Query query = queryBuilder.createQuery (offset, limit);
 

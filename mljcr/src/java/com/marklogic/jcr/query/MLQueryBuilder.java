@@ -23,11 +23,13 @@ import java.util.logging.Level;
  */
 public class MLQueryBuilder implements QueryNodeVisitor
 {
-	private static final Logger log = Logger.getLogger (MLQueryBuilder.class.getName());
+	private static final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
+	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
+	private final Level logLevel;
 	private final QueryRootNode root;
-	private final Session session;
-	private final ItemManager itemMgr;
+//	private final Session session;
+//	private final ItemManager itemMgr;
 	private final String statement;
 	private final String language;
 
@@ -35,19 +37,12 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		String statement, String language)
 	{
 		this.root = root;
-		this.session = session;
-		this.itemMgr = itemMgr;
+//		this.session = session;
+//		this.itemMgr = itemMgr;
 		this.statement = statement;
 		this.language = language;
-	}
-
-	// --------------------------------------------------------------
-
-	private static final Level LOG_LEVEL = Level.INFO;
-
-	private void log (String msg)
-	{
-		log.log (LOG_LEVEL, msg);
+		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+		logLevel = Level.parse (levelName);
 	}
 
 	// --------------------------------------------------------------
@@ -69,7 +64,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (QueryRootNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 
 		MLQuery query = (MLQuery) data;
 
@@ -94,7 +89,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (OrQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  type=" + node.getType());
 
 		node.acceptOperands (this, data);
@@ -104,7 +99,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (AndQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  type=" + node.getType());
 
 		node.acceptOperands (this, data);
@@ -114,7 +109,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (NotQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  type=" + node.getType());
 
 		node.acceptOperands (this, data);
@@ -124,7 +119,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (ExactQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  propname=" + node.getPropertyName().toString());
 //		log ("  propval=" + node.getValue().toString());
 
@@ -133,7 +128,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (NodeTypeQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  type=" + node.getType());
 
 		MLQuery query = (MLQuery) data;
@@ -145,7 +140,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (TextsearchQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  query=" + node.getRelativePath());
 //		log ("  query=" + node.getQuery ());
 //		log ("  refsprop=" + node.getReferencesProperty ());
@@ -160,7 +155,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	{
 		LocationStepQueryNode [] stepNodes = node.getPathSteps();
 
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 //		log ("  abs=" + node.isAbsolute ());
 //		log ("  stepscount=" + stepNodes.length);
 
@@ -177,7 +172,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (LocationStepQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 
 		MLQuery query = (MLQuery) data;
 		Name nameTest = node.getNameTest();
@@ -211,7 +206,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (RelationQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 
 		MLQuery query = (MLQuery) data;
 
@@ -297,7 +292,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (OrderQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 
 		OrderQueryNode.OrderSpec [] orderspecs = node.getOrderSpecs ();
 
@@ -311,7 +306,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (DerefQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 
 //		log ("  refprop=" + node.getRefProperty().toString());
 
@@ -320,7 +315,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Object visit (PropertyFunctionQueryNode node, Object data)
 	{
-		log (node.getClass().getName());
+		logger.log (logLevel, node.getClass().getName());
 
 //		log ("  funcname=" + node.getFunctionName());
 
@@ -357,6 +352,4 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 		return "" + pos;
 	}
-
-
 }

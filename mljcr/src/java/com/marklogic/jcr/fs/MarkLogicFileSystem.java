@@ -60,8 +60,10 @@ import java.util.logging.Level;
 abstract public class MarkLogicFileSystem implements FileSystem
 {
 	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
-	private static final Logger log = Logger.getLogger (MarkLogicFileSystem.class.getName());
+	private static final Logger logger = Logger.getLogger (MarkLogicFileSystem.class.getName());
+	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
+	private final Level logLevel;
 	private static final int DEFUALT_METADATA_CACHE_SIZE = 256;
 	private static final int DEFUALT_ITEMSTATE_CACHE_SIZE = 64;
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
@@ -85,6 +87,8 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	public MarkLogicFileSystem (PMAdapter pmAdapter)
 	{
 		this.pmAdapter = pmAdapter;
+		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+		logLevel = Level.parse (levelName);
 	}
 
 	// ------------------------------------------------------------
@@ -128,7 +132,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 	public void init() throws FileSystemException
 	{
-		log.info ("init: path=" + uriRoot + ", uri=" + contentSourceUrl);
+		logger.log (logLevel, "init: path=" + uriRoot + ", uri=" + contentSourceUrl);
 
 		try {
 			URI uri = new URI (contentSourceUrl);
@@ -161,13 +165,13 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		FileMetaData meta = metaDataCache.get (path);
 
 		if (meta != null) {
-			log.info ("getFileMetaData: found in cache, path=" + path);
+			logger.log (logLevel, "getFileMetaData: found in cache, path=" + path);
 
 			return meta;
 		}
 
 		if (path.endsWith (MAGIC_EMPTY_BLOB_ID)) {
-			log.info ("getFileMetaData: creating dummy metadata object, path=" + path);
+			logger.log (logLevel, "getFileMetaData: creating dummy metadata object, path=" + path);
 
 			meta = new FileMetaData (0, 0, false);
 
@@ -176,7 +180,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 			return meta;
 		}
 
-		log.info ("getFileMetaData: querying for metadata, path=" + path);
+		logger.log (logLevel, "getFileMetaData: querying for metadata, path=" + path);
 
 		String uri = fullPath (path);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
@@ -184,7 +188,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		ResultSequence rs = runModule (GET_METADATA_MODULE, var);
 
 		if (rs.size() == 0) {
-			log.info ("getFileMetaData: does not exist in DB, path=" + path);
+			logger.log (logLevel, "getFileMetaData: does not exist in DB, path=" + path);
 
 			return null;
 		}
@@ -197,7 +201,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 		metaDataCache.put (path, meta);
 
-		log.info ("getFileMetaData: added to cache, path=" + path);
+		logger.log (logLevel, "getFileMetaData: added to cache, path=" + path);
 
 		return meta;
 	}
@@ -211,7 +215,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		String uri = fullPath (filePath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		log.info ("getInputStream: filePath=" + uri);
+		logger.log (logLevel, "getInputStream: filePath=" + uri);
 
 		if (filePath.endsWith (MAGIC_EMPTY_BLOB_ID)) {
 			return new ByteArrayInputStream (new byte [0]);
@@ -232,7 +236,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 		final String uri = fullPath (filePath);
 
-		log.info ("getOutputStream: filePath=" + uri);
+		logger.log (logLevel, "getOutputStream: filePath=" + uri);
 
 		FileSystemPathUtil.checkFormat (filePath);
 
@@ -286,7 +290,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 			};
 		} catch (Exception e) {
 		    String msg = "Failed to open output stream to file: " + filePath;
-		    log.log (Level.SEVERE, msg, e);
+		    logger.log (Level.SEVERE, msg, e);
 		    throw new FileSystemException (msg, e);
 		}
 	}
@@ -297,7 +301,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		metaDataCache.remove (filePath);
 
-		log.info ("getRandomAccessOutputStream: filePath=" + filePath);
+		logger.log (logLevel, "getRandomAccessOutputStream: filePath=" + filePath);
 
 		throw new FileSystemException ("NOT IMPL");
 	}
@@ -311,7 +315,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		String uri = fullDirPath (folderPath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
-		log.info ("createFolder: folderPath=" + uri);
+		logger.log (logLevel, "createFolder: folderPath=" + uri);
 
 		runModule (CREATE_FOLDER_MODULE, var);
 	}
@@ -320,7 +324,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		FileMetaData meta = getFileMetaData (path);
 
-		log.info ("exists: path=" + path + ": " + (meta != null));
+		logger.log (logLevel, "exists: path=" + path + ": " + (meta != null));
 
 		return (meta != null);
 	}
@@ -330,11 +334,11 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		FileMetaData meta = getFileMetaData (path);
 
 		if ((meta == null) || meta.isDirectory()) {
-			log.info ("isFile: path=" + path + ": false");
+			logger.log (logLevel, "isFile: path=" + path + ": false");
 			return false;
 		}
 
-		log.info ("isFile: path=" + path + ": true");
+		logger.log (logLevel, "isFile: path=" + path + ": true");
 
 		return true;
 	}
@@ -344,11 +348,11 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		FileMetaData meta = getFileMetaData (path);
 
 		if ((meta == null) || (! meta.isDirectory())) {
-			log.info ("isFolder: path=" + path + ": false");
+			logger.log (logLevel, "isFolder: path=" + path + ": false");
 			return false;
 		}
 
-		log.info ("isFolder: path=" + path + ": true");
+		logger.log (logLevel, "isFolder: path=" + path + ": true");
 
 		return true;
 	}
@@ -358,11 +362,11 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		FileMetaData meta = getFileMetaData (filePath);
 
 		if (meta == null) {
-			log.info ("length: path=" + filePath + ": does not exist, returning -1");
+			logger.log (logLevel, "length: path=" + filePath + ": does not exist, returning -1");
 			return -1;
 		}
 
-		log.info ("length: path=" + filePath + ": " + meta.getSize());
+		logger.log (logLevel, "length: path=" + filePath + ": " + meta.getSize());
 
 		return meta.getSize();
 	}
@@ -382,7 +386,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		metaDataCache.remove (filePath);
 
-		log.info ("touch: folderPath=" + filePath);
+		logger.log (logLevel, "touch: folderPath=" + filePath);
 
 		throw new FileSystemException ("NOT IMPL");
 	}
@@ -396,7 +400,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 		boolean result = runBinaryModule (HAS_CHILDREN_MODULE, var);
 
-		log.info ("hasChildren: folderPath=" + path + ", result=" + result);
+		logger.log (logLevel, "hasChildren: folderPath=" + path + ", result=" + result);
 
 		return result;
 	}
@@ -405,7 +409,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 	public String[] list (String folderPath) throws FileSystemException
 	{
-		log.info ("list: folderPath=" + folderPath);
+		logger.log (logLevel, "list: folderPath=" + folderPath);
 
 		String uri = fullPath (folderPath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
@@ -419,7 +423,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 	public String[] listFiles (String folderPath) throws FileSystemException
 	{
-		log.info ("listFiles: folderPath=" + folderPath);
+		logger.log (logLevel, "listFiles: folderPath=" + folderPath);
 
 		String uri = fullPath (folderPath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
@@ -433,7 +437,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 	public String[] listFolders (String folderPath) throws FileSystemException
 	{
-		log.info ("listFolders: folderPath=" + folderPath);
+		logger.log (logLevel, "listFolders: folderPath=" + folderPath);
 
 		String uri = fullPath (folderPath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
@@ -449,7 +453,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		metaDataCache.remove (filePath);
 
-		log.info ("deleteFile: folderPath=" + filePath);
+		logger.log (logLevel, "deleteFile: folderPath=" + filePath);
 
 		String uri = fullPath (filePath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
@@ -463,7 +467,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		metaDataCache.clear();
 
-		log.info ("deleteFolder: folderPath=" + folderPath);
+		logger.log (logLevel, "deleteFolder: folderPath=" + folderPath);
 
 		String uri = fullPath (folderPath);
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
@@ -474,7 +478,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	// FIXME: Implement this
 	public void move (String srcPath, String destPath) throws FileSystemException
 	{
-		log.info ("move: srcPath=" + srcPath + ", destPath" + destPath);
+		logger.log (logLevel, "move: srcPath=" + srcPath + ", destPath" + destPath);
 
 		throw new FileSystemException ("NOT IMPL");
 	}
@@ -482,7 +486,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	// FIXME: Implement this
 	public void copy (String srcPath, String destPath) throws FileSystemException
 	{
-		log.info ("copy: srcPath=" + srcPath + ", destPath" + destPath);
+		logger.log (logLevel, "copy: srcPath=" + srcPath + ", destPath" + destPath);
 
 		throw new FileSystemException ("NOT IMPL");
 	}
@@ -496,18 +500,18 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		SerializedItemState state = itemStateCache.get (key);
 
 		if (state == null) {
-			log.info ("(" + key + "): not in cache");
+			logger.log (logLevel, "(" + key + "): not in cache");
 			return null;
 		}
 
-		log.info ("(" + key + "): found in cache");
+		logger.log (logLevel, "(" + key + "): found in cache");
 
 		return state;
 	}
 
 	private void clearItemStateCache()
 	{
-		log.info ("clearing item state cache");
+		logger.log (logLevel, "clearing item state cache");
 		itemStateCache.clear();
 	}
 
@@ -539,11 +543,11 @@ abstract public class MarkLogicFileSystem implements FileSystem
 		ResultSequence rs = runModule (moduleName, uri, uuid, name);
 
 		if (rs.size() == 0) {
-			log.info ("uri=" + hashKey + " not found in repo");
+			logger.log (logLevel, "uri=" + hashKey + " not found in repo");
 			return null;
 		}
 
-		log.info ("uri=" + hashKey + ", was found in repo");
+		logger.log (logLevel, "uri=" + hashKey + ", was found in repo");
 
 		try {
 			state = new SerializedItemState (hashKey, rs.next().asInputStream());
@@ -599,7 +603,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		boolean result = getNodeState (uri, nodeId) != null;
 
-		log.info ("(node): uri=" + fullPath (uri) + ", uuid=" + nodeId.getUUID().toString());
+		logger.log (logLevel, "(node): uri=" + fullPath (uri) + ", uuid=" + nodeId.getUUID().toString());
 
 		return result;
 	}
@@ -608,7 +612,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		boolean result = getPropertyState (uri, propertyId) != null;
 
-		log.info ("(property): uri=" + fullPath (uri) + ", uuid=" + propertyId.getParentId().getUUID().toString());
+		logger.log (logLevel, "(property): uri=" + fullPath (uri) + ", uuid=" + propertyId.getParentId().getUUID().toString());
 
 		return result;
 	}
@@ -617,7 +621,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 	{
 		boolean result = getReferencesState (uri, referencesId.getTargetId()) != null;
 
-		log.info ("(references): uri=" + fullPath (uri) + ", uuid=" + referencesId.getTargetId().getUUID().toString());
+		logger.log (logLevel, "(references): uri=" + fullPath (uri) + ", uuid=" + referencesId.getTargetId().getUUID().toString());
 
 		return result;
 	}
@@ -656,7 +660,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 		String fullWsDocUri = fullPath (workspaceDocUri);
 
-		log.info ("applyStateUpdate(start): workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
+		logger.log (logLevel, "applyStateUpdate(start): workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
 
 		ContentCreateOptions options = ContentCreateOptions.newBinaryInstance();
 		Content [] blobs = new Content [contentList.size() + 1];
@@ -731,7 +735,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 		if (blobMap.size () != 0) throw new FileSystemException ("Blob map inconsistency: size=" + blobMap.size());
 
-		log.info ("applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
+		logger.log (logLevel, "applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
 	}
 
 	// ------------------------------------------------------------

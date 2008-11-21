@@ -5,10 +5,15 @@
 package com.marklogic.jcr.query;
 
 
+import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
+import org.apache.jackrabbit.commons.iterator.NodeIteratorAdapter;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.NodeIterator;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
+import javax.jcr.query.RowIterator;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,11 +28,14 @@ import java.util.ArrayList;
  */
 public class MLQuery implements Query
 {
-	private static final Logger log = Logger.getLogger (MLQuery.class.getName());
+	private static final Logger logger = Logger.getLogger (MLQuery.class.getName());
+	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
 	private final String language;
 	private final long offset;
 	private final long limit;
+
+	private final Level logLevel;
 
 	private StringBuffer xpathBuffer = new StringBuffer();
 	private List propertySelectors = new ArrayList (5);
@@ -38,15 +46,9 @@ public class MLQuery implements Query
 		this.language = language;
 		this.offset = offset;
 		this.limit = limit;
-	}
 
-	// --------------------------------------------------------------
-
-	private static final Level LOG_LEVEL = Level.INFO;
-
-	private void log (String msg)
-	{
-		log.log (LOG_LEVEL, msg);
+		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+		logLevel = Level.parse (levelName);
 	}
 
 	// --------------------------------------------------------------
@@ -126,9 +128,26 @@ public class MLQuery implements Query
 
 	public QueryResult execute() throws RepositoryException
 	{
-		log ("ML Query String: " + getXQuery());
+		logger.log (logLevel, "ML Query String: " + getXQuery());
 
-		throw new RepositoryException ("NOT YET IMPLEMENTED");
+		// FIXME: This is a stub
+		return new QueryResult()
+		{
+			public String[] getColumnNames () throws RepositoryException
+			{
+				return new String[0];  // FIXME: auto-generated
+			}
+
+			public RowIterator getRows () throws RepositoryException
+			{
+				return new RowIteratorAdapter (new ArrayList());
+			}
+
+			public NodeIterator getNodes () throws RepositoryException
+			{
+				return new NodeIteratorAdapter (new ArrayList());
+			}
+		};
 	}
 
 	public String getStatement()
