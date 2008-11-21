@@ -52,24 +52,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * <code>XMLPersistenceManager</code> is a <code>FileSystem</code>-based
- * <code>PersistenceManager</code> that persists <code>ItemState</code>
- * and <code>NodeReferences</code> objects in XML format.
  * @noinspection OverlyComplexClass,ClassWithTooManyMethods
  */
-abstract public class MarkLogicPersistenceManager implements PersistenceManager
+abstract public class AbstractPersistenceManager implements PersistenceManager
 {
-	private static final Logger logger = Logger.getLogger (MarkLogicPersistenceManager.class.getName());
-
-	/**
-	 * hexdigits for toString
-	 */
-//	private static final char[] HEXDIGITS = "0123456789abcdef".toCharArray ();
-
-	/**
-	 * The default encoding used in serialization
-	 */
-	public static final String DEFAULT_ENCODING = "UTF-8";
+	private static final Logger logger = Logger.getLogger (AbstractPersistenceManager.class.getName());
 
 	/**
 	 * The XML elements and attributes used in serialization
@@ -129,7 +116,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 	 * Creates a new <code>XMLPersistenceManager</code> instance.
 	 * @param pmAdapter A PMAdapter instance for JackRabbit interface
 	 */
-	public MarkLogicPersistenceManager (PMAdapter pmAdapter)
+	public AbstractPersistenceManager (PMAdapter pmAdapter)
 	{
 		this.pmAdapter = pmAdapter;
 	}
