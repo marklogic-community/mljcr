@@ -12,7 +12,7 @@ import com.marklogic.jcr.compat.PMAdapter13;
  * Date: Sep 4, 2008
  * Time: 5:09:45 PM
  */
-public class MarkLogicPersistenceManager13 extends MarkLogicPersistenceManager
+public class MarkLogicPersistenceManager13 extends AbstractPersistenceManager
 {
 	public MarkLogicPersistenceManager13()
 	{
