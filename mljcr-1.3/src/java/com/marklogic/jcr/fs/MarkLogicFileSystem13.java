@@ -12,7 +12,7 @@ import com.marklogic.jcr.compat.PMAdapter13;
  * Date: Nov 18, 2008
  * Time: 8:33:12 PM
  */
-public class MarkLogicFileSystem13 extends MarkLogicFileSystem
+public class MarkLogicFileSystem13 extends AbstractMLFileSystem
 {
 	public MarkLogicFileSystem13()
 	{
