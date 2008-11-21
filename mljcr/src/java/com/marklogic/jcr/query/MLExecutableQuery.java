@@ -31,12 +31,9 @@ public class MLExecutableQuery implements ExecutableQuery
 	private final MLQueryBuilder queryBuilder;
 
 	public MLExecutableQuery (SessionImpl session, ItemManager itemMgr, String statement,
-		String language, QueryNodeFactory queryNodeFactory)
+		String language, QueryRootNode root)
 		throws InvalidQueryException
 	{
-		QueryRootNode root = QueryParser.parse (statement, language,
-			session.getNamePathResolver(), queryNodeFactory);
-
 		queryBuilder = new MLQueryBuilder (root, session, itemMgr, statement, language);
 	}
 

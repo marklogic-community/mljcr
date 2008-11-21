@@ -404,7 +404,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 
 		txDirRoot (txId, sb);
 		sb.append (id.getParentId().getUUID().toString()).append (FileSystem.SEPARATOR);
-		sb.append (FileSystemPathUtil.escapeName(id.getName().toString())).append (".blob");
+		sb.append (FileSystemPathUtil.escapeName(pmAdapter.getPropertyIdNameAsString (id))).append (".blob");
 
 		return sb.toString();
 	}
@@ -699,7 +699,7 @@ abstract public class MarkLogicPersistenceManager implements PersistenceManager
 			PropertyId propId = (PropertyId) it.next ();
 			sb.append ("\t<").append (NODEREFERENCE_ELEMENT).append (" ");
 			sb.append (PARENTUUID_ATTRIBUTE).append ("=\"").append (propId.getParentId().getUUID().toString()).append ("\" ");
-			sb.append (NAME_ATTRIBUTE).append ("=\"").append (propId.getName ().toString ()).append ("\"/>\n");
+			sb.append (NAME_ATTRIBUTE).append ("=\"").append (pmAdapter.getPropertyIdNameAsString (propId)).append ("\"/>\n");
 
 //			sb.append (PROPERTYID_ATTRIBUTE).append ("=\"").append (propId).append ("\"/>\n");
 		}
