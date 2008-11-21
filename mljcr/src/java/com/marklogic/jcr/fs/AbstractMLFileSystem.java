@@ -57,10 +57,10 @@ import java.util.logging.Level;
  * Time: 8:24:03 PM
  * @noinspection ClassWithTooManyMethods,OverlyComplexClass
  */
-abstract public class MarkLogicFileSystem implements FileSystem
+abstract public class AbstractMLFileSystem implements FileSystem
 {
 	public static final String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
-	private static final Logger logger = Logger.getLogger (MarkLogicFileSystem.class.getName());
+	private static final Logger logger = Logger.getLogger (AbstractMLFileSystem.class.getName());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
 	private final Level logLevel;
@@ -84,7 +84,7 @@ abstract public class MarkLogicFileSystem implements FileSystem
 
 	// ------------------------------------------------------------
 
-	public MarkLogicFileSystem (PMAdapter pmAdapter)
+	public AbstractMLFileSystem (PMAdapter pmAdapter)
 	{
 		this.pmAdapter = pmAdapter;
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
