@@ -24,7 +24,7 @@ public interface MarkLogicFileSystem extends FileSystem
 	/** @noinspection ConstantDeclaredInInterface*/
 	String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
 
-	String getUriRoot ();
+	String getUriRoot();
 
 	SerializedItemState getNodeState (String uri, NodeId nodeId) throws FileSystemException;
 
