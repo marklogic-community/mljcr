@@ -815,7 +815,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		} catch (RequestException e) {
 			throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
 		}
-
 	}
 
 	private ResultSequence runModule (String module, XdmVariable var)
