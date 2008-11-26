@@ -55,9 +55,14 @@
         </LoginModule>
     </Security>
 
+    <!--
 	<SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex14">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+            <param name="uriRoot" value="${rep.home}/repository"/>
+            <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        </FileSystem>
 	</SearchIndex>
-
+-->
 
     <!--
         location of workspaces root directory and name of default workspace
@@ -81,10 +86,14 @@
             class: FQN of class implementing the PersistenceManager interface
         -->
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager14">
-		<param name="collections" value="jcr-${wsp.name}"/>
-	</PersistenceManager>
-	<SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex14">
-	</SearchIndex>
+		    <param name="collections" value="jcr-${wsp.name}"/>
+	    </PersistenceManager>
+	    <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex14">
+            <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+                <param name="uriRoot" value="${wsp.home}"/>
+                <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+            </FileSystem>
+	    </SearchIndex>
     </Workspace>
 
     <!--
@@ -97,7 +106,7 @@
         -->
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
             <param name="uriRoot" value="${rep.home}/version" />
-		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+		    <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
 
         <!--
@@ -107,6 +116,15 @@
             implementations.
         -->
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager14">
+              <param name="collections" value="jcr-${rep.home}"/>
         </PersistenceManager>
     </Versioning>
+
+    <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex14">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+            <param name="uriRoot" value="${rep.home}/repository/index"/>
+            <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        </FileSystem>
+	</SearchIndex>
+    
 </Repository>

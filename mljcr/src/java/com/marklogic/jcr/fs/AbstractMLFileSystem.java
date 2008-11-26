@@ -5,6 +5,7 @@
 package com.marklogic.jcr.fs;
 
 import com.marklogic.jcr.compat.PMAdapter;
+import com.marklogic.jcr.query.QueryResultImpl;
 import com.marklogic.xcc.Content;
 import com.marklogic.xcc.ContentCreateOptions;
 import com.marklogic.xcc.ContentFactory;
@@ -21,6 +22,7 @@ import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
 import com.marklogic.xcc.types.XSInteger;
 import com.marklogic.xcc.types.XdmVariable;
+import com.marklogic.xcc.AdhocQuery;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
@@ -33,6 +35,7 @@ import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.util.TransientFileFactory;
 
+import javax.jcr.query.QueryResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -736,7 +739,19 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		logger.log (logLevel, "applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
 	}
 
-	// ------------------------------------------------------------
+    public QueryResult runQuery(String query) throws FileSystemException{
+        QueryResult qr = null;
+        try{
+           ResultSequence rs =   runAdHocQuery(query);
+           qr = new QueryResultImpl(rs, this);
+            
+        }catch(FileSystemException fse){
+            throw new FileSystemException ("unable to runQuery",fse);
+        }
+        return qr;
+    }
+
+    // ------------------------------------------------------------
 
 	private String modulePath (String module)
 	{
@@ -798,6 +813,22 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		return false;
 	}
+
+    private ResultSequence runAdHocQuery (String query)
+            throws FileSystemException
+    {
+        Session session = contentSource.newSession();
+        AdhocQuery ahrequest =  session.newAdhocQuery(query);
+            try{
+		      //ahrequest.setQuery (query);
+		      //ahrequest.setOptions (options);
+              return session.submitRequest (ahrequest);
+
+            } catch(RequestException e){
+                 throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
+            }
+
+    }
 
 	private ResultSequence runModule (String module, XdmVariable var1,
 		XdmVariable var2, XdmVariable var3)

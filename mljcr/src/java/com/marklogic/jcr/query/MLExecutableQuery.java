@@ -17,6 +17,8 @@ import javax.jcr.query.Query;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+
 /**
  * Mark Logic-specific implementation of ExecutableQuery
  * Created by IntelliJ IDEA.
@@ -30,14 +32,16 @@ public class MLExecutableQuery implements ExecutableQuery
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final Level logLevel;
 	private final MLQueryBuilder queryBuilder;
+    private final MarkLogicFileSystem mlfs;
 
-	public MLExecutableQuery (SessionImpl session, ItemManager itemMgr, String statement,
-		String language, QueryRootNode root)
+	public MLExecutableQuery(SessionImpl session, ItemManager itemMgr, String statement,
+                             String language, QueryRootNode root, MarkLogicFileSystem mlfs)
 		throws InvalidQueryException
 	{
 		queryBuilder = new MLQueryBuilder (root, session, itemMgr, statement, language);
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
+        this.mlfs = mlfs;
 	}
 
 	// -------------------------------------------------------------
@@ -48,7 +52,7 @@ public class MLExecutableQuery implements ExecutableQuery
 	{
 		logger.log (logLevel, "Executing query: \n" + queryBuilder.getRootNode().dump());
 
-		Query query = queryBuilder.createQuery (offset, limit);
+		Query query = queryBuilder.createQuery (offset, limit, mlfs);
 
 		return query.execute();
 	}

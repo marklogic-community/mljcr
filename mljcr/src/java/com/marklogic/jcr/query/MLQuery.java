@@ -7,6 +7,7 @@ package com.marklogic.jcr.query;
 
 import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
 import org.apache.jackrabbit.commons.iterator.NodeIteratorAdapter;
+import org.apache.jackrabbit.core.fs.FileSystemException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -20,7 +21,10 @@ import java.util.logging.Logger;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
+import com.marklogic.jcr.fs.MarkLogicFileSystem14;
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+
+/**                                        https://rootwiki.marklogic.com/JSPWiki/Wiki.jsp?page=WhatIsReST
  * Created by IntelliJ IDEA.
  * User: ron
  * Date: Nov 12, 2008
@@ -36,16 +40,18 @@ public class MLQuery implements Query
 	private final long limit;
 
 	private final Level logLevel;
+    private final MarkLogicFileSystem mlfs;
 
 	private StringBuffer xpathBuffer = new StringBuffer();
 	private List propertySelectors = new ArrayList (5);
 
-	public MLQuery (String statement, String language, long offset, long limit)
+	public MLQuery(String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs)
 	{
 		this.statement = statement;
 		this.language = language;
 		this.offset = offset;
 		this.limit = limit;
+        this.mlfs = mlfs;
 
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
@@ -129,25 +135,26 @@ public class MLQuery implements Query
 	public QueryResult execute() throws RepositoryException
 	{
 		logger.log (logLevel, "ML Query String: " + getXQuery());
+        System.out.println(getXQuery()+"===========CURRENT XQUERY=============") ;
 
-		// FIXME: This is a stub
-		return new QueryResult()
-		{
-			public String[] getColumnNames () throws RepositoryException
-			{
-				return new String[0];  // FIXME: auto-generated
-			}
+        QueryResult qr=null;
+        //dummy query until getXQuery() is sorted out
+        String xqry = "doc(\"/tmp/JackRabbitRepo/repository/nodetypes/custom_nodetypes.xml\")/nodeTypes/nodeType[@isMixin=\"false\" and @name=\"test:canAddChildNode\"]/supertypes/supertype";
 
-			public RowIterator getRows () throws RepositoryException
-			{
-				return new RowIteratorAdapter (new ArrayList());
-			}
+        //write xquery that generates ids (state.xml)  //@uuid  551b7712-69f4-4f2b-9ad6-51051464f4fe
+        //query result with sequence of strings
+        //implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
 
-			public NodeIterator getNodes () throws RepositoryException
-			{
-				return new NodeIteratorAdapter (new ArrayList());
-			}
-		};
+        try{
+            qr = mlfs.runQuery (xqry); //getXQuery());   // FIXME
+
+        }catch(FileSystemException e){
+             throw new RepositoryException("unable to runQuery()",e);
+        }
+    
+
+        return qr;
+
 	}
 
 	public String getStatement()

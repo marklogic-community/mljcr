@@ -7,8 +7,12 @@ package com.marklogic.jcr.query;
 import org.apache.jackrabbit.core.ItemManager;
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.SessionImpl;
+import org.apache.jackrabbit.core.fs.FileSystem;
+import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.query.AbstractQueryHandler;
 import org.apache.jackrabbit.core.query.ExecutableQuery;
+import org.apache.jackrabbit.core.query.QueryHandlerContext;
+import org.apache.jackrabbit.core.query.QueryHandler;
 import org.apache.jackrabbit.core.state.NodeState;
 
 import javax.jcr.RepositoryException;
@@ -16,6 +20,8 @@ import javax.jcr.query.InvalidQueryException;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,11 +33,23 @@ abstract public class MarkLogicSearchIndex extends AbstractQueryHandler
 {
 	protected static final Logger log = Logger.getLogger (MarkLogicSearchIndex.class.getName());
 
+    protected MarkLogicFileSystem mlfs=null;
+
 	// ---------------------------------------------------------------
 
 	protected void doInit() throws IOException
-	{
-		// FIXME: auto-generated
+	{                                           
+      QueryHandlerContext qx = super.getContext();
+      FileSystem fs =  qx.getFileSystem(); //super.getContext().getFileSystem();
+
+        if(!(fs instanceof MarkLogicFileSystem))
+        {
+           System.out.println("THROWING ERROR ================= FS IS NULL FS IS NULL FS IS NULL");
+           throw new IOException ("Filesystem must be an instance of MarkLogicFileSystem");
+        }
+
+     this.mlfs = (MarkLogicFileSystem) fs;
+
 	}
 
 	public void addNode (NodeState node) throws RepositoryException, IOException

@@ -15,6 +15,8 @@ import javax.jcr.Session;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ron
@@ -47,9 +49,9 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	// --------------------------------------------------------------
 
-	public Query createQuery (long offset, long limit)
+	public Query createQuery(long offset, long limit, MarkLogicFileSystem mlfs)
 	{
-		MLQuery query = new MLQuery (statement, language, offset, limit);
+		MLQuery query = new MLQuery (statement, language, offset, limit, mlfs);
 
 		return (Query) root.accept (this, query);
 	}

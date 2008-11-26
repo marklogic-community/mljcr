@@ -57,6 +57,6 @@ public class MarkLogicSearchIndex14 extends MarkLogicSearchIndex
 			session.getNamePathResolver(),
 			new DefaultQueryNodeFactory (VALID_SYSTEM_INDEX_NODE_TYPE_NAMES));
 
-		return new MLExecutableQuery (session, itemMgr, statement, language, root);
+		return new MLExecutableQuery (session, itemMgr, statement, language, root, mlfs);
 	}
 }

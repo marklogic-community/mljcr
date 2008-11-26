@@ -10,6 +10,7 @@ import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
 import org.apache.jackrabbit.core.state.NodeReferencesId;
 
+import javax.jcr.query.QueryResult;
 import java.io.InputStream;
 import java.util.List;
 
@@ -47,4 +48,8 @@ public interface MarkLogicFileSystem extends FileSystem
 	void applyStateUpdate (String workspaceDocUri, String changeListPath,
 		String deltas, List contentList)
 		throws FileSystemException;
+
+    QueryResult runQuery(String query) throws FileSystemException;
+
+    //another method for query (MLQuery,
 }
