@@ -1,170 +1,180 @@
 package com.marklogic.jcr.query;
 
 
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+import com.marklogic.jcr.persistence.AbstractPersistenceManager;
+
 import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
-import org.apache.jackrabbit.commons.iterator.NodeIteratorAdapter;
+import org.apache.jackrabbit.core.NodeId;
+import org.apache.jackrabbit.core.fs.FileSystemException;
+import org.apache.jackrabbit.uuid.UUID;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.NodeIterator;
-import javax.jcr.Node;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 
-import com.marklogic.xcc.ResultSequence;
-import com.marklogic.xcc.ResultItem;
-import com.marklogic.xcc.types.XdmItem;
-import com.marklogic.jcr.fs.MarkLogicFileSystem;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
  * User: paven
  * Date: Nov 26, 2008
  * Time: 8:21:37 AM
- * To change this template use File | Settings | File Templates.
  */
-public class QueryResultImpl implements QueryResult {
-      //  java.lang.String[] getColumnNames() throws javax.jcr.RepositoryException;
+public class QueryResultImpl implements QueryResult
+{
+	//  java.lang.String[] getColumnNames() throws javax.jcr.RepositoryException;
 
-   // javax.jcr.query.RowIterator getRows() throws javax.jcr.RepositoryException;
+	// javax.jcr.query.RowIterator getRows() throws javax.jcr.RepositoryException;
 
-  //  javax.jcr.NodeIterator getNodes() throws javax.jcr.RepositoryException;
+	//  javax.jcr.NodeIterator getNodes() throws javax.jcr.RepositoryException;
 
-  /*      public QueryResultImpl(SearchIndex index,
-                           ItemManager itemMgr,
-                           NamePathResolver resolver,
-                           AccessManager accessMgr,
-                           AbstractQueryImpl queryImpl,
-                           Query query,
-                           SpellSuggestion spellSuggestion,
-                           Name[] selectProps,
-                           Name[] orderProps,
-                           boolean[] orderSpecs,
-                           boolean documentOrder,
-                           long offset,
-                           long limit) throws RepositoryException {
-        this.index = index;
-        this.itemMgr = itemMgr;
-        this.resolver = resolver;
-        this.accessMgr = accessMgr;
-        this.queryImpl = queryImpl;
-        this.query = query;
-        this.spellSuggestion = spellSuggestion;
-        this.selectProps = selectProps;
-        this.orderProps = orderProps;
-        this.orderSpecs = orderSpecs;
-        this.docOrder = orderProps.length == 0 && documentOrder;
-        this.offset = offset;
-        this.limit = limit;
-        // if document order is requested get all results right away
-        getResults(docOrder ? Integer.MAX_VALUE : index.getResultFetchSize());
-    }
-    */
+	/*      public QueryResultImpl(SearchIndex index,
+				   ItemManager itemMgr,
+				   NamePathResolver resolver,
+				   AccessManager accessMgr,
+				   AbstractQueryImpl queryImpl,
+				   Query query,
+				   SpellSuggestion spellSuggestion,
+				   Name[] selectProps,
+				   Name[] orderProps,
+				   boolean[] orderSpecs,
+				   boolean documentOrder,
+				   long offset,
+				   long limit) throws RepositoryException {
+		this.index = index;
+		this.itemMgr = itemMgr;
+		this.resolver = resolver;
+		this.accessMgr = accessMgr;
+		this.queryImpl = queryImpl;
+		this.query = query;
+		this.spellSuggestion = spellSuggestion;
+		this.selectProps = selectProps;
+		this.orderProps = orderProps;
+		this.orderSpecs = orderSpecs;
+		this.docOrder = orderProps.length == 0 && documentOrder;
+		this.offset = offset;
+		this.limit = limit;
+		// if document order is requested get all results right away
+		getResults(docOrder ? Integer.MAX_VALUE : index.getResultFetchSize());
+	    }
+	    */
 
-    private final ResultSequence rs;
-    private final MarkLogicFileSystem mlfs;
-    
-    public QueryResultImpl(ResultSequence rs, MarkLogicFileSystem mlfs){
+	private final MarkLogicFileSystem mlfs;
+	private final String [] uuids;
 
-        this.rs = rs;
-        this.mlfs= mlfs;
-        
-            System.out.println("======================= "+rs.size());
+	public QueryResultImpl (MarkLogicFileSystem mlfs, String[] uuids)
+	{
+		this.uuids = uuids;
+		this.mlfs = mlfs;
 
-            String x[] = rs.asStrings();
-            for(int i=0; i<x.length;i++){
-            System.out.println(x[i]);
-            }
+//            System.out.println("======================= "+rs.size());
+//
+//            String x[] = rs.asStrings();
+//            for(int i=0; i<x.length;i++){
+//            System.out.println(x[i]);
+//            }
+//
+//            System.out.println("-------------------------------DO MAPPING----------------------------");
 
-            System.out.println("-------------------------------DO MAPPING----------------------------");
+	}
 
-    }
-
-    /**
-     * {@inheritDoc}
-     */
+	/**
+	 * {@inheritDoc}
+	 */
 	public String[] getColumnNames () throws RepositoryException
 	{
-        Iterator i = rs.iterator();
-        while (i.hasNext()){
-            XdmItem ri = (XdmItem)i.next();
-
-        }
-		return  new String[0];  // FIXME: auto-generated
+		return new String[0];  // FIXME: auto-generated
 
 	}
 
 	public RowIterator getRows () throws RepositoryException
 	{
-		return new RowIteratorAdapter(new ArrayList());
+		return new RowIteratorAdapter (new ArrayList ());
 	}
 
 	public NodeIterator getNodes () throws RepositoryException
 	{
-        //System.out.println("SIZE"+rs.size());
-        
-		return new NodeIteratorAdapter(rs.iterator());  //new NodeIteratorAdapter(new ArrayList());
+		//System.out.println("SIZE"+rs.size());
+
+		return new NodeIteratorImpl (mlfs, uuids);  //new NodeIteratorAdapter(new ArrayList());
 	}
 
-    private static class NodeIteratorImpl implements NodeIterator
-    {
-       private final ResultSequence rs;
-       private final Iterator rsIter;
+	private static class NodeIteratorImpl implements NodeIterator
+	{
+		private final MarkLogicFileSystem mlfs;
+		private final String [] uuids;
+		private int cursor = -1;
 
-        private NodeIteratorImpl(ResultSequence rs) {
-            this.rs = rs;
-            this.rsIter = rs.iterator();
+		private NodeIteratorImpl (MarkLogicFileSystem mlfs, String[] uuids)
+		{
+			this.mlfs = mlfs;
+			this.uuids = uuids;
+		}
 
-        }
+		// ---------------------------------------------------
+		// Implementation of NodeIterator interface
 
-        // ---------------------------------------------------
-        // Implementation of NodeIterator
+		public Node nextNode ()
+		{
+			if ( ! hasNext()) return null;
 
-        public Node nextNode() {
+			cursor++;
 
-            //implementation of next node, takes id, and queries for node
+			String uuid = uuids [cursor];
+
+			return session.getNodeByUUID (uuid);
 
 
-            //get the next item from xcc result sequence
-            //parse it
-            //build a Node
-            //return Node
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
+			//implementation of next node, takes id, and queries for node
 
-        // ---------------------------------------------------
-        // Implementation of RangeIterator
+			//get the next item from xcc result sequence
+			//parse it
+			//build a Node
+			//return Node
+//			return null;  //To change body of implemented methods use File | Settings | File Templates.
+		}
 
-        public void skip(long l) {
-            for (int i = 0; (rsIter.hasNext() && (i < l)); i++) {
-                rsIter.next();
-            }
-        }
+		// ---------------------------------------------------
+		// Implementation of RangeIterator interface
 
-        public long getSize() {
-            return rs.size();
-        }
+		public void skip (long l)
+		{
+			if ((cursor + l) > uuids.length) throw new IllegalStateException ("Skipped too far, max =" + getSize());
 
-        public long getPosition() {
-            return  (rs.current() == null) ? -1 : rs.current().getIndex();
-        }
+			cursor += l;
+		}
 
-        // ---------------------------------------------------
-        // IMplementation of Iterator interface
+		public long getSize ()
+		{
+			return uuids.length;
+		}
 
-        public boolean hasNext() {
-            return rsIter.hasNext();
-        }
+		public long getPosition ()
+		{
+			return cursor;
+		}
 
-        public Object next() {
-            return rsIter.next();
-        }
+		// ---------------------------------------------------
+		// Implementation of Iterator interface
 
-        public void remove() {
-            rsIter.remove();
-        }
-    }
+		public boolean hasNext ()
+		{
+			return (getSize() != 0) && (cursor < getSize());
+		}
+
+		public Object next()
+		{
+			return nextNode();
+		}
+
+		public void remove ()
+		{
+			throw new UnsupportedOperationException ("Can't remove");
+		}
+	}
 
 
 }

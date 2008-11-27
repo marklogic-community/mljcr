@@ -5,26 +5,24 @@
 package com.marklogic.jcr.query;
 
 
-import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
-import org.apache.jackrabbit.commons.iterator.NodeIteratorAdapter;
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+import com.marklogic.jcr.fs.AbstractMLFileSystem;
+import com.marklogic.jcr.persistence.AbstractPersistenceManager;
+
 import org.apache.jackrabbit.core.fs.FileSystemException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.NodeIterator;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
-import javax.jcr.query.RowIterator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
 
-import com.marklogic.jcr.fs.MarkLogicFileSystem14;
-import com.marklogic.jcr.fs.MarkLogicFileSystem;
-
-/**                                        https://rootwiki.marklogic.com/JSPWiki/Wiki.jsp?page=WhatIsReST
+/**
+ * https://rootwiki.marklogic.com/JSPWiki/Wiki.jsp?page=WhatIsReST
  * Created by IntelliJ IDEA.
  * User: ron
  * Date: Nov 12, 2008
@@ -32,7 +30,7 @@ import com.marklogic.jcr.fs.MarkLogicFileSystem;
  */
 public class MLQuery implements Query
 {
-	private static final Logger logger = Logger.getLogger (MLQuery.class.getName());
+	private static final Logger logger = Logger.getLogger (MLQuery.class.getName ());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
 	private final String language;
@@ -40,18 +38,18 @@ public class MLQuery implements Query
 	private final long limit;
 
 	private final Level logLevel;
-    private final MarkLogicFileSystem mlfs;
+	private final MarkLogicFileSystem mlfs;
 
-	private StringBuffer xpathBuffer = new StringBuffer();
+	private StringBuffer xpathBuffer = new StringBuffer ();
 	private List propertySelectors = new ArrayList (5);
 
-	public MLQuery(String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs)
+	public MLQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs)
 	{
 		this.statement = statement;
 		this.language = language;
 		this.offset = offset;
 		this.limit = limit;
-        this.mlfs = mlfs;
+		this.mlfs = mlfs;
 
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
@@ -64,14 +62,18 @@ public class MLQuery implements Query
 	{
 		String name = (step.equals ("{}")) ? "" : step;
 
-		if (descendants) xpathBuffer.append ("/");
+		if (descendants) {
+			xpathBuffer.append ("/");
+		}
 
 		xpathBuffer.append ("/node[@name=\"").append (name).append (("\"]"));
 	}
 
 	void addAnyNodePathStep (boolean descendants)
 	{
-		if (descendants) xpathBuffer.append ("/");
+		if (descendants) {
+			xpathBuffer.append ("/");
+		}
 		xpathBuffer.append ("/node");
 	}
 
@@ -105,69 +107,73 @@ public class MLQuery implements Query
 	{
 		int size = selectors.size ();
 
-		if (size != 0) sb.append ("/");
-		if (size > 1) sb.append ("(");
+		if (size != 0) {
+			sb.append ("/");
+		}
+		if (size > 1) {
+			sb.append ("(");
+		}
 
 		for (int i = 0; i < size; i++) {
 			String selector = (String) selectors.get (i);
-			if (i != 0) sb.append ("|");
+			if (i != 0) {
+				sb.append ("|");
+			}
 
 			sb.append ("property[@name\"").append (selector).append ("\"]");
 		}
 
-		if (size > 1) sb.append (")");
+		if (size > 1) {
+			sb.append (")");
+		}
 	}
 
 	String getXQuery ()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuffer sb = new StringBuffer ();
 
 		sb.append (xpathBuffer);
 
 		listify (propertySelectors, sb);
 
-		return sb.toString();
+		return sb.toString ();
 	}
 
 	// ---------------------------------------------------------------
 	// Implementation of Query interface
 
-	public QueryResult execute() throws RepositoryException
+	public QueryResult execute () throws RepositoryException
 	{
-		logger.log (logLevel, "ML Query String: " + getXQuery());
-        System.out.println(getXQuery()+"===========CURRENT XQUERY=============") ;
+		logger.log (logLevel, "ML Query String: " + getXQuery ());
+		System.out.println (getXQuery () + "===========CURRENT XQUERY=============");
 
-        QueryResult qr=null;
-        //dummy query until getXQuery() is sorted out
-        String xqry = "doc(\"/tmp/JackRabbitRepo/repository/nodetypes/custom_nodetypes.xml\")/nodeTypes/nodeType[@isMixin=\"false\" and @name=\"test:canAddChildNode\"]/supertypes/supertype";
+		//dummy query until getXQuery() is sorted out
+		String xqry = "fn:doc(\"" + AbstractMLFileSystem.URI_PLACEHOLDER + "\")//node/@uuid";
 
-        //write xquery that generates ids (state.xml)  //@uuid  551b7712-69f4-4f2b-9ad6-51051464f4fe
-        //query result with sequence of strings
-        //implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
+		//write xquery that generates ids (state.xml)  //@uuid  551b7712-69f4-4f2b-9ad6-51051464f4fe
+		//query result with sequence of strings
+		//implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
 
-        try{
-            qr = mlfs.runQuery (xqry); //getXQuery());   // FIXME
+		try {
+			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
 
-        }catch(FileSystemException e){
-             throw new RepositoryException("unable to runQuery()",e);
-        }
-    
-
-        return qr;
-
+			return new QueryResultImpl (mlfs, resultUUIDs);
+		} catch (FileSystemException e) {
+			throw new RepositoryException ("unable to runQuery()", e);
+		}
 	}
 
-	public String getStatement()
+	public String getStatement ()
 	{
 		return statement;
 	}
 
-	public String getLanguage()
+	public String getLanguage ()
 	{
 		return language;
 	}
 
-	public String getStoredQueryPath()
+	public String getStoredQueryPath ()
 		throws RepositoryException
 	{
 		throw new RepositoryException ("Not implemented for ML");

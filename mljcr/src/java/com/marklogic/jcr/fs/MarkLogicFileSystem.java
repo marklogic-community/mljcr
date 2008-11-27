@@ -19,11 +19,12 @@ import java.util.List;
  * User: ron
  * Date: Nov 21, 2008
  * Time: 3:11:49 PM
+ * @noinspection ConstantDeclaredInInterface
  */
 public interface MarkLogicFileSystem extends FileSystem
 {
-	/** @noinspection ConstantDeclaredInInterface*/
 	String MAGIC_EMPTY_BLOB_ID = "@=-empty-=@";
+	String URI_PLACEHOLDER = "@DOCURI@";
 
 	String getUriRoot();
 
@@ -49,7 +50,7 @@ public interface MarkLogicFileSystem extends FileSystem
 		String deltas, List contentList)
 		throws FileSystemException;
 
-    QueryResult runQuery(String query) throws FileSystemException;
+    String[] runQuery (String docUri, String query) throws FileSystemException;
 
     //another method for query (MLQuery,
 }

@@ -58,6 +58,8 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 {
 	private static final Logger logger = Logger.getLogger (AbstractPersistenceManager.class.getName());
 
+	public static final String WORKSPACE_DOC_NAME = "state.xml";
+
 	/**
 	 * The XML elements and attributes used in serialization
 	 */
@@ -98,7 +100,6 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		"<workspace xmlns=\"" + JCR_NAMESPACE +
 		"\" version=\"" + MLJCR_VERSION + "\" ";
 
-	private static final String workspaceDocName = "state.xml";
 	private static final String changeListDocName = "change-list.xml";
 
 	private static final String BLOB_TX_DIR = "tx-tmp";
@@ -155,7 +156,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 
 		contextFS = (MarkLogicFileSystem) context.getFileSystem();
 
-		insureStateDoc (contextFS, workspaceDocName, workspaceStateTemplate, collections);
+		insureStateDoc (contextFS, WORKSPACE_DOC_NAME, workspaceStateTemplate, collections);
 
 		contextFS.getUriRoot();
 
@@ -198,7 +199,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		}
 
 		try {
-			return contextFS.itemExists (workspaceDocName, id);
+			return contextFS.itemExists (WORKSPACE_DOC_NAME, id);
 		} catch (FileSystemException e) {
 			String msg = "failed to check existence of item state: " + id + ", msg=" + e;
 			logger.log (Level.FINE, msg, e);
@@ -216,7 +217,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		}
 
 		try {
-			return contextFS.itemExists (workspaceDocName, id);
+			return contextFS.itemExists (WORKSPACE_DOC_NAME, id);
 		} catch (FileSystemException e) {
 			String msg = "failed to check existence of item state: " + id;
 			logger.log (Level.SEVERE, msg, e);
@@ -236,7 +237,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		}
 
 		try {
-			return contextFS.itemExists (workspaceDocName, id);
+			return contextFS.itemExists (WORKSPACE_DOC_NAME, id);
 		} catch (FileSystemException e) {
 			String msg = "failed to check existence of item state: " + id + ", msg=" + e;
 			logger.log (Level.FINE, msg, e);
@@ -258,7 +259,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		Exception e = null;
 
 		try {
-			InputStream in = contextFS.nodeStateAsStream (workspaceDocName, id);
+			InputStream in = contextFS.nodeStateAsStream (WORKSPACE_DOC_NAME, id);
 
 			if (in == null) {
 				throw new NoSuchItemStateException (id.toString());
@@ -301,7 +302,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		Exception e = null;
 
 		try {
-			InputStream in = contextFS.propertyStateAsStream (workspaceDocName, id);
+			InputStream in = contextFS.propertyStateAsStream (WORKSPACE_DOC_NAME, id);
 
 			if (in == null) {
 				throw new NoSuchItemStateException (id.toString());
@@ -340,7 +341,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		Exception e = null;
 
 		try {
-			InputStream in = contextFS.referencesStateAsStream (workspaceDocName, id.getTargetId());
+			InputStream in = contextFS.referencesStateAsStream (WORKSPACE_DOC_NAME, id.getTargetId());
 
 			if (in == null) {
 				throw new NoSuchItemStateException (id.toString());
@@ -510,7 +511,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		String deltasDocPath = txDirRootString (txId) + changeListDocName;
 
 		try {
-			contextFS.applyStateUpdate (workspaceDocName, deltasDocPath, deltas, contentList);
+			contextFS.applyStateUpdate (WORKSPACE_DOC_NAME, deltasDocPath, deltas, contentList);
 		} catch (FileSystemException e) {
 			throw new ItemStateException ("Updating state: " + e, e);
 		}

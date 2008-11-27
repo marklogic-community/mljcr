@@ -5,7 +5,7 @@
 package com.marklogic.jcr.fs;
 
 import com.marklogic.jcr.compat.PMAdapter;
-import com.marklogic.jcr.query.QueryResultImpl;
+import com.marklogic.xcc.AdhocQuery;
 import com.marklogic.xcc.Content;
 import com.marklogic.xcc.ContentCreateOptions;
 import com.marklogic.xcc.ContentFactory;
@@ -22,7 +22,6 @@ import com.marklogic.xcc.types.XName;
 import com.marklogic.xcc.types.XSBoolean;
 import com.marklogic.xcc.types.XSInteger;
 import com.marklogic.xcc.types.XdmVariable;
-import com.marklogic.xcc.AdhocQuery;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
@@ -35,7 +34,6 @@ import org.apache.jackrabbit.core.value.BLOBFileValue;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.util.TransientFileFactory;
 
-import javax.jcr.query.QueryResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -739,19 +737,20 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		logger.log (logLevel, "applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
 	}
 
-    public QueryResult runQuery(String query) throws FileSystemException{
-        QueryResult qr = null;
-        try{
-           ResultSequence rs =   runAdHocQuery(query);
-           qr = new QueryResultImpl(rs, this);
-            
-        }catch(FileSystemException fse){
-            throw new FileSystemException ("unable to runQuery",fse);
-        }
-        return qr;
-    }
+	public String [] runQuery (String docName, String query) throws FileSystemException
+	{
+		String docUri = fullPath (docName);
 
-    // ------------------------------------------------------------
+		try {
+			ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
+
+			return rs.asStrings();
+		} catch (FileSystemException fse) {
+			throw new FileSystemException ("unable to run query", fse);
+		}
+	}
+
+	// ------------------------------------------------------------
 
 	private String modulePath (String module)
 	{
