@@ -160,7 +160,7 @@ public class MLQuery implements Query
 		try {
 			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
 
-			return new QueryResultImpl (mlfs, resultUUIDs, session);
+			return new QueryResultImpl (session, resultUUIDs);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);
 		}

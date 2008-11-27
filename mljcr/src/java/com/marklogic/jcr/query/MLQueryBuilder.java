@@ -4,18 +4,18 @@
 
 package com.marklogic.jcr.query;
 
-import org.apache.jackrabbit.core.query.*;
+import com.marklogic.jcr.fs.MarkLogicFileSystem;
+
 import org.apache.jackrabbit.core.ItemManager;
+import org.apache.jackrabbit.core.query.*;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.Path;
 
-import javax.jcr.query.Query;
 import javax.jcr.Session;
+import javax.jcr.query.Query;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import com.marklogic.jcr.fs.MarkLogicFileSystem;
+import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,7 +30,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	private final Level logLevel;
 	private final QueryRootNode root;
-    private final Session session;
+	private final Session session;
 //	private final ItemManager itemMgr;
 	private final String statement;
 	private final String language;
@@ -39,7 +39,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		String statement, String language)
 	{
 		this.root = root;
-        this.session = session;
+		this.session = session;
 //		this.itemMgr = itemMgr;
 		this.statement = statement;
 		this.language = language;

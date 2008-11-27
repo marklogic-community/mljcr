@@ -1,15 +1,11 @@
 package com.marklogic.jcr.query;
 
-
-import com.marklogic.jcr.fs.MarkLogicFileSystem;
-import com.marklogic.jcr.persistence.AbstractPersistenceManager;
-
 import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
-import org.apache.jackrabbit.core.NodeId;
-import org.apache.jackrabbit.core.fs.FileSystemException;
-import org.apache.jackrabbit.uuid.UUID;
 
-import javax.jcr.*;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 
@@ -60,15 +56,13 @@ public class QueryResultImpl implements QueryResult
 	    }
 	    */
 
-	private final MarkLogicFileSystem mlfs;
-	private final String [] uuids;
-    private final Session session;
+	private final String[] uuids;
+	private final Session session;
 
-	public QueryResultImpl(MarkLogicFileSystem mlfs, String[] uuids, Session session)
+	public QueryResultImpl (Session session, String[] uuids)
 	{
+		this.session = session;
 		this.uuids = uuids;
-		this.mlfs = mlfs;
-        this.session = session;
 
 //            System.out.println("======================= "+rs.size());
 //
@@ -78,67 +72,56 @@ public class QueryResultImpl implements QueryResult
 //            }
 //
 //            System.out.println("-------------------------------DO MAPPING----------------------------");
-
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public String[] getColumnNames () throws RepositoryException
+	public String[] getColumnNames() throws RepositoryException
 	{
 		return new String[0];  // FIXME: auto-generated
-
 	}
 
-	public RowIterator getRows () throws RepositoryException
+	public RowIterator getRows() throws RepositoryException
 	{
-		return new RowIteratorAdapter (new ArrayList ());
+		return new RowIteratorAdapter (new ArrayList());
 	}
 
-	public NodeIterator getNodes () throws RepositoryException
+	public NodeIterator getNodes() throws RepositoryException
 	{
 		//System.out.println("SIZE"+rs.size());
 
-		return new NodeIteratorImpl (mlfs, uuids, session);  //new NodeIteratorAdapter(new ArrayList());
+		return new NodeIteratorImpl (session, uuids);  //new NodeIteratorAdapter(new ArrayList());
 	}
 
 	private static class NodeIteratorImpl implements NodeIterator
 	{
-		private final MarkLogicFileSystem mlfs;
-		private final String [] uuids;
-        private final Session session;
+		private final String[] uuids;
+		private final Session session;
 		private int cursor = -1;
 
-		private NodeIteratorImpl (MarkLogicFileSystem mlfs, String[] uuids, Session session)
+		private NodeIteratorImpl (Session session, String [] uuids)
 		{
-			this.mlfs = mlfs;
+			this.session = session;
 			this.uuids = uuids;
-            this.session = session;
 		}
 
 		// ---------------------------------------------------
 		// Implementation of NodeIterator interface
 
-		public Node nextNode ()
+		public Node nextNode()
 		{
-			if ( ! hasNext()) return null;
+			if (!hasNext ()) {
+				return null;
+			}
 
 			cursor++;
 
-			String uuid = uuids [cursor];
-
-
-            Node n = null;
-            try {
-                n = session.getNodeByUUID(uuid);
-            } catch (RepositoryException e) {
-                //To change body of catch statement use File | Settings | File Templates.
-            }
-            return n;
-
-
-
-
+			try {
+				return session.getNodeByUUID (uuids [cursor]);
+			} catch (RepositoryException e) {
+				throw new RuntimeException ("nextNode: " + e, e);
+			}
 
 			//implementation of next node, takes id, and queries for node
 
@@ -154,17 +137,19 @@ public class QueryResultImpl implements QueryResult
 
 		public void skip (long l)
 		{
-			if ((cursor + l) > uuids.length) throw new IllegalStateException ("Skipped too far, max =" + getSize());
+			if ((cursor + l) >= uuids.length) {
+				throw new IllegalStateException ("Skipped too far, max =" + getSize());
+			}
 
 			cursor += l;
 		}
 
-		public long getSize ()
+		public long getSize()
 		{
 			return uuids.length;
 		}
 
-		public long getPosition ()
+		public long getPosition()
 		{
 			return cursor;
 		}
@@ -172,7 +157,7 @@ public class QueryResultImpl implements QueryResult
 		// ---------------------------------------------------
 		// Implementation of Iterator interface
 
-		public boolean hasNext ()
+		public boolean hasNext()
 		{
 			return (getSize() != 0) && (cursor < getSize());
 		}
@@ -182,11 +167,9 @@ public class QueryResultImpl implements QueryResult
 			return nextNode();
 		}
 
-		public void remove ()
+		public void remove()
 		{
 			throw new UnsupportedOperationException ("Can't remove");
 		}
 	}
-
-
 }
