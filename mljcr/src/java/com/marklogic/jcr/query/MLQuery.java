@@ -13,6 +13,7 @@ import org.apache.jackrabbit.core.fs.FileSystemException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
@@ -39,17 +40,19 @@ public class MLQuery implements Query
 
 	private final Level logLevel;
 	private final MarkLogicFileSystem mlfs;
+    private final Session session;
 
 	private StringBuffer xpathBuffer = new StringBuffer ();
 	private List propertySelectors = new ArrayList (5);
 
-	public MLQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs)
+	public MLQuery(String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
 	{
 		this.statement = statement;
 		this.language = language;
 		this.offset = offset;
 		this.limit = limit;
 		this.mlfs = mlfs;
+        this.session = session;
 
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
@@ -157,7 +160,7 @@ public class MLQuery implements Query
 		try {
 			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
 
-			return new QueryResultImpl (mlfs, resultUUIDs);
+			return new QueryResultImpl (mlfs, resultUUIDs, session);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);
 		}

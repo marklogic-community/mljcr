@@ -9,9 +9,7 @@ import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.uuid.UUID;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
+import javax.jcr.*;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 
@@ -64,11 +62,13 @@ public class QueryResultImpl implements QueryResult
 
 	private final MarkLogicFileSystem mlfs;
 	private final String [] uuids;
+    private final Session session;
 
-	public QueryResultImpl (MarkLogicFileSystem mlfs, String[] uuids)
+	public QueryResultImpl(MarkLogicFileSystem mlfs, String[] uuids, Session session)
 	{
 		this.uuids = uuids;
 		this.mlfs = mlfs;
+        this.session = session;
 
 //            System.out.println("======================= "+rs.size());
 //
@@ -99,19 +99,21 @@ public class QueryResultImpl implements QueryResult
 	{
 		//System.out.println("SIZE"+rs.size());
 
-		return new NodeIteratorImpl (mlfs, uuids);  //new NodeIteratorAdapter(new ArrayList());
+		return new NodeIteratorImpl (mlfs, uuids, session);  //new NodeIteratorAdapter(new ArrayList());
 	}
 
 	private static class NodeIteratorImpl implements NodeIterator
 	{
 		private final MarkLogicFileSystem mlfs;
 		private final String [] uuids;
+        private final Session session;
 		private int cursor = -1;
 
-		private NodeIteratorImpl (MarkLogicFileSystem mlfs, String[] uuids)
+		private NodeIteratorImpl (MarkLogicFileSystem mlfs, String[] uuids, Session session)
 		{
 			this.mlfs = mlfs;
 			this.uuids = uuids;
+            this.session = session;
 		}
 
 		// ---------------------------------------------------
@@ -125,7 +127,17 @@ public class QueryResultImpl implements QueryResult
 
 			String uuid = uuids [cursor];
 
-			return session.getNodeByUUID (uuid);
+
+            Node n = null;
+            try {
+                n = session.getNodeByUUID(uuid);
+            } catch (RepositoryException e) {
+                //To change body of catch statement use File | Settings | File Templates.
+            }
+            return n;
+
+
+
 
 
 			//implementation of next node, takes id, and queries for node

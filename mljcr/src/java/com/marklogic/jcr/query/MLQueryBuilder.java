@@ -30,7 +30,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	private final Level logLevel;
 	private final QueryRootNode root;
-//	private final Session session;
+    private final Session session;
 //	private final ItemManager itemMgr;
 	private final String statement;
 	private final String language;
@@ -39,7 +39,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		String statement, String language)
 	{
 		this.root = root;
-//		this.session = session;
+        this.session = session;
 //		this.itemMgr = itemMgr;
 		this.statement = statement;
 		this.language = language;
@@ -51,7 +51,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	public Query createQuery(long offset, long limit, MarkLogicFileSystem mlfs)
 	{
-		MLQuery query = new MLQuery (statement, language, offset, limit, mlfs);
+		MLQuery query = new MLQuery (statement, language, offset, limit, mlfs, session);
 
 		return (Query) root.accept (this, query);
 	}
