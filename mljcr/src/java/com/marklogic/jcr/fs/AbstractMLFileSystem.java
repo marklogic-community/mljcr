@@ -108,8 +108,10 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		return uriRoot;
 	}
 
-	public void setUriRoot (String uriRoot)
+	public void setUriRoot (String uriRootParam)
 	{
+        String uriRoot = uriRootParam.replaceAll("\\\\", "/");
+        
 		if (uriRoot.startsWith ("/")) {
 			this.uriRoot = uriRoot;
 		} else {
@@ -132,6 +134,9 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	public void init() throws FileSystemException
 	{
 		logger.log (logLevel, "init: path=" + uriRoot + ", uri=" + contentSourceUrl);
+
+        System.out.println("======URI ROOT IN INIT "+uriRoot);
+        System.out.println("======contentSourceUrl INIT "+contentSourceUrl);
 
 		try {
 			URI uri = new URI (contentSourceUrl);
@@ -741,9 +746,16 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	{
 		String docUri = fullPath (docName);
 
+//        System.out.println("docName"+docName);
+//        System.out.println("docUri"+docUri);
+//        System.out.println("query"+query);
+//        System.out.println("URI_PLACEHOLDER");
+//
+//        System.out.println("UPDATED QUERY"+query.replaceAll(URI_PLACEHOLDER, docUri));
+
+
 		try {
 			ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
-
 			return rs.asStrings();
 		} catch (FileSystemException fse) {
 			throw new FileSystemException ("unable to run query", fse);
@@ -759,7 +771,12 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 	private String fullPath (String relPath)
 	{
+        //relPath =relPath.replaceAll("\\$", "/");
+
 		String sep = (uriRoot.endsWith ("/") || relPath.startsWith ("/")) ? "" : "/";
+//        System.out.println("`````uriRoot "+uriRoot);
+//        System.out.println("`````sep "+sep);
+//        System.out.println("`````relPath "+relPath);
 
 		return (uriRoot + sep + relPath);
 	}
