@@ -4,13 +4,12 @@
 
 package com.marklogic.jcr.fs;
 
-import org.apache.jackrabbit.core.fs.FileSystem;
-import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
+import org.apache.jackrabbit.core.fs.FileSystem;
+import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.state.NodeReferencesId;
 
-import javax.jcr.query.QueryResult;
 import java.io.InputStream;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public interface MarkLogicFileSystem extends FileSystem
 		String deltas, List contentList)
 		throws FileSystemException;
 
-    String[] runQuery (String docUri, String query) throws FileSystemException;
+	String[] runQuery (String docUri, String query) throws FileSystemException;
 
-    //another method for query (MLQuery,
+	//another method for query (MLQuery,
 }
