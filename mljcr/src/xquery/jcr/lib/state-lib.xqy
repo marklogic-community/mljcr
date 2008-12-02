@@ -11,6 +11,7 @@ declare default element namespace "http://marklogic.com/jcr";
 declare variable $MAGIC_EMPTY_BLOB_ID := "@=-empty-=@";
 
 declare variable $save-debug-history := fn:false();
+declare variable $save-update-profile-data := fn:false();
 
 (: =============================================================== :)
 (: Debug functions to save update history :)
@@ -44,6 +45,16 @@ declare private function save-debug-history ($uri-root as xs:string,
 			<after>{$new-state}</after>
 		</history>
 	)
+};
+
+declare private function save-profile-data ($uri-root as xs:string,
+	$profile as element(prof:report))
+{
+	let $base-uri := fn:concat ($uri-root, "/profile/")
+	let $counter-uri := fn:concat ($base-uri, "history-counter.xml")
+	let $number := get-counter ($counter-uri)
+	let $history-uri := fn:concat ($base-uri, "profile-history-", $number, ".xml")
+	return xdmp:document-insert ($history-uri, $profile)
 };
 
 (: =============================================================== :)
@@ -191,8 +202,10 @@ declare private function update-property ($prop as element(property),
 	$deltas as element(change-list), $collections as xs:string?, $uri-root as xs:string)
 	as element(property)*
 {
-	if (fn:exists ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]))
-	then new-property ($deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name], $deltas, $collections, $uri-root)
+	let $mod-prop := $deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]
+	return
+	if (fn:exists ($mod-prop))
+	then new-property ($mod-prop, $deltas, $collections, $uri-root)
 	else $prop
 };
 
@@ -254,9 +267,9 @@ declare private function parentless-new-nodes ($state as element(workspace),
 };
 
 (: Apply updates for this node.  An update could mean creating a new node,
-   in which can the input node is the one in the change list.  The first
+   in which case the input node is the one in the change list.  The first
    step is to recurse down and apply updates to child nodes.  Once all
-   children have been updated, a new node level is created and returned,
+   children have been updated, a new node element is created and returned,
    which may entail replacing the current node with one from the change list.
    New nodes in the change list do not have name attributes, so the name
    is looked up (in other nodes in the changelist) if necessary.
@@ -268,30 +281,25 @@ declare private function update-node ($node as element(node),
 {
 	(: note function mapping :)
 	let $node-id := $node/@uuid
-	let $child-nodes := (update-node ($node/node, $deltas, $collections, $uri-root),
-		update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas, $collections, $uri-root))
-	let $added-external-nodes := external-node ($child-nodes,
-		$deltas/(added-states|modified-states)/node[@uuid = $node-id]/nodes/node,
-		fn:string ($node-id))
-	let $child-properties := (update-property ($node/property, $deltas, $collections, $uri-root),
-		new-property ($deltas/added-states/property[@parentUUID = $node-id], $deltas, $collections, $uri-root))
-	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
 	return
 	<node>{
 		let $replace-node := $deltas/modified-states/node[@uuid = $node-id]
 		let $name-attr := if ($node/@name)
 			then $node/@name
 			else attribute { "name" } { find-node-name ($deltas, $node-id) }
-		let $node := if ($replace-node) then $replace-node else $node
+		let $current-node := if ($replace-node) then $replace-node else $node
 		return
 		(
-			if ($node/@name) then () else $name-attr,
-			$node/@*,
-			$node/mixinTypes,
-			$child-properties,
-			$child-nodes,
-			$added-external-nodes,
-			$child-refs
+			if ($current-node/@name) then () else $name-attr,
+			$current-node/@*,
+			$current-node/mixinTypes,
+			(update-property ($node/property, $deltas, $collections, $uri-root),
+				new-property ($deltas/added-states/property[@parentUUID = $node-id], $deltas, $collections, $uri-root)),
+			(update-node ($node/node, $deltas, $collections, $uri-root),
+				update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas, $collections, $uri-root)),
+			external-node (($node/node, $deltas/added-states/node[@parentUUID = $node-id]),
+				$deltas/(added-states|modified-states)/node[@uuid = $node-id]/nodes/node, fn:string ($node-id)),
+			prune-references ($node-id, $node/reference, $deltas)
 		)
 	}</node>
 };
@@ -308,9 +316,6 @@ declare private function prune-node ($node as element(node),
 	as element(node)?
 {
 	let $node-id := $node/@uuid
-	let $child-nodes := prune-node ($node/node, $deltas, $uri-root)
-	let $child-properties := prune-property ($node/property, $deltas, $uri-root)
-	let $child-refs := prune-references ($node-id, $node/reference, $deltas)
 	return
 	if (fn:exists ($deltas/deleted-states/node[@uuid = $node-id]))
 	then ()
@@ -318,9 +323,9 @@ declare private function prune-node ($node as element(node),
 	<node>{
 		$node/@*,
 		$node/mixinTypes,
-		$child-properties,
-		$child-nodes,
-		$child-refs
+		prune-property ($node/property, $deltas, $uri-root),
+		prune-node ($node/node, $deltas, $uri-root),
+		prune-references ($node-id, $node/reference, $deltas)
 	}</node>
 };
 
@@ -361,12 +366,14 @@ declare function apply-state-updates ($state as element(workspace),
 (:
 let $dummy := xdmp:log ("apply-state-updates: start, pruning deleted")
 :)
+	let $dummy := if ($save-update-profile-data) then prof:enable(xdmp:request()) else ()
 	let $pruned := prune-deleted ($state, $deltas, $uri-root)
 (:
 let $dummy := xdmp:log ("apply-state-updates: applying updates")
 :)
 	let $new-state := apply-updates ($pruned, $deltas, $uri-root)
 	let $dummy := if ($save-debug-history) then save-debug-history ($uri-root, $state, $pruned, $new-state, $deltas) else ()
+	let $dummy := if ($save-update-profile-data) then save-profile-data ($uri-root, prof:report (xdmp:request())) else ()
 (:
 let $dummy := xdmp:log ("apply-state-updates: done")
 :)
