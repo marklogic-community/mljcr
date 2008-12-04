@@ -82,11 +82,11 @@ public class QueryResultImpl implements QueryResult
 
         public Node nextNode()
         {
+            cursor++;
+
             if (!hasNext ()) {
                 return null;
             }
-
-            cursor++;
 
             try {
                 return session.getNodeByUUID (uuids [cursor]);
