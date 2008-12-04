@@ -68,6 +68,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
+    private static final String QUERY = "query/";
 	private final PMAdapter pmAdapter;
 
 	private FileMetaDataLruCache metaDataCache = null;
@@ -317,6 +318,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		metaDataCache.remove (folderPath);
 
 		String uri = fullDirPath (folderPath);
+
 		XdmVariable var = ValueFactory.newVariable (new XName ("uri"), ValueFactory.newXSString (uri));
 
 		logger.log (logLevel, "createFolder: folderPath=" + uri);
@@ -742,20 +744,24 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		logger.log (logLevel, "applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
 	}
 
+    private static final String RUN_QUERY_MODULE = QUERY + "run-query.xqy";
+
 	public String [] runQuery (String docName, String query) throws FileSystemException
 	{
 		String docUri = fullPath (docName);
+        String stateuri = "dummy";
+        XdmVariable stateuriVar = ValueFactory.newVariable (new XName ("state-uri"), ValueFactory.newXSString (stateuri));
+        XdmVariable queryVar = ValueFactory.newVariable (new XName ("query"), ValueFactory.newXSString (query.replaceAll(URI_PLACEHOLDER, docUri)));
 
-//        System.out.println("docName"+docName);
-//        System.out.println("docUri"+docUri);
-//        System.out.println("query"+query);
-//        System.out.println("URI_PLACEHOLDER");
-//
-//        System.out.println("UPDATED QUERY"+query.replaceAll(URI_PLACEHOLDER, docUri));
+//       System.out.println("_________________________docUri"+docUri);
+//       System.out.println("_________________________query"+query);
+//       System.out.println("UPDATED QUERY"+query.replaceAll(URI_PLACEHOLDER, docUri));
 
 
 		try {
-			ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
+			//ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
+            ResultSequence rs=runModule(RUN_QUERY_MODULE, stateuriVar, queryVar, null);
+            System.out.println("RESULT "+rs.size());
 			return rs.asStrings();
 		} catch (FileSystemException fse) {
 			throw new FileSystemException ("unable to run query", fse);
@@ -771,13 +777,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 	private String fullPath (String relPath)
 	{
-        //relPath =relPath.replaceAll("\\$", "/");
-
 		String sep = (uriRoot.endsWith ("/") || relPath.startsWith ("/")) ? "" : "/";
-//        System.out.println("`````uriRoot "+uriRoot);
-//        System.out.println("`````sep "+sep);
-//        System.out.println("`````relPath "+relPath);
-
 		return (uriRoot + sep + relPath);
 	}
 
@@ -850,6 +850,14 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		XdmVariable var2, XdmVariable var3)
 		throws FileSystemException
 	{
+//        System.out.println("===================================================");
+       System.out.println("MODULE: "+module);
+       System.out.println("MODULE PATH: "+modulePath(module));
+//        if (var1 != null)  System.out.println("VAR 1: NAME"+var1.getName()+" VALUE: "+var1.getValue());
+//        if (var2 != null)   System.out.println("VAR 2: NAME"+var2.getName()+" VALUE: "+var2.getValue());
+//        if (var3 != null)  System.out.println("VAR 3: NAME"+var3.getName()+" VALUE: "+var3.getValue());
+//        System.out.println("===================================================");
+        
 		Session session = contentSource.newSession();
 		Request request = session.newModuleInvoke (modulePath (module));
 

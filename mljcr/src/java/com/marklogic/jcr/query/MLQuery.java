@@ -151,15 +151,19 @@ public class MLQuery implements Query
 		System.out.println (getXQuery () + "===========CURRENT XQUERY=============");
 
 		//dummy query until getXQuery() is sorted out
-		String xqry = "fn:doc(\"" + AbstractMLFileSystem.URI_PLACEHOLDER + "\")//node/@uuid";
+		String xqry = "xquery version '1.0-ml'; " +
+                      "declare namespace mljcr = 'http://marklogic.com/jcr';" +
+                      "fn:doc("+"'" + AbstractMLFileSystem.URI_PLACEHOLDER + "'"+")//mljcr:node/@uuid";
 
+
+        System.out.println("THE QUERY: "+xqry);
 		//write xquery that generates ids (state.xml)  //@uuid  551b7712-69f4-4f2b-9ad6-51051464f4fe
 		//query result with sequence of strings
 		//implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
 
 		try {
 			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
-
+            System.out.println("resultUUIDS size: "+resultUUIDs.length);
 			return new QueryResultImpl (session, resultUUIDs);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);

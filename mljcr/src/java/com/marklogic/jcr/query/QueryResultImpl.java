@@ -25,37 +25,6 @@ public class QueryResultImpl implements QueryResult
 
 	//  javax.jcr.NodeIterator getNodes() throws javax.jcr.RepositoryException;
 
-	/*      public QueryResultImpl(SearchIndex index,
-				   ItemManager itemMgr,
-				   NamePathResolver resolver,
-				   AccessManager accessMgr,
-				   AbstractQueryImpl queryImpl,
-				   Query query,
-				   SpellSuggestion spellSuggestion,
-				   Name[] selectProps,
-				   Name[] orderProps,
-				   boolean[] orderSpecs,
-				   boolean documentOrder,
-				   long offset,
-				   long limit) throws RepositoryException {
-		this.index = index;
-		this.itemMgr = itemMgr;
-		this.resolver = resolver;
-		this.accessMgr = accessMgr;
-		this.queryImpl = queryImpl;
-		this.query = query;
-		this.spellSuggestion = spellSuggestion;
-		this.selectProps = selectProps;
-		this.orderProps = orderProps;
-		this.orderSpecs = orderSpecs;
-		this.docOrder = orderProps.length == 0 && documentOrder;
-		this.offset = offset;
-		this.limit = limit;
-		// if document order is requested get all results right away
-		getResults(docOrder ? Integer.MAX_VALUE : index.getResultFetchSize());
-	    }
-	    */
-
 	private final String[] uuids;
 	private final Session session;
 
@@ -64,11 +33,13 @@ public class QueryResultImpl implements QueryResult
 		this.session = session;
 		this.uuids = uuids;
 
-//            System.out.println("======================= "+rs.size());
+        System.out.println("WORKSPACE NAME: "+session.getWorkspace().getName());
+        System.out.println("UUIDS LENGTH: "+this.uuids.length);
+
 //
-//            String x[] = rs.asStrings();
-//            for(int i=0; i<x.length;i++){
-//            System.out.println(x[i]);
+
+//           for(int i=0; i<this.uuids.length;i++){
+//               System.out.println("+++++++"+this.uuids[i]);
 //            }
 //
 //            System.out.println("-------------------------------DO MAPPING----------------------------");
@@ -109,19 +80,19 @@ public class QueryResultImpl implements QueryResult
 		// ---------------------------------------------------
 		// Implementation of NodeIterator interface
 
-		public Node nextNode()
-		{
-			if (!hasNext ()) {
-				return null;
-			}
+        public Node nextNode()
+        {
+            if (!hasNext ()) {
+                return null;
+            }
 
-			cursor++;
+            cursor++;
 
-			try {
-				return session.getNodeByUUID (uuids [cursor]);
-			} catch (RepositoryException e) {
-				throw new RuntimeException ("nextNode: " + e, e);
-			}
+            try {
+                return session.getNodeByUUID (uuids [cursor]);
+            } catch (RepositoryException e) {
+                throw new RuntimeException ("nextNode: " + e, e);
+            }
 
 			//implementation of next node, takes id, and queries for node
 
