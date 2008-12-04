@@ -63,7 +63,7 @@ declare private function save-profile-data ($uri-root as xs:string,
 declare private function is-empty-blob ($prop as element(property))
 	as xs:boolean
 {
-	if (fn:string ($prop/values/value) = $MAGIC_EMPTY_BLOB_ID)
+	if (fn:string ($prop/values/value) eq $MAGIC_EMPTY_BLOB_ID)
 	then fn:true()
 	else fn:false()
 };
@@ -90,7 +90,7 @@ declare private function find-node-name ($deltas as element(change-list),
 	$id as xs:string)
 	as xs:string
 {
-	fn:string ($deltas//node/nodes/node[@uuid = $id]/@name)
+	fn:string ($deltas//node/nodes/node[@uuid eq $id]/@name)
 };
 
 (: Delete a property.  Delete the blob file for Binary properties,
@@ -99,7 +99,7 @@ declare private function find-node-name ($deltas as element(change-list),
 declare private function delete-property ($prop as element(property), $uri-root as xs:string)
 	as empty-sequence()
 {
-	if ($prop/@type = "Binary")
+	if ($prop/@type eq "Binary")
 	then
 		if (is-empty-blob ($prop))
 		then ()
@@ -202,7 +202,7 @@ declare private function update-property ($prop as element(property),
 	$deltas as element(change-list), $collections as xs:string?, $uri-root as xs:string)
 	as element(property)*
 {
-	let $mod-prop := $deltas/modified-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]
+	let $mod-prop := $deltas/modified-states/property[@parentUUID eq $prop/@parentUUID][@name eq $prop/@name]
 	return
 	if (fn:exists ($mod-prop))
 	then new-property ($mod-prop, $deltas, $collections, $uri-root)
@@ -214,10 +214,12 @@ declare private function update-property ($prop as element(property),
    to (possibly) delete the document corresponding to a binary property.
  :)
 declare private function prune-property ($prop as element(property),
-	$deltas as element(change-list), $uri-root as xs:string)
+	$deltas as element(change-list), $del-prop-node-ids as xs:string*,
+	$uri-root as xs:string)
 	as element(property)*
 {
-	if (fn:exists ($deltas/deleted-states/property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]))
+	if (($prop/@parentUUID = $del-prop-node-ids) and
+		 ($deltas/deleted-states/property[@parentUUID eq $prop/@parentUUID][@name eq $prop/@name]))
 	then delete-property ($prop, $uri-root)
 	else $prop
 };
@@ -230,8 +232,8 @@ declare private function prune-references ($node-id as attribute(uuid),
 	$refs as element(reference)*, $deltas as element(change-list))
 	as element(reference)*
 {
-	if (fn:exists ($deltas/modified-refs/references[@targetId = $node-id]))
-	then $deltas/modified-refs/references[@targetId = $node-id]/reference
+	if (fn:exists ($deltas/modified-refs/references[@targetId eq $node-id]))
+	then $deltas/modified-refs/references[@targetId eq $node-id]/reference
 	else $refs
 };
 
@@ -243,7 +245,7 @@ declare private function prune-references ($node-id as attribute(uuid),
 declare private function external-node ($existing-nodes as element(node)*,
 	$candidate as element(node), $parent-id as xs:string)
 {
-	if (fn:exists ($existing-nodes[@uuid = $candidate/@uuid]))
+	if (fn:exists ($existing-nodes[@uuid eq $candidate/@uuid]))
 	then ()
 	else
 	<node extref="true">{
@@ -261,8 +263,8 @@ declare private function parentless-new-nodes ($state as element(workspace),
 {
 	for $new-node in $deltas/added-states/node
 	let $parent-id := $new-node/@parentUUID
-	where fn:empty (($deltas/added-states/node[@uuid = $parent-id],
-			$state//node[@uuid = $parent-id]))
+	where fn:empty (($deltas/added-states/node[@uuid eq $parent-id],
+			$state//node[@uuid eq $parent-id]))
 	return $new-node
 };
 
@@ -276,32 +278,43 @@ declare private function parentless-new-nodes ($state as element(workspace),
    Note function mapping.
  :)
 declare private function update-node ($node as element(node),
-	$deltas as element(change-list), $collections as xs:string?, $uri-root as xs:string)
+	$deltas as element(change-list), $add-mod-ids as xs:string*,
+	$added-node-parent-ids as xs:string*, $added-prop-parent-ids as xs:string*,
+	$collections as xs:string?, $uri-root as xs:string)
 	as element(node)?
 {
 	(: note function mapping :)
 	let $node-id := $node/@uuid
+(:
+	let $sub-tree-node-ids := $node//@uuid
+:)
+
 	return
+	if ($add-mod-ids = $node//@uuid)
+	then
 	<node>{
-		let $replace-node := $deltas/modified-states/node[@uuid = $node-id]
+		let $replace-node := $deltas/modified-states/node[@uuid eq $node-id]
 		let $name-attr := if ($node/@name)
 			then $node/@name
 			else attribute { "name" } { find-node-name ($deltas, $node-id) }
 		let $current-node := if ($replace-node) then $replace-node else $node
+		let $added-nodes := if ($node-id = $added-node-parent-ids) then $deltas/added-states/node[@parentUUID eq $node-id] else ()
+		let $added-props := if ($node-id = $added-prop-parent-ids) then $deltas/added-states/property[@parentUUID eq $node-id] else ()
 		return
 		(
 			if ($current-node/@name) then () else $name-attr,
 			$current-node/@*,
 			$current-node/mixinTypes,
 			(update-property ($node/property, $deltas, $collections, $uri-root),
-				new-property ($deltas/added-states/property[@parentUUID = $node-id], $deltas, $collections, $uri-root)),
-			(update-node ($node/node, $deltas, $collections, $uri-root),
-				update-node ($deltas/added-states/node[@parentUUID = $node-id], $deltas, $collections, $uri-root)),
-			external-node (($node/node, $deltas/added-states/node[@parentUUID = $node-id]),
-				$deltas/(added-states|modified-states)/node[@uuid = $node-id]/nodes/node, fn:string ($node-id)),
+				new-property ($added-props, $deltas, $collections, $uri-root)),
+			(update-node ($node/node, $deltas, $add-mod-ids, $added-node-parent-ids, $added-prop-parent-ids, $collections, $uri-root),
+				update-node ($added-nodes, $deltas, $add-mod-ids, $added-node-parent-ids, $added-prop-parent-ids, $collections, $uri-root)),
+			external-node (($node/node, $added-nodes),
+				$deltas/(added-states|modified-states)/node[@uuid eq $node-id]/nodes/node, fn:string ($node-id)),
 			prune-references ($node-id, $node/reference, $deltas)
 		)
 	}</node>
+	else $node
 };
 
 (: Attempt to prune this node.  Any child nodes and/or properties are
@@ -312,21 +325,27 @@ declare private function update-node ($node as element(node),
    Note use of function mapping to automatically iterate child nodes.
  :)
 declare private function prune-node ($node as element(node),
-	$deltas as element(change-list), $uri-root as xs:string)
+	$deltas as element(change-list), $del-node-ids as xs:string*,
+	$del-prop-node-ids as xs:string*, $uri-root as xs:string)
 	as element(node)?
 {
 	let $node-id := $node/@uuid
+	let $sub-tree-node-ids := $node//@uuid
+
 	return
-	if (fn:exists ($deltas/deleted-states/node[@uuid = $node-id]))
-	then ()
-	else
-	<node>{
-		$node/@*,
-		$node/mixinTypes,
-		prune-property ($node/property, $deltas, $uri-root),
-		prune-node ($node/node, $deltas, $uri-root),
-		prune-references ($node-id, $node/reference, $deltas)
-	}</node>
+	if ($sub-tree-node-ids = ($del-node-ids, $del-prop-node-ids))
+	then
+		if ($node-id = $del-node-ids)
+		then ()
+		else
+		<node>{
+			$node/@*,
+			$node/mixinTypes,
+			prune-property ($node/property, $deltas, $del-prop-node-ids, $uri-root),
+			prune-node ($node/node, $deltas, $del-node-ids, $del-prop-node-ids, $uri-root),
+			prune-references ($node-id, $node/reference, $deltas)
+		}</node>
+	else $node
 };
 
 (: Apply updates to the workspace tree (adds and modifies).  This
@@ -337,10 +356,16 @@ declare private function apply-updates ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
+	let $add-mod-ids := fn:distinct-values (fn:data (($deltas/(added-states|modified-states)/node/@uuid, $deltas/(added-states|modified-states)/property/@parentUUID)))
+	let $added-node-parent-ids := fn:distinct-values (fn:data ($deltas/added-states/node/@parentUUID))
+	let $added-prop-parent-ids := fn:distinct-values (fn:data ($deltas/added-states/property/@parentUUID))
+	let $collections := fn:string ($state/@collections)
+
+	return
 	<workspace>{
 		$state/@*,
-		update-node ($state/node, $deltas, fn:string ($state/@collections), $uri-root),
-		update-node (parentless-new-nodes ($state, $deltas), $deltas, fn:string ($state/@collections), $uri-root)
+		update-node ($state/node, $deltas, $add-mod-ids, $added-node-parent-ids, $added-prop-parent-ids, $collections, $uri-root),
+		update-node (parentless-new-nodes ($state, $deltas), $deltas, $add-mod-ids, $added-node-parent-ids, $added-prop-parent-ids, $collections, $uri-root)
 	}</workspace>
 };
 
@@ -352,9 +377,13 @@ declare private function prune-deleted ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
+	let $del-node-ids := fn:distinct-values (fn:data ($deltas/deleted-states/node/@uuid))
+	let $del-prop-node-ids := fn:distinct-values (fn:data ($deltas/deleted-states/property/@parentUUID))
+
+	return
 	<workspace>{
 		$state/@*,
-		prune-node ($state/node, $deltas, $uri-root)   (: function mapping here :)
+		prune-node ($state/node, $deltas, $del-node-ids, $del-prop-node-ids, $uri-root)   (: function mapping here :)
 	}</workspace>
 };
 
@@ -363,20 +392,11 @@ declare function apply-state-updates ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
-(:
-let $dummy := xdmp:log ("apply-state-updates: start, pruning deleted")
-:)
-	let $dummy := if ($save-update-profile-data) then prof:enable(xdmp:request()) else ()
+	let $dummy := if ($save-update-profile-data) then prof:enable (xdmp:request()) else ()
 	let $pruned := prune-deleted ($state, $deltas, $uri-root)
-(:
-let $dummy := xdmp:log ("apply-state-updates: applying updates")
-:)
 	let $new-state := apply-updates ($pruned, $deltas, $uri-root)
 	let $dummy := if ($save-debug-history) then save-debug-history ($uri-root, $state, $pruned, $new-state, $deltas) else ()
 	let $dummy := if ($save-update-profile-data) then save-profile-data ($uri-root, prof:report (xdmp:request())) else ()
-(:
-let $dummy := xdmp:log ("apply-state-updates: done")
-:)
 
 	return $new-state
 };
@@ -386,8 +406,8 @@ let $dummy := xdmp:log ("apply-state-updates: done")
 declare function gather-new-blob-uris ($state as element(workspace),
 	$deltas as element(change-list))
 {
-	for $prop in $deltas/(added-states|modified-states)/property[@type = "Binary"]
-	let $new-prop := $state//property[@parentUUID = $prop/@parentUUID][@name = $prop/@name]
+	for $prop in $deltas/(added-states|modified-states)/property[@type eq "Binary"]
+	let $new-prop := $state//property[@parentUUID eq $prop/@parentUUID][@name eq $prop/@name]
 	where fn:not (is-empty-blob ($prop))
 	return
 	fn:concat (fn:string ($new-prop/@parentUUID), "|", fn:string ($new-prop/@name), "|", fn:string ($new-prop/values/value))
@@ -398,13 +418,13 @@ declare function gather-new-blob-uris ($state as element(workspace),
 declare function check-node-exists ($state as element(workspace), $id as xs:string)
 	as xs:boolean
 {
-	fn:exists ($state//node[@uuid = $id][fn:not(@extref)])
+	fn:exists ($state//node[@uuid eq $id][fn:not(@extref)])
 };
 
 declare function query-node-state ($state as element(workspace), $id as xs:string)
 	as element(node)?
 {
-	let $node as element(node)? := $state//node[@uuid = $id][fn:not(@extref)]
+	let $node as element(node)? := $state//node[@uuid eq $id][fn:not(@extref)]
 
 	return
 	if (fn:empty ($node))
@@ -436,14 +456,14 @@ declare function check-property-exists ($state as element(workspace),
 	$id as xs:string, $name as xs:string)
 	as xs:boolean
 {
-	fn:exists ($state//node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name])
+	fn:exists ($state//node[fn:string(@uuid) eq $id]/property[fn:string(@name) eq $name])
 };
 
 declare function query-property-state ($state as element(workspace),
 	$id as xs:string, $name as xs:string)
 	as element(property)?
 {
-	$state//node[fn:string(@uuid) = $id]/property[fn:string(@name) = $name]
+	$state//node[fn:string(@uuid) eq $id]/property[fn:string(@name) eq $name]
 };
 
 (: =============================================================== :)
@@ -452,14 +472,14 @@ declare function check-reference-exists ($state as element(workspace),
 	$id as xs:string)
 	as xs:boolean
 {
-	fn:exists ($state//node[fn:string(@uuid) = $id]/reference)
+	fn:exists ($state//node[fn:string(@uuid) eq $id]/reference)
 };
 
 declare function query-references-state ($state as element(workspace),
 	$id as xs:string)
 	as element(references)
 {
-	let $node := $state//node[fn:string(@uuid) = $id]
+	let $node := $state//node[fn:string(@uuid) eq $id]
 	return
 	<references>{
 		attribute { "targetId" } { $id },
