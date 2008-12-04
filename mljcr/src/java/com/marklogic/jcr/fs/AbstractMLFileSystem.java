@@ -112,7 +112,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	public void setUriRoot (String uriRootParam)
 	{
         String uriRoot = uriRootParam.replaceAll("\\\\", "/");
-        
+
 		if (uriRoot.startsWith ("/")) {
 			this.uriRoot = uriRoot;
 		} else {
@@ -147,6 +147,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		} catch (XccConfigException e) {
 			throw new FileSystemException ("Cannot create ContentSource: " + e, e);
 		}
+
+		sanityCheckConnection();
 
 		metaDataCache = new FileMetaDataLruCache (metaDataCacheSize);
 		itemStateCache = new ItemStateLruCache (itemStateCacheSize);
@@ -765,6 +767,23 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 			return rs.asStrings();
 		} catch (FileSystemException fse) {
 			throw new FileSystemException ("unable to run query", fse);
+		}
+	}
+
+	// ------------------------------------------------------------
+
+	private static final String SANITY_MODULE = FS + "startup-check.xqy";
+
+	private void sanityCheckConnection () throws FileSystemException
+	{
+		Session session = contentSource.newSession();
+		Request request = session.newModuleInvoke (modulePath (SANITY_MODULE));
+
+		try {
+			session.submitRequest (request);
+			// TODO: check version, etc
+		} catch (RequestException e) {
+			throw new FileSystemException ("Cannot establish connection with " + contentSourceUrl);
 		}
 	}
 
