@@ -401,15 +401,13 @@ declare private function prune-deleted ($state as element(workspace),
 	as element(workspace)
 {
 	let $del-nodes-map := map:map()
-	let $dummy := for $n in $deltas/deleted-states/node return map:put ($del-nodes-map, fn:string ($n/@uuid), $n)
+	let $dummy := map:put ($del-nodes-map, $deltas/deleted-states/node/@uuid, "X")  (: func mapping here :)
 	let $del-props-map := map:map()
 	let $dummy :=
 		for $uuid in fn:distinct-values (fn:data ($deltas/deleted-states/property/@parentUUID))
 		return map:put ($del-props-map, $uuid,
 			let $props-map := map:map()
-			let $dummy :=
-				for $prop in $deltas/deleted-states/property[@parentUUID eq $uuid]
-				return map:put ($props-map, $prop/@name, $prop)
+			let $dummy := map:put ($props-map, $deltas/deleted-states/property[@parentUUID eq $uuid]/@name, "X")
 			return $props-map)
 
 	return
