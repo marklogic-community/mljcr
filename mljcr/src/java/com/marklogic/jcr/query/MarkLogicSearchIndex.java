@@ -44,7 +44,6 @@ abstract public class MarkLogicSearchIndex extends AbstractQueryHandler
 
         if(!(fs instanceof MarkLogicFileSystem))
         {
-           System.out.println("THROWING ERROR ================= FS IS NULL FS IS NULL FS IS NULL");
            throw new IOException ("Filesystem must be an instance of MarkLogicFileSystem");
         }
 

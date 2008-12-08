@@ -34,6 +34,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 //	private final ItemManager itemMgr;
 	private final String statement;
 	private final String language;
+    private boolean debug = false;
 
 	public MLQueryBuilder (QueryRootNode root, Session session, ItemManager itemMgr,
 		String statement, String language)
@@ -79,6 +80,8 @@ public class MLQueryBuilder implements QueryNodeVisitor
 			Name name = names[i];
 //			log ("    selprop(" + i + ")=" + name.toString());
 
+            if(debug)
+                System.out.println("+++++++++selprop ("+i+")="+name.toString());
 			query.addPropertySelector (name.toString());
 		}
 
@@ -182,12 +185,21 @@ public class MLQueryBuilder implements QueryNodeVisitor
 //		log ("  nametest=" + ((nameTest == null) ? "*" : nameTest.toString()));
 //		log ("  predcount=" + node.getPredicates ().length);
 //		log ("  incldescendents=" + node.getIncludeDescendants ());
+        if(debug){
+            System.out.println("+++++++++nametest=" + ((nameTest == null) ? "NULL" : nameTest.toString()));
+            System.out.println("+++++++++predcount=" + node.getPredicates ().length);
+            System.out.println("+++++++++incldescendents=" + node.getIncludeDescendants ());
+        }
+
 
 		if (nameTest == null) {
+            if(debug) System.out.println("+++++++++IN FIRST IF");
 			query.addAnyNodePathStep (node.getIncludeDescendants());
 		} else if ("".equals (nameTest.getLocalName()) && "".equals (nameTest.getNamespaceURI())) {
+            if(debug) System.out.println("+++++++++IN SECOND IF");
 			query.addNamedNodePathStep ("", node.getIncludeDescendants());
 		} else {
+            if(debug) System.out.println("+++++++++IN ELSE");
 			query.addNamedNodePathStep (nameTest.toString(), node.getIncludeDescendants());
 		}
 
@@ -264,6 +276,13 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		Path relpath = node.getRelativePath();
 		int valueType = node.getValueType();
 		String propName = propPath (relpath);
+        if(debug)
+        {
+            System.out.println("visit RelationQueryNode relpath "+node.getRelativePath().toString());
+            System.out.println("visit RelationQueryNode valueType "+valueType);
+            System.out.println("visit RelationQueryNode propName "+propName);
+        }
+
 
 		switch (valueType) {
 		case QueryConstants.TYPE_DATE:
@@ -280,6 +299,8 @@ public class MLQueryBuilder implements QueryNodeVisitor
 			break;
 
 		case QueryConstants.TYPE_STRING:
+            //not add predicate
+            //query.addPropertyStepPath(propName);
 			break;
 
 		case QueryConstants.TYPE_TIMESTAMP:

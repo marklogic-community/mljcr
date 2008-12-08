@@ -44,6 +44,7 @@ public class MLQuery implements Query
 
 	private StringBuffer xpathBuffer = new StringBuffer ();
 	private List propertySelectors = new ArrayList (5);
+    private boolean debug = false;
 
 	public MLQuery(String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
 	{
@@ -56,6 +57,7 @@ public class MLQuery implements Query
 
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
+        
 	}
 
 	// --------------------------------------------------------------
@@ -77,16 +79,33 @@ public class MLQuery implements Query
 		if (descendants) {
 			xpathBuffer.append ("/");
 		}
+
 		xpathBuffer.append ("/node");
+
+       // returns "//node"
+       // String x = xpathBuffer.toString();
+       // System.out.println("BUFFER AT aadAnyNodePathStep: "+x);
 	}
+
+    public void addPropertyStepPath(String path)
+    {
+        xpathBuffer.append("/"+path);
+    }
 
 	public void addPropertyValuePredicate (String propName, String propValue)
 	{
+        if(debug){
+            System.out.println("addPropertyValuePredicate PROP NAME"+propName);
+            System.out.println("addPropertyValuePredicate PROP VALUE"+ propValue);
+        }
 		xpathBuffer.append ("[property[@name = \"");
 		xpathBuffer.append (propName);
 		xpathBuffer.append ("\"]/values/value[. = \"");
 		xpathBuffer.append (propValue);
 		xpathBuffer.append ("\"]]");
+
+        if(debug)
+            System.out.println("BUFFER IN addPropertyValuePredicate "+xpathBuffer.toString());
 	}
 
 	void addPropertySelector (String s)
@@ -97,11 +116,17 @@ public class MLQuery implements Query
 	public void addPositionPredicate (int position)
 	{
 		xpathBuffer.append ("[").append (position).append ("]");
+
+        String x = xpathBuffer.toString();
+        if(debug)
+            System.out.println("BUFFER AT addPositionPredicate "+x);
 	}
 
 	public void addPredicate (String pred)
 	{
 		xpathBuffer.append ("[").append (pred).append ("]");
+        if(debug)
+            System.out.println("IN ADDPREDICATE "+xpathBuffer.toString());
 	}
 
 	// ---------------------------------------------------------------
@@ -123,7 +148,7 @@ public class MLQuery implements Query
 				sb.append ("|");
 			}
 
-			sb.append ("property[@name\"").append (selector).append ("\"]");
+			sb.append ("node/property[@name=\"").append (selector).append ("\"]");
 		}
 
 		if (size > 1) {
@@ -148,7 +173,7 @@ public class MLQuery implements Query
 	public QueryResult execute () throws RepositoryException
 	{
 		logger.log (logLevel, "ML Query String: " + getXQuery ());
-		System.out.println (getXQuery () + "===========CURRENT XQUERY=============");
+		 System.out.println ("===========CURRENT XQUERY=============\n"+getXQuery());
 
 		//dummy query until getXQuery() is sorted out
 		String xqry = "xquery version '1.0-ml'; " +
@@ -156,13 +181,13 @@ public class MLQuery implements Query
                       "fn:doc("+"'" + AbstractMLFileSystem.URI_PLACEHOLDER + "'"+")//mljcr:node/@uuid";
 
 
-        System.out.println("THE QUERY: "+xqry);
+        //System.out.println("THE QUERY: "+xqry);
 		//write xquery that generates ids (state.xml)  //@uuid  551b7712-69f4-4f2b-9ad6-51051464f4fe
 		//query result with sequence of strings
 		//implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
 
 		try {
-			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
+			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, getXQuery());
             System.out.println("resultUUIDS size: "+resultUUIDs.length);
 			return new QueryResultImpl (session, resultUUIDs);
 		} catch (FileSystemException e) {

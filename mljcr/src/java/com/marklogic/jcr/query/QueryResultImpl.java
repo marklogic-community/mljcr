@@ -33,16 +33,9 @@ public class QueryResultImpl implements QueryResult
 		this.session = session;
 		this.uuids = uuids;
 
-        System.out.println("WORKSPACE NAME: "+session.getWorkspace().getName());
-        System.out.println("UUIDS LENGTH: "+this.uuids.length);
-
-//
-
-//           for(int i=0; i<this.uuids.length;i++){
-//               System.out.println("+++++++"+this.uuids[i]);
-//            }
-//
-//            System.out.println("-------------------------------DO MAPPING----------------------------");
+//        System.out.println("WORKSPACE NAME: "+session.getWorkspace().getName());
+//        System.out.println("UUIDS LENGTH: "+this.uuids.length);
+//        System.out.println("-------------------------------DO MAPPING----------------------------");
 	}
 
 	/**

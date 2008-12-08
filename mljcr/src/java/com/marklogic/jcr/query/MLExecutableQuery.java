@@ -52,6 +52,8 @@ public class MLExecutableQuery implements ExecutableQuery
 	{
 		logger.log (logLevel, "Executing query: \n" + queryBuilder.getRootNode().dump());
 
+        System.out.println("Executing query:\n+"+queryBuilder.getRootNode().dump());
+
 		Query query = queryBuilder.createQuery (offset, limit, mlfs);
 
 		return query.execute();
