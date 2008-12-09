@@ -136,8 +136,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	{
 		logger.log (logLevel, "init: path=" + uriRoot + ", uri=" + contentSourceUrl);
 
-        System.out.println("======URI ROOT IN INIT "+uriRoot);
-        System.out.println("======contentSourceUrl INIT "+contentSourceUrl);
+//        System.out.println("======URI ROOT IN INIT "+uriRoot);
+//        System.out.println("======contentSourceUrl INIT "+contentSourceUrl);
 
 		try {
 			URI uri = new URI (contentSourceUrl);
@@ -272,7 +272,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 						throw new IOException ("Inserting " + uri + ": " + e.getMessage());
 					} finally {
 					    // temp file can now safely be removed
-					    tmpFile.delete();
+						//noinspection ResultOfMethodCallIgnored
+						tmpFile.delete();
 					}
 				}
 
@@ -849,34 +850,25 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		return false;
 	}
 
-    private ResultSequence runAdHocQuery (String query)
-            throws FileSystemException
-    {
-        Session session = contentSource.newSession();
-        AdhocQuery ahrequest =  session.newAdhocQuery(query);
-            try{
-		      //ahrequest.setQuery (query);
-		      //ahrequest.setOptions (options);
-              return session.submitRequest (ahrequest);
-
-            } catch(RequestException e){
-                 throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
-            }
-
-    }
+//    private ResultSequence runAdHocQuery (String query)
+//            throws FileSystemException
+//    {
+//        Session session = contentSource.newSession();
+//        AdhocQuery ahrequest =  session.newAdhocQuery(query);
+//            try{
+//		      //ahrequest.setQuery (query);
+//		      //ahrequest.setOptions (options);
+//              return session.submitRequest (ahrequest);
+//
+//            } catch(RequestException e){
+//                 throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
+//            }
+//    }
 
 	private ResultSequence runModule (String module, XdmVariable var1,
 		XdmVariable var2, XdmVariable var3)
 		throws FileSystemException
 	{
-//        System.out.println("===================================================");
-       System.out.println("MODULE: "+module);
-       System.out.println("MODULE PATH: "+modulePath(module));
-//        if (var1 != null)  System.out.println("VAR 1: NAME"+var1.getName()+" VALUE: "+var1.getValue());
-//        if (var2 != null)   System.out.println("VAR 2: NAME"+var2.getName()+" VALUE: "+var2.getValue());
-//        if (var3 != null)  System.out.println("VAR 3: NAME"+var3.getName()+" VALUE: "+var3.getValue());
-//        System.out.println("===================================================");
-        
 		Session session = contentSource.newSession();
 		Request request = session.newModuleInvoke (modulePath (module));
 
