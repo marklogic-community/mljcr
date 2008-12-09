@@ -226,7 +226,7 @@ declare private function prune-property ($prop as element(property),
 	if ($del-prop) then delete-property ($prop, $uri-root) else $prop
 };
 
-(: Given a <referenceds> node and the id of its parent node, if a new
+(: Given a <references> node and the id of its parent node, if a new
    instance is in the change list, return that.  Otherwise return the
    original <references> element.
  :)
@@ -283,16 +283,14 @@ declare private function update-node ($node as element(node),
 	$deltas as element(change-list),
 	$added-nodes-by-parent as map:map, $added-props-by-parent as map:map,
 	$modified-nodes as map:map, $modified-props as map:map,
-	$collections as xs:string?, $uri-root as xs:string)
+	$affected-nodes as map:map, $collections as xs:string?, $uri-root as xs:string)
 	as element(node)?
 {
 	let $node-id := $node/@uuid
 
 	return
-(:
-	if ($node//@uuid = (map:keys ($added-nodes-by-parent), map:keys ($modified-nodes)))
+	if ((map:get ($affected-nodes, $node-id)) or ($node//@uuid = map:keys ($affected-nodes)))
 	then
-:)
 	<node>{
 		let $replace-node := map:get ($modified-nodes, $node-id)
 		let $name-attr := if ($node/@name)
@@ -308,16 +306,14 @@ declare private function update-node ($node as element(node),
 			$current-node/mixinTypes,
 			(update-property ($node/property, $deltas, $modified-props, $collections, $uri-root),
 				new-property ($added-props, $deltas, $collections, $uri-root)),
-			(update-node ($node/node, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $collections, $uri-root),
-				update-node ($added-nodes, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $collections, $uri-root)),
+			(update-node ($node/node, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $affected-nodes, $collections, $uri-root),
+				update-node ($added-nodes, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $affected-nodes, $collections, $uri-root)),
 			external-node (($node/node, $added-nodes),
 				$deltas/(added-states|modified-states)/node[@uuid eq $node-id]/nodes/node, fn:string ($node-id)),
 			prune-references ($node-id, $node/reference, $deltas)
 		)
 	}</node>
-(:
 	else $node
-:)
 };
 
 (: Apply updates to the workspace tree (adds and modifies).  This
@@ -348,13 +344,18 @@ declare private function apply-updates ($state as element(workspace),
 		for $uuid in fn:distinct-values (fn:data ($deltas/modified-states/property/@parentUUID))
 		return map:put ($modified-props, $uuid, $deltas/modified-states/property[@parentUUID eq $uuid])
 
+	let $affected-nodes := map:map()
+	let $dummy := map:put ($affected-nodes, fn:distinct-values ((map:keys ($added-nodes-by-parent),
+		map:keys ($added-props-by-parent), map:keys ($modified-nodes), map:keys ($modified-props),
+		fn:data ($deltas/modified-refs/references/@targetId))), fn:true())
+
 	let $collections := fn:string ($state/@collections)
 
 	return
 	<workspace>{
 		$state/@*,
-		update-node ($state/node, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $collections, $uri-root),
-		update-node (parentless-new-nodes ($state, $deltas), $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $collections, $uri-root)
+		update-node ($state/node, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $affected-nodes, $collections, $uri-root),
+		update-node (parentless-new-nodes ($state, $deltas), $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $affected-nodes, $collections, $uri-root)
 	}</workspace>
 };
 
@@ -367,29 +368,26 @@ declare private function apply-updates ($state as element(workspace),
  :)
 declare private function prune-node ($node as element(node),
 	$deltas as element(change-list), $del-nodes-map as map:map,
-	$del-props-map as map:map, $uri-root as xs:string)
+	$del-props-map as map:map, $affected-nodes-map as map:map,
+	$uri-root as xs:string)
 	as element(node)?
 {
 	let $node-id := $node/@uuid
 
 	return
-(:
-	if ($node//@uuid = (map:keys ($del-nodes-map), map:keys ($del-props-map)))
-	then
-:)
-		if (map:get ($del-nodes-map, $node-id))
-		then ()
-		else
-		<node>{
-			$node/@*,
-			$node/mixinTypes,
-			prune-property ($node/property, $deltas, $del-props-map, $uri-root),
-			prune-node ($node/node, $deltas, $del-nodes-map, $del-props-map, $uri-root),
-			prune-references ($node-id, $node/reference, $deltas)
-		}</node>
-(:
-	else $node
-:)
+	if (map:get ($del-nodes-map, $node-id))
+	then ()
+	else
+		if ((map:get ($affected-nodes-map, $node-id)) or ($node//@uuid = map:keys ($affected-nodes-map)))
+		then
+			<node>{
+				$node/@*,
+				$node/mixinTypes,
+				prune-property ($node/property, $deltas, $del-props-map, $uri-root),
+				prune-node ($node/node, $deltas, $del-nodes-map, $del-props-map, $affected-nodes-map, $uri-root),
+				prune-references ($node-id, $node/reference, $deltas)
+			}</node>
+		else $node
 };
 
 (: Recurse down the workspace state tree and prune out deleted nodes.
@@ -401,19 +399,21 @@ declare private function prune-deleted ($state as element(workspace),
 	as element(workspace)
 {
 	let $del-nodes-map := map:map()
-	let $dummy := map:put ($del-nodes-map, $deltas/deleted-states/node/@uuid, "X")  (: func mapping here :)
+	let $dummy := map:put ($del-nodes-map, $deltas/deleted-states/node/@uuid, fn:true())  (: func mapping here :)
 	let $del-props-map := map:map()
 	let $dummy :=
 		for $uuid in fn:distinct-values (fn:data ($deltas/deleted-states/property/@parentUUID))
 		return map:put ($del-props-map, $uuid,
 			let $props-map := map:map()
-			let $dummy := map:put ($props-map, $deltas/deleted-states/property[@parentUUID eq $uuid]/@name, "X")
+			let $dummy := map:put ($props-map, $deltas/deleted-states/property[@parentUUID eq $uuid]/@name, fn:true())
 			return $props-map)
+	let $affected-nodes-map := map:map()
+	let $dummy := map:put ($affected-nodes-map, (map:keys ($del-nodes-map), map:keys ($del-props-map)), fn:true())
 
 	return
 	<workspace>{
 		$state/@*,
-		prune-node ($state/node, $deltas, $del-nodes-map, $del-props-map, $uri-root)   (: function mapping here :)
+		prune-node ($state/node, $deltas, $del-nodes-map, $del-props-map, $affected-nodes-map, $uri-root)   (: function mapping here :)
 	}</workspace>
 };
 
