@@ -31,34 +31,35 @@ import com.marklogic.jcr.fs.MarkLogicFileSystem;
  */
 abstract public class MarkLogicSearchIndex extends AbstractQueryHandler
 {
-	protected static final Logger log = Logger.getLogger (MarkLogicSearchIndex.class.getName());
+	protected static final Logger log = Logger.getLogger (MarkLogicSearchIndex.class.getName ());
 
-    protected MarkLogicFileSystem mlfs=null;
+	protected MarkLogicFileSystem mlfs = null;
 
 	// ---------------------------------------------------------------
 
-	protected void doInit() throws IOException
-	{                                           
-      QueryHandlerContext qx = super.getContext();
-      FileSystem fs =  qx.getFileSystem(); //super.getContext().getFileSystem();
+	protected void doInit () throws IOException
+	{
+		QueryHandlerContext qx = super.getContext ();
+		FileSystem fs = qx.getFileSystem (); //super.getContext().getFileSystem();
 
-        if(!(fs instanceof MarkLogicFileSystem))
-        {
-           throw new IOException ("Filesystem must be an instance of MarkLogicFileSystem");
-        }
+		if (!(fs instanceof MarkLogicFileSystem)) {
+			throw new IOException ("Filesystem must be an instance of MarkLogicFileSystem");
+		}
 
-     this.mlfs = (MarkLogicFileSystem) fs;
+		this.mlfs = (MarkLogicFileSystem) fs;
 
 	}
 
 	public void addNode (NodeState node) throws RepositoryException, IOException
 	{
-		throw new UnsupportedOperationException ("addNode");
+		// Do nothing for now
+//		throw new UnsupportedOperationException ("addNode");
 	}
 
 	public void deleteNode (NodeId id) throws IOException
 	{
-		throw new UnsupportedOperationException ("deleteNode");
+		// Do nothing for now
+//		throw new UnsupportedOperationException ("deleteNode");
 	}
 
 	public void close() throws IOException
