@@ -41,7 +41,7 @@ public class MLExecutableQuery implements ExecutableQuery
 		queryBuilder = new MLQueryBuilder (root, session, itemMgr, statement, language);
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
-        this.mlfs = mlfs;
+		this.mlfs = mlfs;
 	}
 
 	// -------------------------------------------------------------
