@@ -4,8 +4,6 @@
 
 package com.marklogic.jcr.query;
 
-import com.marklogic.jcr.compat.PMAdapter13;
-
 import org.apache.jackrabbit.core.query.ExecutableQuery;
 import org.apache.jackrabbit.core.query.QueryRootNode;
 import org.apache.jackrabbit.core.query.QueryParser;
@@ -31,6 +29,6 @@ public class MarkLogicSearchIndex13 extends MarkLogicSearchIndex
 		QueryRootNode root = QueryParser.parse (statement, language,
 			session.getNamespaceResolver());
 
-		return new MLExecutableQuery (session, itemMgr, statement, language, root);
+		return new MLExecutableQuery (session, itemMgr, statement, language, root, mlfs);
 	}
 }
