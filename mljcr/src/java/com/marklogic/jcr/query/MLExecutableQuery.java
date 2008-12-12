@@ -32,7 +32,7 @@ public class MLExecutableQuery implements ExecutableQuery
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final Level logLevel;
 	private final MLQueryBuilder queryBuilder;
-    private final MarkLogicFileSystem mlfs;
+	private final MarkLogicFileSystem mlfs;
 
 	public MLExecutableQuery(SessionImpl session, ItemManager itemMgr, String statement,
                              String language, QueryRootNode root, MarkLogicFileSystem mlfs)
@@ -52,7 +52,7 @@ public class MLExecutableQuery implements ExecutableQuery
 	{
 		logger.log (logLevel, "Executing query: \n" + queryBuilder.getRootNode().dump());
 
-        System.out.println("Executing query:\n+"+queryBuilder.getRootNode().dump());
+		System.out.println("Executing query:\n+"+queryBuilder.getRootNode().dump());
 
 		Query query = queryBuilder.createQuery (offset, limit, mlfs);
 
