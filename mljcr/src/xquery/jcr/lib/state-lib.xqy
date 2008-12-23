@@ -265,8 +265,8 @@ declare private function parentless-new-nodes ($state as element(workspace),
 {
 	for $new-node in $deltas/added-states/node
 	let $parent-id := $new-node/@parentUUID
-	where fn:empty (($deltas/added-states/node[@uuid eq $parent-id],
-			$state//node[@uuid eq $parent-id]))
+	where fn:empty ($deltas/added-states/node[@uuid eq $parent-id]) and
+			fn:empty ($state//node[@uuid eq $parent-id])
 	return $new-node
 };
 
@@ -289,7 +289,7 @@ declare private function update-node ($node as element(node),
 	let $node-id := $node/@uuid
 
 	return
-	if ((map:get ($affected-nodes, $node-id)) or ($node//@uuid = map:keys ($affected-nodes)))
+	if ((map:get ($affected-nodes, $node-id)) or (map:keys ($affected-nodes) = $node//@uuid))
 	then
 	<node>{
 		let $replace-node := map:get ($modified-nodes, $node-id)
@@ -411,6 +411,9 @@ declare private function prune-deleted ($state as element(workspace),
 	let $dummy := map:put ($affected-nodes-map, (map:keys ($del-nodes-map), map:keys ($del-props-map)), fn:true())
 
 	return
+	if (map:count ($affected-nodes-map) eq 0)
+	then $state
+	else
 	<workspace>{
 		$state/@*,
 		prune-node ($state/node, $deltas, $del-nodes-map, $del-props-map, $affected-nodes-map, $uri-root)   (: function mapping here :)

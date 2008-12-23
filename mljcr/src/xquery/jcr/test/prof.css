@@ -1,0 +1,46 @@
+body {
+        font-family: Helvetica, Arial, sans-serif;
+        background-color: #aadddd;
+        padding: 12pt 2% 10pt 2%;
+        font-size: 11pt;
+
+/*
+        font-family: Georgia, Times, "Times New Roman", serif;
+*/
+}
+
+.main {
+        margin-top: 7em;
+}
+
+.headerblock {
+        background-color: #eeeeee;
+        padding: 7px;
+        margin-bottom: 12px;
+        border: solid black 1px;
+}
+
+.exprblock {
+        background-color: #ffffff;
+        padding: 4px;
+        margin-bottom: 12px;
+        border: solid blue 1px;
+}
+
+.histogramblock {
+        background-color: #cceecc;
+        padding: 4px;
+        border: solid blue 1px;
+}
+
+.codelisting {
+        font-family: "Courier New", Courier, mono, fixed;
+        font-size: .9em;
+        font-weight: bold;
+        white-space: pre-wrap;
+        border: 1px solid black;
+	margin-top: 5px;
+        padding: 5px;
+        background: #eeeeee;
+        overflow: auto;
+}
