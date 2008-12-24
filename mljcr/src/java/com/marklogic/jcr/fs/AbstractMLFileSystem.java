@@ -68,7 +68,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
-    private static final String QUERY = "query/";
+	private static final String QUERY = "query/";
 	private final PMAdapter pmAdapter;
 
 	private FileMetaDataLruCache metaDataCache = null;
@@ -111,7 +111,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 	public void setUriRoot (String uriRootParam)
 	{
-        String uriRoot = uriRootParam.replaceAll("\\\\", "/");
+		String uriRoot = uriRootParam.replaceAll("\\\\", "/");
 
 		if (uriRoot.startsWith ("/")) {
 			this.uriRoot = uriRoot;
@@ -665,11 +665,13 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		String deltas, List contentList)
 		throws FileSystemException
 	{
+		long startTime = System.currentTimeMillis();
+
 		clearItemStateCache();
 
 		String fullWsDocUri = fullPath (workspaceDocUri);
 
-		logger.log (logLevel, "applyStateUpdate(start): workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
+		logger.log (logLevel, "+Begin: workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
 
 		ContentCreateOptions options = ContentCreateOptions.newBinaryInstance();
 		Content [] blobs = new Content [contentList.size() + 1];
@@ -697,6 +699,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 			throw new FileSystemException ("Inserting transaction data: " + e, e);
 		}
 
+		long prepareDone = System.currentTimeMillis();
+
 		XdmVariable var1 = ValueFactory.newVariable (new XName ("state-doc-uri"), ValueFactory.newXSString (fullWsDocUri));
 		XdmVariable var2 = ValueFactory.newVariable (new XName ("workspace-root"), ValueFactory.newXSString (uriRoot));
 		XdmVariable var3 = ValueFactory.newVariable (new XName ("deltas-uri"), ValueFactory.newXSString (changeListUri));
@@ -707,6 +711,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		if (rs.size() != contentList.size()) {
 			throw new FileSystemException ("Blob list size mismatch: content=" + contentList.size() + ", rs=" + rs.size());
 		}
+
+		long updateDone = System.currentTimeMillis();
 
 		while (rs.hasNext()) {
 			String blobPathItem = rs.next().asString();
@@ -744,17 +750,41 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		if (blobMap.size () != 0) throw new FileSystemException ("Blob map inconsistency: size=" + blobMap.size());
 
-		logger.log (logLevel, "applyStateUpdate(finish): workspaceDocUri=" + fullWsDocUri);
+		logger.log (logLevel, "-End:   workspaceDocUri=" + fullWsDocUri);
+
+		logger.log (logLevel, "Insert: " + fmttime (prepareDone - startTime) +
+			", New State: " + fmttime (updateDone - prepareDone) +
+			", Total: " + fmttime (System.currentTimeMillis () - startTime) +
+			", new blobs: " + rs.size() +
+			", WS: " + fullWsDocUri);
 	}
 
-    private static final String RUN_QUERY_MODULE = QUERY + "run-query.xqy";
+	private String fmttime (long interval)
+	{
+		StringBuffer sb = new StringBuffer();
+
+		sb.append (interval / 1000).append (".");
+
+		long millis = interval % 1000;
+
+		if (millis < 10) sb.append ("0");
+		if (millis < 100) sb.append ("0");
+//		if ((millis % 10) == 0) millis /= 10;
+//		if ((millis % 10) == 0) millis /= 10;
+
+		sb.append (millis);
+
+		return sb.toString();
+	}
+
+	private static final String RUN_QUERY_MODULE = QUERY + "run-query.xqy";
 
 	public String [] runQuery (String docName, String query) throws FileSystemException
 	{
 		String docUri = fullPath (docName);
-        String stateuri = "dummy";
-        XdmVariable stateuriVar = ValueFactory.newVariable (new XName ("state-uri"), ValueFactory.newXSString (stateuri));
-        XdmVariable queryVar = ValueFactory.newVariable (new XName ("query"), ValueFactory.newXSString (query.replaceAll(URI_PLACEHOLDER, docUri)));
+		String stateuri = "dummy";
+		XdmVariable stateuriVar = ValueFactory.newVariable (new XName ("state-uri"), ValueFactory.newXSString (stateuri));
+		XdmVariable queryVar = ValueFactory.newVariable (new XName ("query"), ValueFactory.newXSString (query.replaceAll (URI_PLACEHOLDER, docUri)));
 
 //       System.out.println("_________________________docUri"+docUri);
 //       System.out.println("_________________________query"+query);
@@ -763,9 +793,9 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		try {
 			//ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
-            ResultSequence rs=runModule(RUN_QUERY_MODULE, stateuriVar, queryVar, null);
-            System.out.println("RESULT "+rs.size());
-			return rs.asStrings();
+			ResultSequence rs = runModule (RUN_QUERY_MODULE, stateuriVar, queryVar, null);
+System.out.println ("RESULT " + rs.size ());
+			return rs.asStrings ();
 		} catch (FileSystemException fse) {
 			throw new FileSystemException ("unable to run query", fse);
 		}
