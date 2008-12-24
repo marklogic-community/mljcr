@@ -17,11 +17,16 @@ declare variable $tx-tmp-dir as xs:string :=
 	fn:concat ($workspace-root, "/", fn:string ($deltas/tx-dir), "/",
 	fn:string ($deltas/tx-id), "/");
 
+let $dummy := state:starting()
 let $new-state := state:apply-state-updates ($state, $deltas, $workspace-root)
 
 return
 (
 	state:gather-new-blob-uris ($new-state, $deltas),
+(:
 	xdmp:node-replace ($state, $new-state),
-	xdmp:directory-delete ($tx-tmp-dir)
+:)
+	xdmp:document-insert ($state-doc-uri, $new-state),
+	xdmp:directory-delete ($tx-tmp-dir),
+	state:finished ($workspace-root)
 )

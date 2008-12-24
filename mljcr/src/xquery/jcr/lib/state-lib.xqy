@@ -425,13 +425,10 @@ declare function apply-state-updates ($state as element(workspace),
 	$deltas as element(change-list), $uri-root as xs:string)
 	as element(workspace)
 {
-	let $dummy := if ($save-update-profile-data) then prof:enable (xdmp:request()) else ()
-
 	let $pruned := prune-deleted ($state, $deltas, $uri-root)
 	let $new-state := apply-updates ($pruned, $deltas, $uri-root)
 
 	let $dummy := if ($save-debug-history) then save-debug-history ($uri-root, $state, $pruned, $new-state, $deltas) else ()
-	let $dummy := if ($save-update-profile-data) then save-profile-data ($uri-root, prof:report (xdmp:request())) else ()
 
 	return $new-state
 };
@@ -527,5 +524,18 @@ declare function query-references-state ($state as element(workspace),
 		}</reference>
 	}</references>
 };
+
+(: =============================================================== :)
+
+declare function starting()
+{
+	if ($save-update-profile-data) then prof:enable (xdmp:request()) else ()
+};
+
+declare function finished ($uri-root as xs:string)
+{
+	if ($save-update-profile-data) then save-profile-data ($uri-root, prof:report (xdmp:request())) else ()
+};
+
 
 (: =============================================================== :)
