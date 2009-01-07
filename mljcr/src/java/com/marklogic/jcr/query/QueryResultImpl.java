@@ -41,17 +41,17 @@ public class QueryResultImpl implements QueryResult
 	/**
 	 * {@inheritDoc}
 	 */
-	public String[] getColumnNames() throws RepositoryException
+	public String[] getColumnNames () throws RepositoryException
 	{
 		return new String[0];  // FIXME: auto-generated
 	}
 
-	public RowIterator getRows() throws RepositoryException
+	public RowIterator getRows () throws RepositoryException
 	{
-		return new RowIteratorAdapter (new ArrayList());
+		return new RowIteratorAdapter (new ArrayList ());
 	}
 
-	public NodeIterator getNodes() throws RepositoryException
+	public NodeIterator getNodes () throws RepositoryException
 	{
 		//System.out.println("SIZE"+rs.size());
 
@@ -60,7 +60,7 @@ public class QueryResultImpl implements QueryResult
 
 	private static class NodeIteratorImpl implements NodeIterator
 	{
-		private final String[] uuids;
+		private final String [] uuids;
 		private final Session session;
 		private int cursor = -1;
 
@@ -73,19 +73,19 @@ public class QueryResultImpl implements QueryResult
 		// ---------------------------------------------------
 		// Implementation of NodeIterator interface
 
-        public Node nextNode()
-        {
-            cursor++;
+		public Node nextNode()
+		{
+			if (!hasNext()) {
+				return null;
+			}
 
-            if (!hasNext ()) {
-                return null;
-            }
+			cursor++;
 
-            try {
-                return session.getNodeByUUID (uuids [cursor]);
-            } catch (RepositoryException e) {
-                throw new RuntimeException ("nextNode: " + e, e);
-            }
+			try {
+				return session.getNodeByUUID (uuids[cursor]);
+			} catch (RepositoryException e) {
+				throw new RuntimeException ("nextNode: " + e, e);
+			}
 
 			//implementation of next node, takes id, and queries for node
 
@@ -123,7 +123,7 @@ public class QueryResultImpl implements QueryResult
 
 		public boolean hasNext()
 		{
-			return (getSize() != 0) && (cursor < getSize());
+			return (getSize() != 0) && (cursor < (getSize() - 1));
 		}
 
 		public Object next()

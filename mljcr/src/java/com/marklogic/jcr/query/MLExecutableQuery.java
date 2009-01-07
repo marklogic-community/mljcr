@@ -39,8 +39,9 @@ public class MLExecutableQuery implements ExecutableQuery
 		throws InvalidQueryException
 	{
 		queryBuilder = new MLQueryBuilder (root, session, itemMgr, statement, language);
-		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
-		logLevel = Level.parse (levelName);
+//		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+//		logLevel = Level.parse (levelName);
+logLevel = Level.INFO;
 		this.mlfs = mlfs;
 	}
 
@@ -51,8 +52,6 @@ public class MLExecutableQuery implements ExecutableQuery
 		throws RepositoryException
 	{
 		logger.log (logLevel, "Executing query: \n" + queryBuilder.getRootNode().dump());
-
-		System.out.println("Executing query:\n+"+queryBuilder.getRootNode().dump());
 
 		Query query = queryBuilder.createQuery (offset, limit, mlfs);
 

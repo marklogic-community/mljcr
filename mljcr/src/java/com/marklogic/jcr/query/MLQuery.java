@@ -40,7 +40,7 @@ public class MLQuery implements Query
 
 	private final Level logLevel;
 	private final MarkLogicFileSystem mlfs;
-    private final Session session;
+	private final Session session;
 
 	private StringBuffer xpathBuffer = new StringBuffer ();
 	private List propertySelectors = new ArrayList (5);
@@ -53,17 +53,17 @@ public class MLQuery implements Query
 		this.offset = offset;
 		this.limit = limit;
 		this.mlfs = mlfs;
-        this.session = session;
+		this.session = session;
 
-		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
-		logLevel = Level.parse (levelName);
-        
+//		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+//		logLevel = Level.parse (levelName);
+logLevel = Level.INFO;
 	}
 
 	// --------------------------------------------------------------
 	// ---------------------------------------------------------------
 
-	void addNamedNodePathStep (String step, boolean descendants)
+	void addNamedNodePathStep (String step, boolean descendants, boolean hasPredicates)
 	{
 		String name = (step.equals ("{}")) ? "" : step;
 
@@ -71,7 +71,9 @@ public class MLQuery implements Query
 			xpathBuffer.append ("/");
 		}
 
-		xpathBuffer.append ("/node[@name=\"").append (name).append (("\"]"));
+		xpathBuffer.append ((hasPredicates) ? "/(" : "/");
+		xpathBuffer.append ("node[@name=\"").append (name).append (("\"]"));
+		if (hasPredicates) xpathBuffer.append (")");
 	}
 
 	void addAnyNodePathStep (boolean descendants)
@@ -87,10 +89,10 @@ public class MLQuery implements Query
        // System.out.println("BUFFER AT aadAnyNodePathStep: "+x);
 	}
 
-    public void addPropertyStepPath(String path)
-    {
-        xpathBuffer.append("/"+path);
-    }
+	public void addPropertyStepPath(String path)
+	{
+		xpathBuffer.append ("/").append (path);
+	}
 
 	public void addPropertyValuePredicate (String propName, String propValue)
 	{
@@ -158,11 +160,15 @@ public class MLQuery implements Query
 
 	String getXQuery ()
 	{
-		StringBuffer sb = new StringBuffer ();
+		StringBuffer sb = new StringBuffer();
+
+		sb.append ("/workspace");
 
 		sb.append (xpathBuffer);
 
 		listify (propertySelectors, sb);
+
+		sb.append ("/@uuid");
 
 		return sb.toString ();
 	}
@@ -170,15 +176,16 @@ public class MLQuery implements Query
 	// ---------------------------------------------------------------
 	// Implementation of Query interface
 
-	public QueryResult execute () throws RepositoryException
+	public QueryResult execute() throws RepositoryException
 	{
-		logger.log (logLevel, "ML Query String: " + getXQuery ());
-		 System.out.println ("===========CURRENT XQUERY=============\n"+getXQuery());
-
 		//dummy query until getXQuery() is sorted out
-		String xqry = "xquery version '1.0-ml'; " +
-                      "declare namespace mljcr = 'http://marklogic.com/jcr';" +
-                      "fn:doc("+"'" + AbstractMLFileSystem.URI_PLACEHOLDER + "'"+")//mljcr:node/@uuid";
+		String xqry = "xquery version '1.0-ml';\n" +
+			"declare namespace mljcr = 'http://marklogic.com/jcr'; \n" +
+			"declare default element namespace 'http://marklogic.com/jcr'; \n" +
+			"fn:doc ('" + AbstractMLFileSystem.URI_PLACEHOLDER + "')" +
+			getXQuery();
+
+		logger.log (logLevel, "ML Query String: \n" + xqry);
 
 
         //System.out.println("THE QUERY: "+xqry);
@@ -187,8 +194,9 @@ public class MLQuery implements Query
 		//implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
 
 		try {
-			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, getXQuery());
-            System.out.println("resultUUIDS size: "+resultUUIDs.length);
+//			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, getXQuery());
+			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
+logger.log (logLevel, "resultUUIDS size: " + resultUUIDs.length);
 			return new QueryResultImpl (session, resultUUIDs);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);

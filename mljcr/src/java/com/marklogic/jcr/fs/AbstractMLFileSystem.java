@@ -786,16 +786,10 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		XdmVariable stateuriVar = ValueFactory.newVariable (new XName ("state-uri"), ValueFactory.newXSString (stateuri));
 		XdmVariable queryVar = ValueFactory.newVariable (new XName ("query"), ValueFactory.newXSString (query.replaceAll (URI_PLACEHOLDER, docUri)));
 
-//       System.out.println("_________________________docUri"+docUri);
-//       System.out.println("_________________________query"+query);
-//       System.out.println("UPDATED QUERY"+query.replaceAll(URI_PLACEHOLDER, docUri));
-
-
 		try {
 			//ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
 			ResultSequence rs = runModule (RUN_QUERY_MODULE, stateuriVar, queryVar, null);
-System.out.println ("RESULT " + rs.size ());
-			return rs.asStrings ();
+			return rs.asStrings();
 		} catch (FileSystemException fse) {
 			throw new FileSystemException ("unable to run query", fse);
 		}

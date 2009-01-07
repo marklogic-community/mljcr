@@ -185,28 +185,20 @@ public class MLQueryBuilder implements QueryNodeVisitor
 //		log ("  nametest=" + ((nameTest == null) ? "*" : nameTest.toString()));
 //		log ("  predcount=" + node.getPredicates ().length);
 //		log ("  incldescendents=" + node.getIncludeDescendants ());
-        if(debug){
-            System.out.println("+++++++++nametest=" + ((nameTest == null) ? "NULL" : nameTest.toString()));
-            System.out.println("+++++++++predcount=" + node.getPredicates ().length);
-            System.out.println("+++++++++incldescendents=" + node.getIncludeDescendants ());
-        }
-
-
-		if (nameTest == null) {
-            if(debug) System.out.println("+++++++++IN FIRST IF");
-			query.addAnyNodePathStep (node.getIncludeDescendants());
-		} else if ("".equals (nameTest.getLocalName()) && "".equals (nameTest.getNamespaceURI())) {
-            if(debug) System.out.println("+++++++++IN SECOND IF");
-			query.addNamedNodePathStep ("", node.getIncludeDescendants());
-		} else {
-            if(debug) System.out.println("+++++++++IN ELSE");
-			query.addNamedNodePathStep (nameTest.toString(), node.getIncludeDescendants());
-		}
 
 		int index = node.getIndex();
+		boolean hasindexPredicate = index != LocationStepQueryNode.NONE;
+
+		if (nameTest == null) {
+			query.addAnyNodePathStep (node.getIncludeDescendants());
+		} else if ("".equals (nameTest.getLocalName()) && "".equals (nameTest.getNamespaceURI())) {
+			query.addNamedNodePathStep ("", node.getIncludeDescendants(), hasindexPredicate);
+		} else {
+			query.addNamedNodePathStep (nameTest.toString(), node.getIncludeDescendants(), hasindexPredicate);
+		}
 
 		// FIXME: should this operate like RelationQueryNode?
-		if (index != LocationStepQueryNode.NONE) {
+		if (hasindexPredicate) {
 			if (index == LocationStepQueryNode.LAST) {
 				query.addPredicate ("position() = last()");
 			}
