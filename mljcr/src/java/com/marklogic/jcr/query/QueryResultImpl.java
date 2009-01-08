@@ -6,8 +6,11 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Value;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
+import javax.jcr.query.Row;
 
 import java.util.ArrayList;
 
@@ -46,9 +49,9 @@ public class QueryResultImpl implements QueryResult
 		return new String[0];  // FIXME: auto-generated
 	}
 
-	public RowIterator getRows () throws RepositoryException
+	public RowIterator getRows() throws RepositoryException
 	{
-		return new RowIteratorAdapter (new ArrayList ());
+		return new RowIteratorImpl (session, uuids);
 	}
 
 	public NodeIterator getNodes () throws RepositoryException
@@ -56,6 +59,84 @@ public class QueryResultImpl implements QueryResult
 		//System.out.println("SIZE"+rs.size());
 
 		return new NodeIteratorImpl (session, uuids);  //new NodeIteratorAdapter(new ArrayList());
+	}
+
+	private static class RowIteratorImpl implements RowIterator
+	{
+		private final NodeIterator nodes;
+
+		private RowIteratorImpl (Session session, String [] uuids)
+		{
+			nodes = new NodeIteratorImpl (session, uuids);
+		}
+
+		// -----------------------------------------------
+		// Implementation of RowIterator interface
+
+		public Row nextRow()
+		{
+			Node node = nodes.nextNode();
+
+			if (node == null) return null;
+
+			return new RowImpl (node);
+		}
+
+		// -----------------------------------------------
+		// Implementation of RangeIterator interface
+
+		public void skip (long l)
+		{
+			nodes.skip (l);
+		}
+
+		public long getSize()
+		{
+			return nodes.getSize();
+		}
+
+		public long getPosition()
+		{
+			return nodes.getPosition();
+		}
+
+		// -----------------------------------------------
+		// Implementation of Iterator interface
+
+		public boolean hasNext()
+		{
+			return nodes.hasNext();
+		}
+
+		public Object next()
+		{
+			return nextRow();
+		}
+
+		public void remove()
+		{
+			nodes.remove();
+		}
+
+		private static class RowImpl implements Row
+		{
+			private final Node node;
+
+			private RowImpl (Node node)
+			{
+				this.node = node;
+			}
+
+			public Value[] getValues() throws RepositoryException
+			{
+				return new Value[0];  // FIXME: auto-generated
+			}
+
+			public Value getValue (String s) throws RepositoryException
+			{
+				return node.getProperty (s).getValue ();
+			}
+		}
 	}
 
 	private static class NodeIteratorImpl implements NodeIterator
@@ -86,14 +167,6 @@ public class QueryResultImpl implements QueryResult
 			} catch (RepositoryException e) {
 				throw new RuntimeException ("nextNode: " + e, e);
 			}
-
-			//implementation of next node, takes id, and queries for node
-
-			//get the next item from xcc result sequence
-			//parse it
-			//build a Node
-			//return Node
-//			return null;  //To change body of implemented methods use File | Settings | File Templates.
 		}
 
 		// ---------------------------------------------------

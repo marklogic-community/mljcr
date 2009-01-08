@@ -63,7 +63,7 @@ logLevel = Level.INFO;
 	// --------------------------------------------------------------
 	// ---------------------------------------------------------------
 
-	void addNamedNodePathStep (String step, boolean descendants, boolean hasPredicates)
+	void addNamedNodePathStep (String step, boolean descendants)
 	{
 		String name = (step.equals ("{}")) ? "" : step;
 
@@ -71,9 +71,7 @@ logLevel = Level.INFO;
 			xpathBuffer.append ("/");
 		}
 
-		xpathBuffer.append ((hasPredicates) ? "/(" : "/");
-		xpathBuffer.append ("node[@name=\"").append (name).append (("\"]"));
-		if (hasPredicates) xpathBuffer.append (")");
+		xpathBuffer.append ("/(node[@name=\"").append (name).append (("\"])"));
 	}
 
 	void addAnyNodePathStep (boolean descendants)
@@ -197,6 +195,9 @@ logLevel = Level.INFO;
 //			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, getXQuery());
 			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
 logger.log (logLevel, "resultUUIDS size: " + resultUUIDs.length);
+for (int i = 0; i < resultUUIDs.length; i++) {
+	System.out.println (resultUUIDs[i]);
+}
 			return new QueryResultImpl (session, resultUUIDs);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);

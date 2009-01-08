@@ -146,12 +146,15 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (TextsearchQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  query=" + node.getRelativePath());
-//		log ("  query=" + node.getQuery ());
-//		log ("  refsprop=" + node.getReferencesProperty ());
-//		log ("  needsystree=" + node.needsSystemTree());
-//		log ("  refsprop=" + node.getRelativePath());
 
+		MLQuery query = (MLQuery) data;
+		Path relPath = node.getRelativePath();
+		// FIXME: This is probably broken for the general case
+		String relPathStr = (relPath == null) ? "." : relPath.getString();
+		String txtQuery = node.getQuery();
+
+		// FIXME: Is it safe to assume the 'xmlcharacters' property here?
+		query.addPredicate ("fn:contains(" + relPathStr + "/property[name=\"{http://www.jcp.org/jcr/1.0}xmlcharacters\"]/value/values, " + txtQuery + ")");
 
 		return data;
 	}
@@ -192,17 +195,18 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		if (nameTest == null) {
 			query.addAnyNodePathStep (node.getIncludeDescendants());
 		} else if ("".equals (nameTest.getLocalName()) && "".equals (nameTest.getNamespaceURI())) {
-			query.addNamedNodePathStep ("", node.getIncludeDescendants(), hasindexPredicate);
+			query.addNamedNodePathStep ("", node.getIncludeDescendants());
 		} else {
-			query.addNamedNodePathStep (nameTest.toString(), node.getIncludeDescendants(), hasindexPredicate);
+			query.addNamedNodePathStep (nameTest.toString(), node.getIncludeDescendants());
 		}
 
 		// FIXME: should this operate like RelationQueryNode?
 		if (hasindexPredicate) {
 			if (index == LocationStepQueryNode.LAST) {
 				query.addPredicate ("position() = last()");
+			} else {
+				query.addPositionPredicate (node.getIndex());
 			}
-			query.addPositionPredicate (node.getIndex());
 		}
 
 		node.acceptOperands (this, data);
@@ -268,13 +272,6 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		Path relpath = node.getRelativePath();
 		int valueType = node.getValueType();
 		String propName = propPath (relpath);
-        if(debug)
-        {
-            System.out.println("visit RelationQueryNode relpath "+node.getRelativePath().toString());
-            System.out.println("visit RelationQueryNode valueType "+valueType);
-            System.out.println("visit RelationQueryNode propName "+propName);
-        }
-
 
 		switch (valueType) {
 		case QueryConstants.TYPE_DATE:
@@ -287,7 +284,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 			break;
 
 		case QueryConstants.TYPE_POSITION:
-			query.addPredicate (propName + "[position() " + opString + " " + positionName (node.getPositionValue()) + "]");
+			query.addPredicate ("position() " + opString + " " + positionName (node.getPositionValue()));
 			break;
 
 		case QueryConstants.TYPE_STRING:

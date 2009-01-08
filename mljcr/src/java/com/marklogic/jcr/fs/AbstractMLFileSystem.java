@@ -782,6 +782,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	public String [] runQuery (String docName, String query) throws FileSystemException
 	{
 		String docUri = fullPath (docName);
+logger.log (Level.INFO, "doc=" + docUri);
 		String stateuri = "dummy";
 		XdmVariable stateuriVar = ValueFactory.newVariable (new XName ("state-uri"), ValueFactory.newXSString (stateuri));
 		XdmVariable queryVar = ValueFactory.newVariable (new XName ("query"), ValueFactory.newXSString (query.replaceAll (URI_PLACEHOLDER, docUri)));
