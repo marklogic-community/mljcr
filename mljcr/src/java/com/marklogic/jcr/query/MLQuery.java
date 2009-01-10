@@ -10,6 +10,9 @@ import com.marklogic.jcr.fs.AbstractMLFileSystem;
 import com.marklogic.jcr.persistence.AbstractPersistenceManager;
 
 import org.apache.jackrabbit.core.fs.FileSystemException;
+import org.apache.jackrabbit.core.query.OrderQueryNode;
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.Path;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -19,6 +22,7 @@ import javax.jcr.query.QueryResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,9 +46,9 @@ public class MLQuery implements Query
 	private final MarkLogicFileSystem mlfs;
 	private final Session session;
 
-	private StringBuffer xpathBuffer = new StringBuffer ();
-	private List propertySelectors = new ArrayList (5);
-    private boolean debug = false;
+	private StringBuffer xpathBuffer = new StringBuffer();
+	private Name [] propertySelectors = new Name [0];
+	private final List orderSpecs = new ArrayList (5);
 
 	public MLQuery(String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
 	{
@@ -94,79 +98,121 @@ logLevel = Level.INFO;
 
 	public void addPropertyValuePredicate (String propName, String propValue)
 	{
-        if(debug){
-            System.out.println("addPropertyValuePredicate PROP NAME"+propName);
-            System.out.println("addPropertyValuePredicate PROP VALUE"+ propValue);
-        }
-		xpathBuffer.append ("[property[@name = \"");
+ 		xpathBuffer.append ("[property[@name = \"");
 		xpathBuffer.append (propName);
 		xpathBuffer.append ("\"]/values/value[. = \"");
 		xpathBuffer.append (propValue);
 		xpathBuffer.append ("\"]]");
-
-        if(debug)
-            System.out.println("BUFFER IN addPropertyValuePredicate "+xpathBuffer.toString());
 	}
 
-	void addPropertySelector (String s)
+	void addPropertySelectors (Name[] names)
 	{
-		propertySelectors.add (s);
+		propertySelectors = (Name[]) names.clone ();
 	}
 
 	public void addPositionPredicate (int position)
 	{
 		xpathBuffer.append ("[").append (position).append ("]");
-
-        String x = xpathBuffer.toString();
-        if(debug)
-            System.out.println("BUFFER AT addPositionPredicate "+x);
 	}
 
 	public void addPredicate (String pred)
 	{
 		xpathBuffer.append ("[").append (pred).append ("]");
-        if(debug)
-            System.out.println("IN ADDPREDICATE "+xpathBuffer.toString());
+	}
+
+	public void addOrderBySpec (OrderQueryNode.OrderSpec orderspec)
+	{
+		orderSpecs.add (orderspec);
+	}
+
+	public void addPropertyValueTest (Path relPath, String opString, String operand, String functionName)
+	{
+		Path.Element[] elements = relPath.getElements();
+
+		xpathBuffer.append ("[");
+
+		if (functionName != null) {
+			xpathBuffer.append (functionName).append ("(");
+		}
+
+		for (int i = 0; i < elements.length; i++) {
+			if (i != 0) {
+				xpathBuffer.append ("/");
+			}
+
+			if (i == elements.length - 1) {
+				xpathBuffer.append ("property[@name=\"").append (elements[i]).append ("\"]");
+			} else {
+				xpathBuffer.append (elements[i]);
+			}
+		}
+
+		xpathBuffer.append ("/values/value");
+
+		if (functionName == null) {
+			xpathBuffer.append ("[. ");
+			xpathBuffer.append (opString).append (" ");
+			xpathBuffer.append (operand);
+			xpathBuffer.append ("]");
+		} else {
+			xpathBuffer.append (")");
+		}
+
+		xpathBuffer.append ("]");
 	}
 
 	// ---------------------------------------------------------------
 
-	private void listify (List selectors, StringBuffer sb)
+//	private void insertPropertyRelations (List relations, StringBuffer sb)
+//	{
+//		for (Iterator it = relations.iterator (); it.hasNext ();) {
+//			String s = (String) it.next ();
+//			sb.append ("[property[@name=\"").append (s).append ("\"]]");
+//		}
+//	}
+
+	private void insertOrderSpecs (List orderSpecs, StringBuffer sb)
 	{
-		int size = selectors.size ();
+		boolean notFirst = false;
+		if (orderSpecs.size() == 0) return;
 
-		if (size != 0) {
-			sb.append ("/");
-		}
-		if (size > 1) {
-			sb.append ("(");
-		}
+		sb.append ("order by");
 
-		for (int i = 0; i < size; i++) {
-			String selector = (String) selectors.get (i);
-			if (i != 0) {
-				sb.append ("|");
+		for (Iterator it = orderSpecs.iterator(); it.hasNext();) {
+			OrderQueryNode.OrderSpec orderSpec = (OrderQueryNode.OrderSpec) it.next ();
+
+			if (notFirst) {
+				sb.append (",");
+			} else {
+				notFirst = true;
 			}
 
-			sb.append ("node/property[@name=\"").append (selector).append ("\"]");
+			sb.append (" $node[property[@name=\"");
+			sb.append (orderSpec.getProperty().toString());
+			sb.append ("\"]]/values/value ");
+			sb.append ((orderSpec.isAscending ()) ? "ascending" : "descending");
 		}
 
-		if (size > 1) {
-			sb.append (")");
-		}
+		sb.append ("\n");
 	}
 
 	String getXQuery ()
 	{
 		StringBuffer sb = new StringBuffer();
 
+		sb.append ("for $node in ");
+		sb.append ("fn:doc (\"").append (AbstractMLFileSystem.URI_PLACEHOLDER).append ("\")");
 		sb.append ("/workspace");
 
 		sb.append (xpathBuffer);
 
-		listify (propertySelectors, sb);
+//		insertPropertyRelations (propertySelectors, sb);
 
-		sb.append ("/@uuid");
+		sb.append ("\n");
+
+		insertOrderSpecs (orderSpecs, sb);
+
+		sb.append ("return $node/@uuid\n");
 
 		return sb.toString ();
 	}
@@ -180,8 +226,7 @@ logLevel = Level.INFO;
 		String xqry = "xquery version '1.0-ml';\n" +
 			"declare namespace mljcr = 'http://marklogic.com/jcr'; \n" +
 			"declare default element namespace 'http://marklogic.com/jcr'; \n" +
-			"fn:doc ('" + AbstractMLFileSystem.URI_PLACEHOLDER + "')" +
-			getXQuery();
+			getXQuery() + "\n";
 
 		logger.log (logLevel, "ML Query String: \n" + xqry);
 

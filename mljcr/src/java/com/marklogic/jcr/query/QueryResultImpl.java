@@ -1,18 +1,20 @@
 package com.marklogic.jcr.query;
 
-import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
+import org.apache.jackrabbit.value.LongValue;
+import org.apache.jackrabbit.value.PathValue;
+import org.apache.jackrabbit.value.StringValue;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
-import javax.jcr.ItemNotFoundException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 import javax.jcr.query.Row;
 
-import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,31 +24,35 @@ import java.util.ArrayList;
  */
 public class QueryResultImpl implements QueryResult
 {
-	//  java.lang.String[] getColumnNames() throws javax.jcr.RepositoryException;
-
-	// javax.jcr.query.RowIterator getRows() throws javax.jcr.RepositoryException;
-
-	//  javax.jcr.NodeIterator getNodes() throws javax.jcr.RepositoryException;
+	private static final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
+	private static final String DEFAULT_LOG_LEVEL = "FINE";
+	private static final Value zeroValue = new LongValue (0);
 
 	private final String[] uuids;
 	private final Session session;
+	private final Level logLevel;
 
 	public QueryResultImpl (Session session, String[] uuids)
 	{
 		this.session = session;
 		this.uuids = uuids;
 
+		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+		logLevel = Level.parse (levelName);
+
 //        System.out.println("WORKSPACE NAME: "+session.getWorkspace().getName());
 //        System.out.println("UUIDS LENGTH: "+this.uuids.length);
 //        System.out.println("-------------------------------DO MAPPING----------------------------");
 	}
 
+	private static final String [] columnNames = { "jcr:path", "jcr:score" };
+
 	/**
 	 * {@inheritDoc}
 	 */
-	public String[] getColumnNames () throws RepositoryException
+	public String[] getColumnNames() throws RepositoryException
 	{
-		return new String[0];  // FIXME: auto-generated
+		return columnNames;
 	}
 
 	public RowIterator getRows() throws RepositoryException
@@ -54,14 +60,12 @@ public class QueryResultImpl implements QueryResult
 		return new RowIteratorImpl (session, uuids);
 	}
 
-	public NodeIterator getNodes () throws RepositoryException
+	public NodeIterator getNodes() throws RepositoryException
 	{
-		//System.out.println("SIZE"+rs.size());
-
-		return new NodeIteratorImpl (session, uuids);  //new NodeIteratorAdapter(new ArrayList());
+		return new NodeIteratorImpl (session, uuids);
 	}
 
-	private static class RowIteratorImpl implements RowIterator
+	private class RowIteratorImpl implements RowIterator
 	{
 		private final NodeIterator nodes;
 
@@ -118,7 +122,7 @@ public class QueryResultImpl implements QueryResult
 			nodes.remove();
 		}
 
-		private static class RowImpl implements Row
+		private class RowImpl implements Row
 		{
 			private final Node node;
 
@@ -134,12 +138,26 @@ public class QueryResultImpl implements QueryResult
 
 			public Value getValue (String s) throws RepositoryException
 			{
-				return node.getProperty (s).getValue ();
+				logger.log (logLevel, "column: " + s);
+logger.log (Level.INFO, "column: " + s);
+
+				if ("jcr:score".equals (s)) {
+					return zeroValue;
+				}
+
+				if ("jcr:path".equals (s)) {
+					// FIXME: This is not correct
+					return new StringValue (node.getName());
+				}
+
+				// FIXME: need to catch jcr:path and jcr:score
+
+				return node.getProperty (s).getValue();
 			}
 		}
 	}
 
-	private static class NodeIteratorImpl implements NodeIterator
+	private class NodeIteratorImpl implements NodeIterator
 	{
 		private final String [] uuids;
 		private final Session session;

@@ -74,19 +74,15 @@ public class MLQueryBuilder implements QueryNodeVisitor
 //		log ("  order=" + ((node.getOrderNode () == null) ? "NONE" :  node.getOrderNode().toString()));
 //		log ("  abs=" + node.getLocationNode().isAbsolute());
 
-		Name [] names = node.getSelectProperties();
-
-		for (int i = 0; i < names.length; i++) {
-			Name name = names[i];
-//			log ("    selprop(" + i + ")=" + name.toString());
-
-            if(debug)
-                System.out.println("+++++++++selprop ("+i+")="+name.toString());
-			query.addPropertySelector (name.toString());
-		}
+		// These are the columns reported by the QueryResult
+		query.addPropertySelectors (node.getSelectProperties());
 
 		if (node.getLocationNode() != null) {
 			node.getLocationNode().accept (this, data);
+		}
+
+		if (node.getOrderNode() != null) {
+			node.getOrderNode ().accept (this, data);
 		}
 
 		return data;
@@ -95,9 +91,24 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (OrQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  type=" + node.getType());
 
+		QueryNode [] operands = node.getOperands();
+
+		if (operands.length < 2) {
+			node.acceptOperands (this, data);
+			return data;
+		}
+
+
+		// TODO
+//		for (int i = 0; i < operands.length; i++) {
+//			QueryNode operand = operands[i];
+//
+//		}
+
+		// TODO: push to add-expr state
 		node.acceptOperands (this, data);
+		// TODO: pop from add-expr state
 
 		return data;
 	}
@@ -105,9 +116,15 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (AndQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  type=" + node.getType());
 
+		if (node.getNumOperands() < 2) {
+			node.acceptOperands (this, data);
+			return data;
+		}
+
+		// TODO: push to add-expr state
 		node.acceptOperands (this, data);
+		// TODO: pop from add-expr state
 
 		return data;
 	}
@@ -115,9 +132,12 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (NotQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  type=" + node.getType());
+
+		// TODO: push not-expr
 
 		node.acceptOperands (this, data);
+
+		// TODO: pop not-expr
 
 		return data;
 	}
@@ -134,7 +154,6 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (NodeTypeQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  type=" + node.getType());
 
 		MLQuery query = (MLQuery) data;
 
@@ -217,6 +236,7 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (RelationQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
+logger.log (Level.INFO, node.getClass().getName());
 
 		MLQuery query = (MLQuery) data;
 
@@ -226,61 +246,70 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 		int op = node.getOperation();
 		String opString = null;
+		String function = null;
 
 		if (op == QueryConstants.OPERATION_BETWEEN) {
 		    opString = ("BETWEEN");
 		} else if (op == QueryConstants.OPERATION_EQ_GENERAL) {
-		    opString = ("=");
+		    opString = (" = ");
 		} else if (op == QueryConstants.OPERATION_EQ_VALUE) {
-		    opString = ("eq");
+		    opString = (" eq ");
 		} else if (op == QueryConstants.OPERATION_GE_GENERAL) {
-		    opString = (">=");
+		    opString = (" >= ");
 		} else if (op == QueryConstants.OPERATION_GE_VALUE) {
-		    opString = ("ge");
+		    opString = (" ge ");
 		} else if (op == QueryConstants.OPERATION_GT_GENERAL) {
-		    opString = ("> ");
+		    opString = (" > ");
 		} else if (op == QueryConstants.OPERATION_GT_VALUE) {
-		    opString = ("gt");
+		    opString = (" gt ");
 		} else if (op == QueryConstants.OPERATION_IN) {
-		    opString = ("IN");
+		    opString = (" IN ");
 		} else if (op == QueryConstants.OPERATION_LE_GENERAL) {
-		    opString = ("<=");
+		    opString = (" <= ");
 		} else if (op == QueryConstants.OPERATION_LE_VALUE) {
-		    opString = ("le");
+		    opString = (" le ");
 		} else if (op == QueryConstants.OPERATION_LIKE) {
-		    opString = ("LIKE");
+		    opString = (" LIKE ");
 		} else if (op == QueryConstants.OPERATION_LT_GENERAL) {
-		    opString = ("< ");
+		    opString = (" < ");
 		} else if (op == QueryConstants.OPERATION_LT_VALUE) {
-		    opString = ("lt");
+		    opString = (" lt ");
 		} else if (op == QueryConstants.OPERATION_NE_GENERAL) {
-		    opString = ("<>");
+		    opString = (" != ");
 		} else if (op == QueryConstants.OPERATION_NE_VALUE) {
-		    opString = ("ne");
+		    opString = (" ne ");
 		} else if (op == QueryConstants.OPERATION_NOT_NULL) {
-		    opString = ("NOT NULL");
+		    function = "fn:exists";
 		} else if (op == QueryConstants.OPERATION_NULL) {
-		    opString = ("IS NULL");
+			function = "fn:empty";
 		} else if (op == QueryConstants.OPERATION_SIMILAR) {
-		    opString = ("similarity");
+		    opString = (" similarity ");
 		} else if (op == QueryConstants.OPERATION_SPELLCHECK) {
-		    opString = ("spellcheck");
+		    opString = (" spellcheck ");
 		} else {
-		    opString = ("!!UNKNOWN OPERATION!!");
+		    opString = (" !!UNKNOWN OPERATION!! ");
 		}
 
 		Path relpath = node.getRelativePath();
 		int valueType = node.getValueType();
-		String propName = propPath (relpath);
+//		String propName = propPath (relpath);
+		String operand = "";
 
+		// TODO: add type tests here?
 		switch (valueType) {
 		case QueryConstants.TYPE_DATE:
+			operand = node.getDateValue().toString();
+logger.log (Level.INFO, "type: Date");
 			break;
 
 		case QueryConstants.TYPE_DOUBLE:
+			operand = "" + node.getDoubleValue();
+logger.log (Level.INFO, "type: Double");
 			break;
 
 		case QueryConstants.TYPE_LONG:
+			operand = "" + node.getLongValue();
+logger.log (Level.INFO, "type: Long");
 			break;
 
 		case QueryConstants.TYPE_POSITION:
@@ -288,16 +317,26 @@ public class MLQueryBuilder implements QueryNodeVisitor
 			break;
 
 		case QueryConstants.TYPE_STRING:
-            //not add predicate
-            //query.addPropertyStepPath(propName);
+			operand = "\"" + node.getStringValue() + "\"";
+logger.log (Level.INFO, "type: String");
 			break;
 
 		case QueryConstants.TYPE_TIMESTAMP:
+			// FIXME:
+			operand = node.getDateValue().toString();
+logger.log (Level.INFO, "type: TimeStamp");
+			break;
+
+		case 0:
 			break;
 
 		default:
-			throw new RuntimeException ("bad type: " + node.getValueType());
+			throw new RuntimeException ("bad type: " + node.getValueType() + ", opString: " + opString);
 		}
+
+		query.addPropertyValueTest (relpath, opString, operand, function);
+
+//		query.addPredicate (propName + opString + operand);
 
 		return data;
 	}
@@ -305,13 +344,14 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (OrderQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
+		MLQuery query = (MLQuery) data;
 
-		OrderQueryNode.OrderSpec [] orderspecs = node.getOrderSpecs ();
+		OrderQueryNode.OrderSpec [] orderspecs = node.getOrderSpecs();
 
 		for (int i = 0; i < orderspecs.length; i++) {
 			OrderQueryNode.OrderSpec orderspec = orderspecs[i];
 
-//			log ("  " + orderspec.getProperty ().toString () + ", ascending=" + orderspec.isAscending ());
+			query.addOrderBySpec (orderspec);
 		}
 		return data;
 	}
