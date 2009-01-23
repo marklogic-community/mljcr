@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 public class MLQuery implements Query
 {
 	private static final Logger logger = Logger.getLogger (MLQuery.class.getName ());
-	private static final String DEFAULT_LOG_LEVEL = "FINE";
+//	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
 	private final String language;
 	private final long offset;
@@ -47,6 +47,7 @@ public class MLQuery implements Query
 	private final Session session;
 
 	private StringBuffer xpathBuffer = new StringBuffer();
+	// TODO: Handle this properly in result and as query constraint
 	private Name [] propertySelectors = new Name [0];
 	private final List orderSpecs = new ArrayList (5);
 
@@ -159,6 +160,24 @@ logLevel = Level.INFO;
 		}
 
 		xpathBuffer.append ("]");
+	}
+
+	public void addFullTextSearch (String relPathStr, String rawQuery)
+	{
+		TextQueryParser textQuery = new TextQueryParser (rawQuery);
+		String posTest = textQuery.getPositiveTest();
+		String negTest = textQuery.getNegativeTest();
+
+		if (posTest != null) {
+			logger.log (logLevel, "positive test: " + posTest);
+			addPredicate ("cts:contains(" + relPathStr + "/property/values, " + posTest + ")");
+		}
+
+		if (negTest != null) {
+			logger.log (logLevel, "negative test: " + negTest);
+			addPredicate ("fn:not(cts:contains(" + relPathStr + "/property/values, " + negTest + "))");
+		}
+
 	}
 
 	// ---------------------------------------------------------------

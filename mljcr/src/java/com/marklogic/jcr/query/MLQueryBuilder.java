@@ -34,7 +34,6 @@ public class MLQueryBuilder implements QueryNodeVisitor
 //	private final ItemManager itemMgr;
 	private final String statement;
 	private final String language;
-    private boolean debug = false;
 
 	public MLQueryBuilder (QueryRootNode root, Session session, ItemManager itemMgr,
 		String statement, String language)
@@ -170,10 +169,8 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		Path relPath = node.getRelativePath();
 		// FIXME: This is probably broken for the general case
 		String relPathStr = (relPath == null) ? "." : relPath.getString();
-		String txtQuery = node.getQuery();
 
-		// FIXME: Is it safe to assume the 'xmlcharacters' property here?
-		query.addPredicate ("fn:contains(" + relPathStr + "/property[name=\"{http://www.jcp.org/jcr/1.0}xmlcharacters\"]/value/values, " + txtQuery + ")");
+		query.addFullTextSearch (relPathStr, node.getQuery());
 
 		return data;
 	}

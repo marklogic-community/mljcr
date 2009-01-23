@@ -24,6 +24,11 @@ import java.util.logging.Level;
  */
 public class QueryResultImpl implements QueryResult
 {
+	private static final String NS_JCR_URI = "http://www.jcp.org/jcr/1.0";
+	private static final String SCORE_COL_NAME1 = "jcr:score";
+	private static final String SCORE_COL_NAME2 =  "{" + NS_JCR_URI + "}:score";
+	private static final String PATH_COL_NAME1 = "jcr:path";
+	private static final String PATH_COL_NAME2 =  "{" + NS_JCR_URI + "}:path";
 	private static final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private static final Value zeroValue = new LongValue (0);
@@ -141,11 +146,11 @@ public class QueryResultImpl implements QueryResult
 				logger.log (logLevel, "column: " + s);
 logger.log (Level.INFO, "column: " + s);
 
-				if ("jcr:score".equals (s)) {
+				if (SCORE_COL_NAME1.equals (s) || SCORE_COL_NAME2.equals (s)) {
 					return zeroValue;
 				}
 
-				if ("jcr:path".equals (s)) {
+				if (PATH_COL_NAME1.equals (s) || PATH_COL_NAME2.equals (s)) {
 					// FIXME: This is not correct
 					return new StringValue (node.getName());
 				}
