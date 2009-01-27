@@ -126,7 +126,7 @@ logLevel = Level.INFO;
 		orderSpecs.add (orderspec);
 	}
 
-	public void addPropertyValueTest (Path relPath, String opString, String operand, String functionName)
+	public void addPropertyValueTest (Path relPath, String opString, String value, String operand, String functionName)
 	{
 		Path.Element[] elements = relPath.getElements();
 
@@ -151,7 +151,7 @@ logLevel = Level.INFO;
 		xpathBuffer.append ("/values/value");
 
 		if (functionName == null) {
-			xpathBuffer.append ("[. ");
+			xpathBuffer.append ("[").append (value);
 			xpathBuffer.append (opString).append (" ");
 			xpathBuffer.append (operand);
 			xpathBuffer.append ("]");
@@ -206,9 +206,9 @@ logLevel = Level.INFO;
 				notFirst = true;
 			}
 
-			sb.append (" $node[property[@name=\"");
+			sb.append (" $node/property[@name=\"");
 			sb.append (orderSpec.getProperty().toString());
-			sb.append ("\"]]/values/value ");
+			sb.append ("\"]/values/value ");
 			sb.append ((orderSpec.isAscending ()) ? "ascending" : "descending");
 		}
 

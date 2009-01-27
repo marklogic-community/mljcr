@@ -50,7 +50,7 @@ public class QueryResultImpl implements QueryResult
 //        System.out.println("-------------------------------DO MAPPING----------------------------");
 	}
 
-	private static final String [] columnNames = { "jcr:path", "jcr:score" };
+	private static final String [] columnNames = { "jcr:score", "jcr:path"  };
 
 	/**
 	 * {@inheritDoc}

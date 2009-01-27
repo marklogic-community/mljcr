@@ -25,6 +25,9 @@ import java.util.logging.Logger;
  */
 public class MLQueryBuilder implements QueryNodeVisitor
 {
+	private static final String NT_NS_NAME = "http://www.jcp.org/jcr/nt/1.0";
+	private static final String NT_BASE_TYPE_NAME = "{" + NT_NS_NAME + "}base";
+
 	private static final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
@@ -156,7 +159,11 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 		MLQuery query = (MLQuery) data;
 
-		query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString());
+		String typeName = node.getValue().toString();
+
+		if ( ! NT_BASE_TYPE_NAME.equals (typeName)) {
+			query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString());
+		}
 
 		return data;
 	}
@@ -290,6 +297,7 @@ logger.log (Level.INFO, node.getClass().getName());
 		Path relpath = node.getRelativePath();
 		int valueType = node.getValueType();
 //		String propName = propPath (relpath);
+		String value = ".";
 		String operand = "";
 
 		// TODO: add type tests here?
@@ -310,12 +318,21 @@ logger.log (Level.INFO, "type: Long");
 			break;
 
 		case QueryConstants.TYPE_POSITION:
-			query.addPredicate ("position() " + opString + " " + positionName (node.getPositionValue()));
-			break;
+//			query.addPredicate ("position() " + opString + " " + positionName (node.getPositionValue()));
+
+			if (node.getPositionValue() == LocationStepQueryNode.LAST) {
+				operand = "last()";
+			} else {
+				operand = "" + node.getPositionValue();
+			}
+
+			query.addPredicate ("position()" + opString + operand);
+
+			return data;
 
 		case QueryConstants.TYPE_STRING:
-			operand = "\"" + node.getStringValue() + "\"";
-logger.log (Level.INFO, "type: String");
+			operand = "\"" + nsResolverHack (node.getStringValue()) + "\"";
+logger.log (Level.INFO, "type: String (" + operand + ")");
 			break;
 
 		case QueryConstants.TYPE_TIMESTAMP:
@@ -331,11 +348,21 @@ logger.log (Level.INFO, "type: TimeStamp");
 			throw new RuntimeException ("bad type: " + node.getValueType() + ", opString: " + opString);
 		}
 
-		query.addPropertyValueTest (relpath, opString, operand, function);
+		query.addPropertyValueTest (relpath, opString, value, operand, function);
 
 //		query.addPredicate (propName + opString + operand);
 
 		return data;
+	}
+
+	// TODO: Need to catch other prefixes here?  General lookup?  Patch the parser?
+	private String nsResolverHack (String stringValue)
+	{
+		if ( ! stringValue.startsWith ("nt:")) {
+			return stringValue;
+		}
+
+		return "{" + NT_NS_NAME + "}" + stringValue.substring (3);
 	}
 
 	public Object visit (OrderQueryNode node, Object data)

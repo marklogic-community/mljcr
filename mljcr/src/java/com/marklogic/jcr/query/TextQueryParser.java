@@ -109,7 +109,7 @@ public class TextQueryParser
 		return temp;
 	}
 
-	// -------------------------------------------------------
+       	// -------------------------------------------------------
 
 //	public static String parseContainsQuery (String rawQuery)
 //	{
