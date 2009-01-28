@@ -319,7 +319,7 @@ declare private function update-node ($node as element(node),
 (: Restore the order of added child nodes, which was lost
    by using a map to speed up finding added nodes.
    TODO: possible bottleneck here looking up node list in $deltas
-   TODO: Is it the right thing to not order when added-states list is empty?
+   TODO: Is it the right thing to not order when ordered-states list is empty?  Is order maintained?
 :)
 declare private function ordered-added-nodes ($node-id as xs:string,
 	$added-nodes-by-parent as map:map, $deltas as element(change-list))
