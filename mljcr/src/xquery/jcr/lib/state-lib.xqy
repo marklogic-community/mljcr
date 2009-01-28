@@ -297,7 +297,7 @@ declare private function update-node ($node as element(node),
 			then $node/@name
 			else attribute { "name" } { find-node-name ($deltas, $node-id) }  (: FIXME :)
 		let $current-node := if ($replace-node) then $replace-node else $node
-		let $added-nodes := map:get ($added-nodes-by-parent, $node-id)
+		let $added-nodes := ordered-added-nodes ($node-id, $added-nodes-by-parent, $deltas)
 		let $added-props := map:get ($added-props-by-parent, $node-id)
 		return
 		(
@@ -314,6 +314,23 @@ declare private function update-node ($node as element(node),
 		)
 	}</node>
 	else $node
+};
+
+(: Restore the order of added child nodes, which was lost
+   by using a map to speed up finding added nodes.
+   TODO: possible bottleneck here looking up node list in $deltas
+   TODO: Is it the right thing to not order when added-states list is empty?
+:)
+declare private function ordered-added-nodes ($node-id as xs:string,
+	$added-nodes-by-parent as map:map, $deltas as element(change-list))
+{
+	let $added-nodes := map:get ($added-nodes-by-parent, $node-id)
+	let $node-id-list := $deltas/added-states/node[@uuid = $node-id]/nodes/node/@uuid
+	let $ordered-nodes := for $id in $node-id-list return $added-nodes[@uuid = $id]
+	let $added-count := fn:count ($added-nodes)
+	let $ordered-count := fn:count ($ordered-nodes)
+
+	return  if ($added-count eq $ordered-count) then $ordered-nodes else $added-nodes
 };
 
 (: Apply updates to the workspace tree (adds and modifies).  This
