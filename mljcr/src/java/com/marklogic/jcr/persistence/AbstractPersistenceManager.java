@@ -48,6 +48,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,6 +97,9 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 	private static final String TXID_ELEMENT = "tx-id";
 
 	private static final String MLJCR_VERSION = "1.0";
+
+	private static final String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
+	private static final String XS_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
 	private static final String JCR_NAMESPACE = "http://marklogic.com/jcr";
 	private static final String workspaceStateTemplate =
 		"<workspace xmlns=\"" + JCR_NAMESPACE +
@@ -104,6 +109,20 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 
 	private static final String BLOB_TX_DIR = "tx-tmp";
 	private static final String BLOB_DATA_DIR = "data";
+
+	private static final Map jcrToSchemaTypeMap;
+	static {
+		jcrToSchemaTypeMap = new HashMap();
+		jcrToSchemaTypeMap.put ("" + PropertyType.STRING, "xs:string");
+		jcrToSchemaTypeMap.put ("" + PropertyType.BOOLEAN, "xs:boolean");
+		jcrToSchemaTypeMap.put ("" + PropertyType.DATE, "xs:dateTime");
+		jcrToSchemaTypeMap.put ("" + PropertyType.DOUBLE, "xs:double");
+		jcrToSchemaTypeMap.put ("" + PropertyType.LONG, "xs:integer");
+		jcrToSchemaTypeMap.put ("" + PropertyType.NAME, "xs:string");   // contains {namespace}localname
+		jcrToSchemaTypeMap.put ("" + PropertyType.PATH, "xs:string");   // contains a JCR path
+		jcrToSchemaTypeMap.put ("" + PropertyType.REFERENCE, "xs:string");  // contains a UUID
+		jcrToSchemaTypeMap.put ("" + PropertyType.BINARY, "xs:string");	// value element contains a URI
+	}
 
 	private volatile boolean initialized = false;
 	private final Random random = new Random (System.currentTimeMillis());
@@ -423,7 +442,10 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		StringBuffer sb = new StringBuffer();
 
 		sb.append ("<").append (CHANGE_LIST_ELEMENT);
-		sb.append (" xmlns=\"").append (JCR_NAMESPACE).append ("\">\n");
+		sb.append (" xmlns=\"").append (JCR_NAMESPACE).append ("\"\n\t");
+		sb.append (" xmlns:xsi=\"").append (XSI_NAMESPACE).append ("\"\n\t");
+		sb.append (" xmlns:xs=\"").append (XS_NAMESPACE).append ("\"\n\t");
+		sb.append (">\n");
 
 		sb.append ("\t<").append (TXID_ELEMENT).append (">");
 		sb.append (txId);
@@ -599,7 +621,15 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 
 			if (val == null) continue;	// does this ever happen?
 
-			sb.append ("\t\t<").append (VALUE_ELEMENT).append (">");
+			sb.append ("\t\t<").append (VALUE_ELEMENT);
+
+			String schemaType = (String) jcrToSchemaTypeMap.get ("" + type);
+
+			if (schemaType != null) {
+				sb.append (" xsi:type=\"").append (schemaType).append ("\"");
+			}
+
+			sb.append (">");
 
 			if (type == PropertyType.BINARY) {
 				try {
