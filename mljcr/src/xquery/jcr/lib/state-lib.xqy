@@ -371,6 +371,7 @@ declare private function apply-updates ($state as element(workspace),
 	return
 	<workspace>{
 		$state/@*,
+		$state/namespace::*,
 		update-node ($state/node, $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $affected-nodes, $collections, $uri-root),
 		update-node (parentless-new-nodes ($state, $deltas), $deltas, $added-nodes-by-parent, $added-props-by-parent, $modified-nodes, $modified-props, $affected-nodes, $collections, $uri-root)
 	}</workspace>
@@ -433,6 +434,7 @@ declare private function prune-deleted ($state as element(workspace),
 	else
 	<workspace>{
 		$state/@*,
+		$state/namespace::*,
 		prune-node ($state/node, $deltas, $del-nodes-map, $del-props-map, $affected-nodes-map, $uri-root)   (: function mapping here :)
 	}</workspace>
 };
