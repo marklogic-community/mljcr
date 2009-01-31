@@ -102,8 +102,9 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 	private static final String XS_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
 	private static final String JCR_NAMESPACE = "http://marklogic.com/jcr";
 	private static final String workspaceStateTemplate =
-		"<workspace xmlns=\"" + JCR_NAMESPACE +
-		"\" version=\"" + MLJCR_VERSION + "\" ";
+		"<workspace xmlns=\"" + JCR_NAMESPACE + "\"\n" +
+			" xmlns:xsi=\"" + XSI_NAMESPACE + "\"\n" +
+			" version=\"" + MLJCR_VERSION + "\" ";
 
 	private static final String changeListDocName = "change-list.xml";
 
