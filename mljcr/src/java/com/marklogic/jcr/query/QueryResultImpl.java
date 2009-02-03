@@ -1,7 +1,6 @@
 package com.marklogic.jcr.query;
 
 import org.apache.jackrabbit.value.LongValue;
-import org.apache.jackrabbit.value.PathValue;
 import org.apache.jackrabbit.value.StringValue;
 
 import javax.jcr.Node;
@@ -9,12 +8,16 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.PropertyIterator;
+import javax.jcr.Property;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 import javax.jcr.query.Row;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,6 +39,8 @@ public class QueryResultImpl implements QueryResult
 	private final String[] uuids;
 	private final Session session;
 	private final Level logLevel;
+	private String [] columnNames = null;
+
 
 	public QueryResultImpl (Session session, String[] uuids)
 	{
@@ -44,19 +49,31 @@ public class QueryResultImpl implements QueryResult
 
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
-
-//        System.out.println("WORKSPACE NAME: "+session.getWorkspace().getName());
-//        System.out.println("UUIDS LENGTH: "+this.uuids.length);
-//        System.out.println("-------------------------------DO MAPPING----------------------------");
 	}
 
-	private static final String [] columnNames = { "jcr:score", "jcr:path"  };
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public String[] getColumnNames() throws RepositoryException
 	{
+		List propertyNames = new ArrayList();
+
+		if (columnNames == null) {
+			for (NodeIterator nit = getNodes(); nit.hasNext();) {
+				Node node =  nit.nextNode();
+
+				for (PropertyIterator pit = node.getProperties(); pit.hasNext();) {
+					Property property = pit.nextProperty ();
+
+					propertyNames.add (property.getName());
+				}
+			}
+
+			propertyNames.add (PATH_COL_NAME1);
+
+			columnNames = new String [propertyNames.size()];
+
+			propertyNames.toArray (columnNames);
+		}
+
 		return columnNames;
 	}
 
@@ -144,18 +161,15 @@ public class QueryResultImpl implements QueryResult
 			public Value getValue (String s) throws RepositoryException
 			{
 				logger.log (logLevel, "column: " + s);
-logger.log (Level.INFO, "column: " + s);
+//logger.log (Level.INFO, "column: " + s);
 
 				if (SCORE_COL_NAME1.equals (s) || SCORE_COL_NAME2.equals (s)) {
 					return zeroValue;
 				}
 
 				if (PATH_COL_NAME1.equals (s) || PATH_COL_NAME2.equals (s)) {
-					// FIXME: This is not correct
-					return new StringValue (node.getName());
+					return new StringValue (node.getPath());
 				}
-
-				// FIXME: need to catch jcr:path and jcr:score
 
 				return node.getProperty (s).getValue();
 			}

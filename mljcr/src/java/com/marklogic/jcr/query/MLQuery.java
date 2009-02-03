@@ -86,10 +86,6 @@ logLevel = Level.INFO;
 		}
 
 		xpathBuffer.append ("/node");
-
-       // returns "//node"
-       // String x = xpathBuffer.toString();
-       // System.out.println("BUFFER AT aadAnyNodePathStep: "+x);
 	}
 
 	public void addPropertyStepPath(String path)
@@ -215,7 +211,7 @@ logLevel = Level.INFO;
 		sb.append ("\n");
 	}
 
-	String getXQuery ()
+	String getXQuery()
 	{
 		StringBuffer sb = new StringBuffer();
 
@@ -241,7 +237,6 @@ logLevel = Level.INFO;
 
 	public QueryResult execute() throws RepositoryException
 	{
-		//dummy query until getXQuery() is sorted out
 		String xqry = "xquery version '1.0-ml';\n" +
 			"declare namespace mljcr = 'http://marklogic.com/jcr'; \n" +
 			"declare default element namespace 'http://marklogic.com/jcr'; \n" +
@@ -249,15 +244,9 @@ logLevel = Level.INFO;
 
 		logger.log (logLevel, "ML Query String: \n" + xqry);
 
-
-        //System.out.println("THE QUERY: "+xqry);
-		//write xquery that generates ids (state.xml)  //@uuid  551b7712-69f4-4f2b-9ad6-51051464f4fe
-		//query result with sequence of strings
-		//implementation of next node, takes id, and queries for node (Go Look at QueryResultImpl.NextNode()
-
 		try {
-//			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, getXQuery());
 			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
+
 logger.log (logLevel, "resultUUIDS size: " + resultUUIDs.length);
 for (int i = 0; i < resultUUIDs.length; i++) {
 	System.out.println (resultUUIDs[i]);
@@ -268,17 +257,17 @@ for (int i = 0; i < resultUUIDs.length; i++) {
 		}
 	}
 
-	public String getStatement ()
+	public String getStatement()
 	{
 		return statement;
 	}
 
-	public String getLanguage ()
+	public String getLanguage()
 	{
 		return language;
 	}
 
-	public String getStoredQueryPath ()
+	public String getStoredQueryPath()
 		throws RepositoryException
 	{
 		throw new RepositoryException ("Not implemented for ML");
