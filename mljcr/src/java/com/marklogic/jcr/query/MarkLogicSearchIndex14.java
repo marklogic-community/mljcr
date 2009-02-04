@@ -52,7 +52,7 @@ public class MarkLogicSearchIndex14 extends MarkLogicSearchIndex
 		throws InvalidQueryException
 	{
 		log.info ("lang=" + language + ", stmt=" + statement);
-        
+
         System.out.println("lang="+language+", stmt="+statement);
 
 		QueryRootNode root = QueryParser.parse (statement, language,
