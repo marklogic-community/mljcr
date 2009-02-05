@@ -6,6 +6,8 @@ package com.marklogic.jcr.compat;
 
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
+import org.apache.jackrabbit.core.value.BLOBFileValue;
+import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.name.QName;
@@ -75,5 +77,10 @@ public class PMAdapter13 implements PMAdapter
 	{
 		// FIXME: I think this may be broken, it tests identity in Object.equals
 		return state.getName().equals(QName.valueOf (name));
+	}
+
+	public BLOBFileValue getBlobFileValue (InternalValue val)
+	{
+		return (BLOBFileValue) val.internalValue();
 	}
 }

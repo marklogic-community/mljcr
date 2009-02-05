@@ -23,20 +23,22 @@ import java.util.logging.Logger;
  * Date: Nov 11, 2008
  * Time: 6:15:52 PM
  */
-public class MLQueryBuilder implements QueryNodeVisitor
+abstract class MLQueryBuilder implements QueryNodeVisitor
 {
 	private static final String NT_NS_NAME = "http://www.jcp.org/jcr/nt/1.0";
 	private static final String NT_BASE_TYPE_NAME = "{" + NT_NS_NAME + "}base";
 
-	private static final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
-	private final Level logLevel;
+
+	//	private final ItemManager itemMgr;
 	private final QueryRootNode root;
-	private final Session session;
-//	private final ItemManager itemMgr;
-	private final String statement;
-	private final String language;
+
+	protected final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
+	protected final Level logLevel;
+	protected final Session session;
+	protected final String statement;
+	protected final String language;
 
 	public MLQueryBuilder (QueryRootNode root, Session session, ItemManager itemMgr,
 		String statement, String language)
@@ -52,13 +54,6 @@ public class MLQueryBuilder implements QueryNodeVisitor
 
 	// --------------------------------------------------------------
 
-	public Query createQuery(long offset, long limit, MarkLogicFileSystem mlfs)
-	{
-		MLQuery query = new MLQuery (statement, language, offset, limit, mlfs, session);
-
-		return (Query) root.accept (this, query);
-	}
-
 	public QueryRootNode getRootNode()
 	{
 		return root;
@@ -70,14 +65,6 @@ public class MLQueryBuilder implements QueryNodeVisitor
 	public Object visit (QueryRootNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-
-		MLQuery query = (MLQuery) data;
-
-//		log ("  order=" + ((node.getOrderNode () == null) ? "NONE" :  node.getOrderNode().toString()));
-//		log ("  abs=" + node.getLocationNode().isAbsolute());
-
-		// These are the columns reported by the QueryResult
-		query.addPropertySelectors (node.getSelectProperties());
 
 		if (node.getLocationNode() != null) {
 			node.getLocationNode().accept (this, data);
@@ -168,19 +155,6 @@ public class MLQueryBuilder implements QueryNodeVisitor
 		return data;
 	}
 
-	public Object visit (TextsearchQueryNode node, Object data)
-	{
-		logger.log (logLevel, node.getClass().getName());
-
-		MLQuery query = (MLQuery) data;
-		Path relPath = node.getRelativePath();
-		// FIXME: This is probably broken for the general case
-		String relPathStr = (relPath == null) ? "." : relPath.getString();
-
-		query.addFullTextSearch (relPathStr, node.getQuery());
-
-		return data;
-	}
 
 	public Object visit (PathQueryNode node, Object data)
 	{
@@ -400,32 +374,32 @@ logger.log (Level.INFO, "type: TimeStamp");
 
 	// -------------------------------------------------------------
 
-	private String propPath (Path relPath)
-	{
-		StringBuffer sb = new StringBuffer ();
-		Path.Element[] elements = relPath.getElements ();
-
-		for (int i = 0; i < elements.length; i++) {
-			if (i != 0) {
-				sb.append ("/");
-			}
-
-			if (i == elements.length - 1) {
-				sb.append ("property[@name=\"").append (elements[i]).append ("\"]");
-			} else {
-				sb.append (elements[i]);
-			}
-		}
-
-		return sb.toString ();
-	}
-
-	private String positionName (int pos)
-	{
-		if (pos == LocationStepQueryNode.LAST) {
-			return "last()";
-		}
-
-		return "" + pos;
-	}
+//	private String propPath (Path relPath)
+//	{
+//		StringBuffer sb = new StringBuffer ();
+//		Path.Element[] elements = relPath.getElements ();
+//
+//		for (int i = 0; i < elements.length; i++) {
+//			if (i != 0) {
+//				sb.append ("/");
+//			}
+//
+//			if (i == elements.length - 1) {
+//				sb.append ("property[@name=\"").append (elements[i]).append ("\"]");
+//			} else {
+//				sb.append (elements[i]);
+//			}
+//		}
+//
+//		return sb.toString ();
+//	}
+//
+//	private String positionName (int pos)
+//	{
+//		if (pos == LocationStepQueryNode.LAST) {
+//			return "last()";
+//		}
+//
+//		return "" + pos;
+//	}
 }

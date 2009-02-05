@@ -8,11 +8,9 @@ import org.apache.jackrabbit.core.ItemManager;
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.SessionImpl;
 import org.apache.jackrabbit.core.fs.FileSystem;
-import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.query.AbstractQueryHandler;
 import org.apache.jackrabbit.core.query.ExecutableQuery;
 import org.apache.jackrabbit.core.query.QueryHandlerContext;
-import org.apache.jackrabbit.core.query.QueryHandler;
 import org.apache.jackrabbit.core.state.NodeState;
 
 import javax.jcr.RepositoryException;
@@ -47,7 +45,6 @@ abstract public class MarkLogicSearchIndex extends AbstractQueryHandler
 		}
 
 		this.mlfs = (MarkLogicFileSystem) fs;
-
 	}
 
 	public void addNode (NodeState node) throws RepositoryException, IOException

@@ -11,8 +11,6 @@ import com.marklogic.jcr.persistence.AbstractPersistenceManager;
 
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.query.OrderQueryNode;
-import org.apache.jackrabbit.spi.Name;
-import org.apache.jackrabbit.spi.Path;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -33,7 +31,7 @@ import java.util.logging.Logger;
  * Date: Nov 12, 2008
  * Time: 3:50:47 PM
  */
-public class MLQuery implements Query
+abstract class MLQuery implements Query
 {
 	private static final Logger logger = Logger.getLogger (MLQuery.class.getName ());
 //	private static final String DEFAULT_LOG_LEVEL = "FINE";
@@ -45,13 +43,12 @@ public class MLQuery implements Query
 	private final Level logLevel;
 	private final MarkLogicFileSystem mlfs;
 	private final Session session;
-
-	private StringBuffer xpathBuffer = new StringBuffer();
 	// TODO: Handle this properly in result and as query constraint
-	private Name [] propertySelectors = new Name [0];
+	private String [] propertySelectors = new String [0];
 	private final List orderSpecs = new ArrayList (5);
+	private StringBuffer xpathBuffer = new StringBuffer();
 
-	public MLQuery(String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
+	public MLQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
 	{
 		this.statement = statement;
 		this.language = language;
@@ -66,6 +63,14 @@ logLevel = Level.INFO;
 	}
 
 	// --------------------------------------------------------------
+	// ---------------------------------------------------------------
+	// methods used only by subclasses
+
+	protected void addPropertySelectors (String [] names)
+	{
+		propertySelectors = names;
+	}
+
 	// ---------------------------------------------------------------
 
 	void addNamedNodePathStep (String step, boolean descendants)
@@ -102,11 +107,6 @@ logLevel = Level.INFO;
 		xpathBuffer.append ("\"]]");
 	}
 
-	void addPropertySelectors (Name[] names)
-	{
-		propertySelectors = (Name[]) names.clone ();
-	}
-
 	public void addPositionPredicate (int position)
 	{
 		xpathBuffer.append ("[").append (position).append ("]");
@@ -122,25 +122,24 @@ logLevel = Level.INFO;
 		orderSpecs.add (orderspec);
 	}
 
-	public void addPropertyValueTest (Path relPath, String opString, String value, String operand, String functionName)
+	protected void addPropertyValueTest (String [] pathElements,
+		String opString, String value, String operand, String functionName)
 	{
-		Path.Element[] elements = relPath.getElements();
-
 		xpathBuffer.append ("[");
 
 		if (functionName != null) {
 			xpathBuffer.append (functionName).append ("(");
 		}
 
-		for (int i = 0; i < elements.length; i++) {
+		for (int i = 0; i < pathElements.length; i++) {
 			if (i != 0) {
 				xpathBuffer.append ("/");
 			}
 
-			if (i == elements.length - 1) {
-				xpathBuffer.append ("property[@name=\"").append (elements[i]).append ("\"]");
+			if (i == pathElements.length - 1) {
+				xpathBuffer.append ("property[@name=\"").append (pathElements [i]).append ("\"]");
 			} else {
-				xpathBuffer.append (elements[i]);
+				xpathBuffer.append (pathElements [i]);
 			}
 		}
 

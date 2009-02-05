@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ * Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.jcr.compat;
@@ -8,6 +8,8 @@ import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
+import org.apache.jackrabbit.core.value.BLOBFileValue;
+import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.spi.NameFactory;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 
@@ -78,5 +80,10 @@ public class PMAdapter14 implements PMAdapter
 	{
 		// FIXME: I think this may be broken, it tests identity in Object.equals
 		return state.getName().equals (factory.create (name));
+	}
+
+	public BLOBFileValue getBlobFileValue (InternalValue val)
+	{
+		return val.getBLOBFileValue();
 	}
 }

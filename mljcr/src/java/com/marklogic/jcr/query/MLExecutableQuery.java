@@ -25,6 +25,7 @@ import com.marklogic.jcr.fs.MarkLogicFileSystem;
  * User: ron
  * Date: Nov 11, 2008
  * Time: 3:07:43 PM
+ * @deprecated Use JackRabbit version-specific class
  */
 public class MLExecutableQuery implements ExecutableQuery
 {
@@ -34,7 +35,7 @@ public class MLExecutableQuery implements ExecutableQuery
 	private final MLQueryBuilder queryBuilder;
 	private final MarkLogicFileSystem mlfs;
 
-	public MLExecutableQuery(SessionImpl session, ItemManager itemMgr, String statement,
+	private MLExecutableQuery(SessionImpl session, ItemManager itemMgr, String statement,
                              String language, QueryRootNode root, MarkLogicFileSystem mlfs)
 		throws InvalidQueryException
 	{
@@ -46,7 +47,7 @@ logLevel = Level.INFO;
 	}
 
 	// -------------------------------------------------------------
-	// Implementation of ExecutableQuery
+	// Implementation of ExecutableQuery (JackRabit 1.4)
 
 	public QueryResult execute (long offset, long limit)
 		throws RepositoryException
@@ -56,5 +57,13 @@ logLevel = Level.INFO;
 		Query query = queryBuilder.createQuery (offset, limit, mlfs);
 
 		return query.execute();
+	}
+
+	// -------------------------------------------------------------
+	// Implementation of ExecutableQuery (JackRabit 1.3)
+
+	public QueryResult execute () throws RepositoryException
+	{
+		return execute (0, Long.MAX_VALUE);
 	}
 }

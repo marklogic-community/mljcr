@@ -634,7 +634,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 
 			if (type == PropertyType.BINARY) {
 				try {
-					BLOBFileValue blobVal = val.getBLOBFileValue();
+					BLOBFileValue blobVal = pmAdapter.getBlobFileValue (val);
 					long blobLen = blobVal.getLength();
 					String blobId = (blobLen == 0)
 						? blobId = MarkLogicFileSystem.MAGIC_EMPTY_BLOB_ID

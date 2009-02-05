@@ -29,6 +29,6 @@ public class MarkLogicSearchIndex13 extends MarkLogicSearchIndex
 		QueryRootNode root = QueryParser.parse (statement, language,
 			session.getNamespaceResolver());
 
-		return new MLExecutableQuery (session, itemMgr, statement, language, root, mlfs);
+		return new MarkLogicExecutableQuery13 (session, itemMgr, statement, language, root, mlfs);
 	}
 }

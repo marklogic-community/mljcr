@@ -8,6 +8,8 @@ import org.apache.jackrabbit.core.state.NodeState;
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.NodeId;
 import org.apache.jackrabbit.core.PropertyId;
+import org.apache.jackrabbit.core.value.BLOBFileValue;
+import org.apache.jackrabbit.core.value.InternalValue;
 
 import java.util.Set;
 
@@ -38,4 +40,6 @@ public interface PMAdapter
 	void addChildNodeEntry (NodeState state, String childName, NodeId nodeId);
 
 	void addName (Set set, String name);
+
+	abstract BLOBFileValue getBlobFileValue (InternalValue val);
 }

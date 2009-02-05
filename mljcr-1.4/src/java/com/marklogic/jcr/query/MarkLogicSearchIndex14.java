@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ * Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
  */
 
 package com.marklogic.jcr.query;
@@ -53,12 +53,12 @@ public class MarkLogicSearchIndex14 extends MarkLogicSearchIndex
 	{
 		log.info ("lang=" + language + ", stmt=" + statement);
 
-        System.out.println("lang="+language+", stmt="+statement);
+System.out.println("lang="+language+", stmt="+statement);
 
 		QueryRootNode root = QueryParser.parse (statement, language,
 			session.getNamePathResolver(),
 			new DefaultQueryNodeFactory (VALID_SYSTEM_INDEX_NODE_TYPE_NAMES));
 
-		return new MLExecutableQuery (session, itemMgr, statement, language, root, mlfs);
+		return new MarkLogicExecutableQuery14 (session, itemMgr, statement, language, root, mlfs);
 	}
 }
