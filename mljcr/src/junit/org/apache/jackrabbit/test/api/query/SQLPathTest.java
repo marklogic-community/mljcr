@@ -90,6 +90,7 @@ public class SQLPathTest extends AbstractQueryTest {
      * returns nodes with name &lt;nodename> which are descendants of
      * node at <code>testroot</code>.
      */
+// FIXME: The parser appears to generate a bad AST for this query [Rh 2009-02-02]
     public void testDescendantSelfTestRoot() throws RepositoryException {
         // get first node which is two levels deeper than node at testroot
         Node n = null;
