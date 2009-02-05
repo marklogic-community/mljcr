@@ -4,15 +4,10 @@
 
 package com.marklogic.jcr.query;
 
-import com.marklogic.jcr.fs.MarkLogicFileSystem;
-
 import org.apache.jackrabbit.core.ItemManager;
 import org.apache.jackrabbit.core.query.*;
-import org.apache.jackrabbit.spi.Name;
-import org.apache.jackrabbit.spi.Path;
 
 import javax.jcr.Session;
-import javax.jcr.query.Query;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +57,11 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 	// --------------------------------------------------------------
 	// Implementation of QueryNodeVisitor interface
 
-	public Object visit (QueryRootNode node, Object data)
+	abstract public Object visit (TextsearchQueryNode node, Object data);
+	abstract public Object visit (QueryRootNode node, Object data);
+
+	// internal method that subclasses call for common operations
+	protected Object visitRoot (QueryRootNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
 
@@ -175,26 +174,22 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 		return data;
 	}
 
+	protected abstract String locationStepNameTest (LocationStepQueryNode node);
+
 	public Object visit (LocationStepQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
 
 		MLQuery query = (MLQuery) data;
-		Name nameTest = node.getNameTest();
-
-//		log ("  nametest=" + ((nameTest == null) ? "*" : nameTest.toString()));
-//		log ("  predcount=" + node.getPredicates ().length);
-//		log ("  incldescendents=" + node.getIncludeDescendants ());
+		String nameTest = locationStepNameTest (node);
 
 		int index = node.getIndex();
 		boolean hasindexPredicate = index != LocationStepQueryNode.NONE;
 
 		if (nameTest == null) {
 			query.addAnyNodePathStep (node.getIncludeDescendants());
-		} else if ("".equals (nameTest.getLocalName()) && "".equals (nameTest.getNamespaceURI())) {
-			query.addNamedNodePathStep ("", node.getIncludeDescendants());
 		} else {
-			query.addNamedNodePathStep (nameTest.toString(), node.getIncludeDescendants());
+			query.addNamedNodePathStep (nameTest, node.getIncludeDescendants());
 		}
 
 		// FIXME: should this operate like RelationQueryNode?
@@ -210,6 +205,8 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 
 		return data;
 	}
+
+	protected abstract String [] relationQueryPathToStrings (RelationQueryNode RelationQueryNodenode);
 
 	public Object visit (RelationQueryNode node, Object data)
 	{
@@ -260,15 +257,14 @@ logger.log (Level.INFO, node.getClass().getName());
 		    function = "fn:exists";
 		} else if (op == QueryConstants.OPERATION_NULL) {
 			function = "fn:empty";
-		} else if (op == QueryConstants.OPERATION_SIMILAR) {
-		    opString = (" similarity ");
-		} else if (op == QueryConstants.OPERATION_SPELLCHECK) {
-		    opString = (" spellcheck ");
+//		} else if (op == QueryConstants.OPERATION_SIMILAR) {
+//		    opString = (" similarity ");
+//		} else if (op == QueryConstants.OPERATION_SPELLCHECK) {
+//		    opString = (" spellcheck ");
 		} else {
 		    opString = (" !!UNKNOWN OPERATION!! ");
 		}
 
-		Path relpath = node.getRelativePath();
 		int valueType = node.getValueType();
 //		String propName = propPath (relpath);
 		String value = ".";
@@ -278,22 +274,17 @@ logger.log (Level.INFO, node.getClass().getName());
 		switch (valueType) {
 		case QueryConstants.TYPE_DATE:
 			operand = node.getDateValue().toString();
-logger.log (Level.INFO, "type: Date");
 			break;
 
 		case QueryConstants.TYPE_DOUBLE:
 			operand = "" + node.getDoubleValue();
-logger.log (Level.INFO, "type: Double");
 			break;
 
 		case QueryConstants.TYPE_LONG:
 			operand = "" + node.getLongValue();
-logger.log (Level.INFO, "type: Long");
 			break;
 
 		case QueryConstants.TYPE_POSITION:
-//			query.addPredicate ("position() " + opString + " " + positionName (node.getPositionValue()));
-
 			if (node.getPositionValue() == LocationStepQueryNode.LAST) {
 				operand = "last()";
 			} else {
@@ -306,13 +297,11 @@ logger.log (Level.INFO, "type: Long");
 
 		case QueryConstants.TYPE_STRING:
 			operand = "\"" + nsResolverHack (node.getStringValue()) + "\"";
-logger.log (Level.INFO, "type: String (" + operand + ")");
 			break;
 
 		case QueryConstants.TYPE_TIMESTAMP:
 			// FIXME:
 			operand = node.getDateValue().toString();
-logger.log (Level.INFO, "type: TimeStamp");
 			break;
 
 		case 0:
@@ -322,7 +311,8 @@ logger.log (Level.INFO, "type: TimeStamp");
 			throw new RuntimeException ("bad type: " + node.getValueType() + ", opString: " + opString);
 		}
 
-		query.addPropertyValueTest (relpath, opString, value, operand, function);
+		query.addPropertyValueTest (relationQueryPathToStrings (node),
+			opString, value, operand, function);
 
 //		query.addPredicate (propName + opString + operand);
 
