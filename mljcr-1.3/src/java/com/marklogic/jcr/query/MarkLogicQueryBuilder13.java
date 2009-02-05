@@ -35,7 +35,7 @@ public class MarkLogicQueryBuilder13 extends MarkLogicQueryBuilder
 
 	public Query createQuery (MarkLogicFileSystem mlfs)
 	{
-		MarkLogicQuery query = new MarkLogicQuery13 (statement, language, mlfs, session);
+		AbstractQuery query = new MarkLogicQuery13 (statement, language, mlfs, session);
 
 		return (Query) getRootNode().accept (this, query);
 	}

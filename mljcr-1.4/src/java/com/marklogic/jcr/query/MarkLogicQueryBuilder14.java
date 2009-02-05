@@ -35,7 +35,7 @@ public class MarkLogicQueryBuilder14 extends MarkLogicQueryBuilder
 
 	public Query createQuery (long offset, long limit, MarkLogicFileSystem mlfs)
 	{
-		MarkLogicQuery query = new MarkLogicQuery14 (statement, language, offset, limit, mlfs, session);
+		AbstractQuery query = new MarkLogicQuery14 (statement, language, offset, limit, mlfs, session);
 
 		return (Query) getRootNode().accept (this, query);
 	}
@@ -69,7 +69,7 @@ public class MarkLogicQueryBuilder14 extends MarkLogicQueryBuilder
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-		MarkLogicQuery query = (MarkLogicQuery) data;
+		AbstractQuery query = (AbstractQuery) data;
 		Path relPath = node.getRelativePath();
 		// FIXME: This is probably broken for the general case
 		String relPathStr = (node.getRelativePath() == null) ? "." : relPath.getString();

@@ -17,7 +17,7 @@ import javax.jcr.Session;
  * Date: Feb 4, 2009
  * Time: 7:33:56 PM
  */
-public class MarkLogicQuery14 extends MarkLogicQuery
+public class MarkLogicQuery14 extends AbstractQuery
 {
 	public MarkLogicQuery14 (String statement, String language,
 		long offset, long limit, MarkLogicFileSystem mlfs, Session session)
