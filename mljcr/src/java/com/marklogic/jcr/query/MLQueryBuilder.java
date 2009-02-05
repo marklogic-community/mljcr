@@ -143,7 +143,7 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-		MLQuery query = (MLQuery) data;
+		MarkLogicQuery query = (MarkLogicQuery) data;
 
 		String typeName = node.getValue().toString();
 
@@ -180,7 +180,7 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-		MLQuery query = (MLQuery) data;
+		MarkLogicQuery query = (MarkLogicQuery) data;
 		String nameTest = locationStepNameTest (node);
 
 		int index = node.getIndex();
@@ -213,7 +213,7 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 		logger.log (logLevel, node.getClass().getName());
 logger.log (Level.INFO, node.getClass().getName());
 
-		MLQuery query = (MLQuery) data;
+		MarkLogicQuery query = (MarkLogicQuery) data;
 
 //		log ("  op=" + node.getOperation());
 //		log ("  valtype=" + node.getValueType());
@@ -332,7 +332,7 @@ logger.log (Level.INFO, node.getClass().getName());
 	public Object visit (OrderQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-		MLQuery query = (MLQuery) data;
+		MarkLogicQuery query = (MarkLogicQuery) data;
 
 		OrderQueryNode.OrderSpec [] orderspecs = node.getOrderSpecs();
 

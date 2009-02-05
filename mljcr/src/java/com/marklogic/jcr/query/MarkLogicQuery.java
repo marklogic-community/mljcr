@@ -31,9 +31,9 @@ import java.util.logging.Logger;
  * Date: Nov 12, 2008
  * Time: 3:50:47 PM
  */
-abstract class MLQuery implements Query
+abstract class MarkLogicQuery implements Query
 {
-	private static final Logger logger = Logger.getLogger (MLQuery.class.getName ());
+	private static final Logger logger = Logger.getLogger (MarkLogicQuery.class.getName ());
 //	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
 	private final String language;
@@ -48,7 +48,7 @@ abstract class MLQuery implements Query
 	private final List orderSpecs = new ArrayList (5);
 	private StringBuffer xpathBuffer = new StringBuffer();
 
-	public MLQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
+	public MarkLogicQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
 	{
 		this.statement = statement;
 		this.language = language;
