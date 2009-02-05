@@ -13,3 +13,6 @@ src/junit/org/apache/jackrabbit/test/api/lock/LockTest.java
 src/junit/org/apache/jackrabbit/test/api/observation/EventResult.java
 	Badly broken rendezvous code for thread synchronization
 
+src/junit/org/apache/jackrabbit/test/api/query/SQLPathTest.java
+	Added comment to testDescendantSelfTestRoot(), parser seems to
+	generate a bad AST - spurious index on parent node
