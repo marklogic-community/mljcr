@@ -23,7 +23,7 @@ import javax.jcr.query.Query;
  * Date: Feb 4, 2009
  * Time: 7:37:56 PM
  */
-public class MarkLogicQueryBuilder14 extends MLQueryBuilder
+public class MarkLogicQueryBuilder14 extends MarkLogicQueryBuilder
 {
 	public MarkLogicQueryBuilder14 (QueryRootNode root, Session session,
 		ItemManager itemMgr, String statement, String language)

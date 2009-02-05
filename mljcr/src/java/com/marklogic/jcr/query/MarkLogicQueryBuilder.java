@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * Date: Nov 11, 2008
  * Time: 6:15:52 PM
  */
-abstract class MLQueryBuilder implements QueryNodeVisitor
+abstract class MarkLogicQueryBuilder implements QueryNodeVisitor
 {
 	private static final String NT_NS_NAME = "http://www.jcp.org/jcr/nt/1.0";
 	private static final String NT_BASE_TYPE_NAME = "{" + NT_NS_NAME + "}base";
@@ -29,13 +29,13 @@ abstract class MLQueryBuilder implements QueryNodeVisitor
 	//	private final ItemManager itemMgr;
 	private final QueryRootNode root;
 
-	protected final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
+	protected final Logger logger = Logger.getLogger (MarkLogicQueryBuilder.class.getName());
 	protected final Level logLevel;
 	protected final Session session;
 	protected final String statement;
 	protected final String language;
 
-	public MLQueryBuilder (QueryRootNode root, Session session, ItemManager itemMgr,
+	public MarkLogicQueryBuilder (QueryRootNode root, Session session, ItemManager itemMgr,
 		String statement, String language)
 	{
 		this.root = root;

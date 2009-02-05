@@ -32,7 +32,7 @@ public class QueryResultImpl implements QueryResult
 	private static final String SCORE_COL_NAME2 =  "{" + NS_JCR_URI + "}:score";
 	private static final String PATH_COL_NAME1 = "jcr:path";
 	private static final String PATH_COL_NAME2 =  "{" + NS_JCR_URI + "}:path";
-	private static final Logger logger = Logger.getLogger (MLQueryBuilder.class.getName());
+	private static final Logger logger = Logger.getLogger (QueryResultImpl.class.getName());
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private static final Value zeroValue = new LongValue (0);
 
