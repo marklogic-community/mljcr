@@ -27,9 +27,9 @@ import com.marklogic.jcr.fs.MarkLogicFileSystem;
  * Date: Oct 13, 2008
  * Time: 4:26:45 PM
  */
-abstract public class MarkLogicSearchIndex extends AbstractQueryHandler
+abstract public class AbstractSearchIndex extends AbstractQueryHandler
 {
-	protected static final Logger log = Logger.getLogger (MarkLogicSearchIndex.class.getName ());
+	protected static final Logger log = Logger.getLogger (AbstractSearchIndex.class.getName ());
 
 	protected MarkLogicFileSystem mlfs = null;
 

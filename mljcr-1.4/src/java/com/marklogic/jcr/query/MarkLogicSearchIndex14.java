@@ -25,7 +25,7 @@ import java.util.List;
  * Date: Nov 20, 2008
  * Time: 10:54:54 AM
  */
-public class MarkLogicSearchIndex14 extends MarkLogicSearchIndex
+public class MarkLogicSearchIndex14 extends AbstractSearchIndex
 {
 	private static final Name[] indexTypeNames = {
 		NameConstants.NT_CHILDNODEDEFINITION,

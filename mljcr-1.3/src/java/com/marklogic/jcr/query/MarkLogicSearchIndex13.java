@@ -18,7 +18,7 @@ import javax.jcr.query.InvalidQueryException;
  * Date: Nov 20, 2008
  * Time: 1:07:06 PM
  */
-public class MarkLogicSearchIndex13 extends MarkLogicSearchIndex
+public class MarkLogicSearchIndex13 extends AbstractSearchIndex
 {
 	public ExecutableQuery createExecutableQuery (SessionImpl session,
 		ItemManager itemMgr, String statement, String language)
