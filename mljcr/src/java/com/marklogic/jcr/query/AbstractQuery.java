@@ -46,6 +46,7 @@ abstract class AbstractQuery implements Query
 	// TODO: Handle this properly in result and as query constraint
 	private String [] propertySelectors = new String [0];
 	private final List orderSpecs = new ArrayList (5);
+	private final List textQueries = new ArrayList (5);
 	private StringBuffer xpathBuffer = new StringBuffer();
 
 	public AbstractQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
@@ -98,11 +99,13 @@ logLevel = Level.INFO;
 		xpathBuffer.append ("/").append (path);
 	}
 
-	public void addPropertyValuePredicate (String propName, String propValue)
+	public void addPropertyValuePredicate (String propName, String propValue, String op)
 	{
  		xpathBuffer.append ("[property[@name = \"");
 		xpathBuffer.append (propName);
-		xpathBuffer.append ("\"]/values/value[. = \"");
+		xpathBuffer.append ("\"]/values/value[. ");
+		xpathBuffer.append (op);
+		xpathBuffer.append (" \"");
 		xpathBuffer.append (propValue);
 		xpathBuffer.append ("\"]]");
 	}
@@ -157,22 +160,67 @@ logLevel = Level.INFO;
 		xpathBuffer.append ("]");
 	}
 
+	private static final String TEXT_SEARCH_FUNC_ROOT = "local:textContains";
+
 	public void addFullTextSearch (String relPathStr, String rawQuery)
 	{
-		TextQueryParser textQuery = new TextQueryParser (rawQuery);
-		String posTest = textQuery.getPositiveTest();
-		String negTest = textQuery.getNegativeTest();
+		String functionName = TEXT_SEARCH_FUNC_ROOT + textQueries.size();
+		String predicateFunctionCall = functionName + "(" + relPathStr + ")";
+		TextQueryParser textQuery = new TextQueryParser (rawQuery, functionName);
 
-		if (posTest != null) {
-			logger.log (logLevel, "positive test: " + posTest);
-			addPredicate ("cts:contains(" + relPathStr + "/property/values, " + posTest + ")");
+		textQueries.add (textQuery);
+
+		addPredicate (predicateFunctionCall);
+
+//		String posTest = textQuery.getPositiveTest();
+//		String negTest = textQuery.getNegativeTest();
+//
+//		if (posTest != null) {
+//			logger.log (logLevel, "positive test: " + posTest);
+//			addPredicate ("cts:contains(" + relPathStr + "/property/values, " + posTest + ")");
+//		}
+//
+//		if (negTest != null) {
+//			logger.log (logLevel, "negative test: " + negTest);
+//			addPredicate ("fn:not(cts:contains(" + relPathStr + "/property/values, " + negTest + "))");
+//		}
+
+	}
+
+	// ---------------------------------------------------------------
+
+	private void generateTextFunctions (StringBuffer sb)
+	{
+		for (Iterator it = textQueries.iterator(); it.hasNext();) {
+			TextQueryParser textQuery = (TextQueryParser) it.next();
+			String posTest = textQuery.getPositiveTest();
+			String negTest = textQuery.getNegativeTest();
+
+			// TODO: check for Binary property type
+			// URI=xdmp:node-uri() - state.xml + property/values/value
+
+			sb.append ("\ndeclare private function ");
+			sb.append (textQuery.getFunctionName());
+			sb.append (" ($node as element (node)) as xs:boolean\n{\n\n");
+
+			if (posTest != null) {
+//				sb.append ("	if (fn:exists ($node/property[@type = \"Binary\"]))");
+//				sb.append ("	for $prop in $node/");
+				sb.append ("	cts:contains ($node/property/values, ");
+				sb.append (posTest).append (")");
+			}
+
+			if ((posTest != null) && (negTest != null)) {
+				sb.append ("\n	and\n");
+			}
+
+			if (negTest != null) {
+				sb.append ("	fn:not (cts:contains ($node/property/values, ");
+				sb.append (negTest).append ("))");
+			}
+
+			sb.append ("\n};\n\n");
 		}
-
-		if (negTest != null) {
-			logger.log (logLevel, "negative test: " + negTest);
-			addPredicate ("fn:not(cts:contains(" + relPathStr + "/property/values, " + negTest + "))");
-		}
-
 	}
 
 	// ---------------------------------------------------------------
@@ -213,6 +261,8 @@ logLevel = Level.INFO;
 	String getXQuery()
 	{
 		StringBuffer sb = new StringBuffer();
+
+		generateTextFunctions (sb);
 
 		sb.append ("for $node in ");
 		sb.append ("fn:doc (\"").append (AbstractMLFileSystem.URI_PLACEHOLDER).append ("\")");

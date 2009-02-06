@@ -125,6 +125,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 
 		node.acceptOperands (this, data);
 
+
 		// TODO: pop not-expr
 
 		return data;
@@ -133,8 +134,10 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	public Object visit (ExactQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  propname=" + node.getPropertyName().toString());
-//		log ("  propval=" + node.getValue().toString());
+
+		AbstractQuery query = (AbstractQuery) data;
+
+		query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString(), "eq");
 
 		return data;
 	}
@@ -148,7 +151,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		String typeName = node.getValue().toString();
 
 		if ( ! NT_BASE_TYPE_NAME.equals (typeName)) {
-			query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString());
+			query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString(), "eq");
 		}
 
 		return data;
@@ -160,13 +163,11 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		LocationStepQueryNode [] stepNodes = node.getPathSteps();
 
 		logger.log (logLevel, node.getClass().getName());
-//		log ("  abs=" + node.isAbsolute ());
-//		log ("  stepscount=" + stepNodes.length);
+
+		// FIXME: Need to do anything with node.isAbsolute?
 
 		for (int i = 0; i < stepNodes.length; i++) {
 			LocationStepQueryNode stepNode = stepNodes [i];
-
-//			log ("    stepNode=" + stepNode.toString());
 
 			stepNode.accept (this, data);
 		}
@@ -206,7 +207,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		return data;
 	}
 
-	protected abstract String [] relationQueryPathToStrings (RelationQueryNode RelationQueryNodenode);
+	protected abstract String [] relationQueryPathStrings (RelationQueryNode RelationQueryNodenode);
 
 	public Object visit (RelationQueryNode node, Object data)
 	{
@@ -266,7 +267,6 @@ logger.log (Level.INFO, node.getClass().getName());
 		}
 
 		int valueType = node.getValueType();
-//		String propName = propPath (relpath);
 		String value = ".";
 		String operand = "";
 
@@ -311,22 +311,10 @@ logger.log (Level.INFO, node.getClass().getName());
 			throw new RuntimeException ("bad type: " + node.getValueType() + ", opString: " + opString);
 		}
 
-		query.addPropertyValueTest (relationQueryPathToStrings (node),
+		query.addPropertyValueTest (relationQueryPathStrings (node),
 			opString, value, operand, function);
 
-//		query.addPredicate (propName + opString + operand);
-
 		return data;
-	}
-
-	// TODO: Need to catch other prefixes here?  General lookup?  Patch the parser?
-	private String nsResolverHack (String stringValue)
-	{
-		if ( ! stringValue.startsWith ("nt:")) {
-			return stringValue;
-		}
-
-		return "{" + NT_NS_NAME + "}" + stringValue.substring (3);
 	}
 
 	public Object visit (OrderQueryNode node, Object data)
@@ -341,6 +329,7 @@ logger.log (Level.INFO, node.getClass().getName());
 
 			query.addOrderBySpec (orderspec);
 		}
+
 		return data;
 	}
 
@@ -363,6 +352,17 @@ logger.log (Level.INFO, node.getClass().getName());
 	}
 
 	// -------------------------------------------------------------
+
+	// TODO: Need to catch other prefixes here?  General lookup?  Patch the parser?
+	private String nsResolverHack (String stringValue)
+	{
+		if ( ! stringValue.startsWith ("nt:")) {
+			return stringValue;
+		}
+
+		return "{" + NT_NS_NAME + "}" + stringValue.substring (3);
+	}
+
 
 //	private String propPath (Path relPath)
 //	{

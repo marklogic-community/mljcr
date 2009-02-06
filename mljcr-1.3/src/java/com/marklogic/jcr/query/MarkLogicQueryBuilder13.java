@@ -82,7 +82,7 @@ public class MarkLogicQueryBuilder13 extends AbstractQueryBuilder
 
 	// ---------------------------------------------------------
 
-	protected String [] relationQueryPathToStrings (RelationQueryNode node)
+	protected String [] relationQueryPathStrings (RelationQueryNode node)
 	{
 		Path.PathElement[] elements = node.getRelativePath().getElements();
 		String [] strings = new String [elements.length];

@@ -25,11 +25,14 @@ public class TextQueryParser
 		"(" + QUOTSINGLE + "|" + QUOTDOUBLE + "|" + SIMPLEWORD + ")";
 	private static final Pattern termPattern = Pattern.compile (TERM_REGEX);
 
+	private final String functionName;
 	private final List positiveTerms = new ArrayList(10);
 	private final List negativeTerms = new ArrayList(10);
 
-	public TextQueryParser (String rawQuery)
+	public TextQueryParser (String rawQuery, String functionName)
 	{
+		this.functionName = functionName;
+
 		Matcher matcher = termPattern.matcher (rawQuery);
 
 		while (matcher.find()) {
@@ -44,6 +47,11 @@ public class TextQueryParser
 				positiveTerms.add (term);
 			}
 		}
+	}
+
+	public String getFunctionName()
+	{
+		return functionName;
 	}
 
 	public String getPositiveTest()
@@ -67,14 +75,15 @@ public class TextQueryParser
 
 	// TODO: Need to handle "or" queries
 	// TODO: Need to handle precedence rules (parens?)
-	private String aggregateQuery (List queries)
+	private String aggregateQuery (List terms)
 	{
 		boolean notFirst = false;
 		StringBuffer sb = new StringBuffer();
 
-		sb.append ("cts:and-query ((");
+		sb.append ("cts:and-query (");
+		if (terms.size() > 1) sb.append ("(");
 
-		for (Iterator it = queries.iterator(); it.hasNext();) {
+		for (Iterator it = terms.iterator(); it.hasNext();) {
 			if (notFirst) {
 				sb.append (", ");
 			} else {
@@ -86,7 +95,8 @@ public class TextQueryParser
 			sb.append ("'");
 		}
 
-		sb.append ("))");
+		if (terms.size() > 1) sb.append (")");
+		sb.append (")");
 
 		return sb.toString();
 	}
