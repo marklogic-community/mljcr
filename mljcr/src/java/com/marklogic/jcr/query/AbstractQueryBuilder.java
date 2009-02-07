@@ -87,16 +87,13 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 			return data;
 		}
 
+		AbstractQuery query = (AbstractQuery) data;
 
-		// TODO
-//		for (int i = 0; i < operands.length; i++) {
-//			QueryNode operand = operands[i];
-//
-//		}
+		query.pushPredicateLevel();
 
-		// TODO: push to add-expr state
 		node.acceptOperands (this, data);
-		// TODO: pop from add-expr state
+
+		query.popPredicateLevel ("(", " and ", ")");
 
 		return data;
 	}
@@ -105,10 +102,10 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-		if (node.getNumOperands() < 2) {
-			node.acceptOperands (this, data);
-			return data;
-		}
+//		if (node.getNumOperands() < 2) {
+//			node.acceptOperands (this, data);
+//			return data;
+//		}
 
 		// TODO: push to add-expr state
 		node.acceptOperands (this, data);
@@ -121,12 +118,17 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-		// TODO: push not-expr
+		if (node.getOperands().length == 0) {
+			return data;
+		}
+
+		AbstractQuery query = (AbstractQuery) data;
+
+		query.pushPredicateLevel();
 
 		node.acceptOperands (this, data);
 
-
-		// TODO: pop not-expr
+		query.popPredicateLevel ("fn:not((", ",", "))");
 
 		return data;
 	}

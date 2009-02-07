@@ -21,15 +21,16 @@ import javax.jcr.query.QueryResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * https://rootwiki.marklogic.com/JSPWiki/Wiki.jsp?page=WhatIsReST
  * Created by IntelliJ IDEA.
  * User: ron
  * Date: Nov 12, 2008
  * Time: 3:50:47 PM
+ * @noinspection ClassWithTooManyMethods
  */
 abstract class AbstractQuery implements Query
 {
@@ -47,6 +48,7 @@ abstract class AbstractQuery implements Query
 	private String [] propertySelectors = new String [0];
 	private final List orderSpecs = new ArrayList (5);
 	private final List textQueries = new ArrayList (5);
+	private final LinkedList pendingPredicateContexts = new LinkedList();
 	private StringBuffer xpathBuffer = new StringBuffer();
 
 	public AbstractQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
@@ -70,6 +72,50 @@ logLevel = Level.INFO;
 	protected void addPropertySelectors (String [] names)
 	{
 		propertySelectors = names;
+	}
+
+	// ---------------------------------------------------------------
+
+	private void handlePredicate (String pred)
+	{
+		if (pendingPredicateContexts.size() == 0) {
+			xpathBuffer.append ("[");
+			xpathBuffer.append (pred);
+			xpathBuffer.append ("]");
+			return;
+		}
+
+		((LinkedList) pendingPredicateContexts.getLast()).add (pred);
+	}
+
+	public void pushPredicateLevel()
+	{
+		pendingPredicateContexts.add (new LinkedList());
+	}
+
+	public void popPredicateLevel (String prefix, String sep, String suffix)
+	{
+		LinkedList preds = (LinkedList) pendingPredicateContexts.removeLast();
+		StringBuffer sb = new StringBuffer();
+		boolean notFirst = false;
+
+		sb.append (prefix);
+
+		for (Iterator it = preds.iterator(); it.hasNext();) {
+			String pred = (String) it.next();
+
+			if (notFirst) {
+				sb.append (sep);
+			} else {
+				notFirst = true;
+			}
+
+			sb.append (pred);
+		}
+
+		sb.append (suffix);
+
+		handlePredicate (sb.toString());
 	}
 
 	// ---------------------------------------------------------------
@@ -101,23 +147,29 @@ logLevel = Level.INFO;
 
 	public void addPropertyValuePredicate (String propName, String propValue, String op)
 	{
- 		xpathBuffer.append ("[property[@name = \"");
-		xpathBuffer.append (propName);
-		xpathBuffer.append ("\"]/values/value[. ");
-		xpathBuffer.append (op);
-		xpathBuffer.append (" \"");
-		xpathBuffer.append (propValue);
-		xpathBuffer.append ("\"]]");
+		StringBuffer sb = new StringBuffer();
+
+ 		sb.append ("property[@name = \"");
+		sb.append (propName);
+		sb.append ("\"]/values/value[. ");
+		sb.append (op);
+		sb.append (" \"");
+		sb.append (propValue);
+		sb.append ("\"]");
+
+		handlePredicate (sb.toString());
 	}
 
 	public void addPositionPredicate (int position)
 	{
-		xpathBuffer.append ("[").append (position).append ("]");
+//		xpathBuffer.append ("[").append (position).append ("]");
+		handlePredicate ("" + position);
 	}
 
 	public void addPredicate (String pred)
 	{
-		xpathBuffer.append ("[").append (pred).append ("]");
+//		xpathBuffer.append ("[").append (pred).append ("]");
+		handlePredicate (pred);
 	}
 
 	public void addOrderBySpec (OrderQueryNode.OrderSpec orderspec)
@@ -128,36 +180,40 @@ logLevel = Level.INFO;
 	protected void addPropertyValueTest (String [] pathElements,
 		String opString, String value, String operand, String functionName)
 	{
-		xpathBuffer.append ("[");
+		StringBuffer sb = new StringBuffer();
+
+//		xpathBuffer.append ("[");
 
 		if (functionName != null) {
-			xpathBuffer.append (functionName).append ("(");
+			sb.append (functionName).append ("(");
 		}
 
 		for (int i = 0; i < pathElements.length; i++) {
 			if (i != 0) {
-				xpathBuffer.append ("/");
+				sb.append ("/");
 			}
 
 			if (i == pathElements.length - 1) {
-				xpathBuffer.append ("property[@name=\"").append (pathElements [i]).append ("\"]");
+				sb.append ("property[@name=\"").append (pathElements [i]).append ("\"]");
 			} else {
-				xpathBuffer.append (pathElements [i]);
+				sb.append (pathElements [i]);
 			}
 		}
 
-		xpathBuffer.append ("/values/value");
+		sb.append ("/values/value");
 
 		if (functionName == null) {
-			xpathBuffer.append ("[").append (value);
-			xpathBuffer.append (opString).append (" ");
-			xpathBuffer.append (operand);
-			xpathBuffer.append ("]");
+			sb.append ("[").append (value);
+			sb.append (opString).append (" ");
+			sb.append (operand);
+			sb.append ("]");
 		} else {
-			xpathBuffer.append (")");
+			sb.append (")");
 		}
 
-		xpathBuffer.append ("]");
+		handlePredicate (sb.toString());
+
+//		xpathBuffer.append ("]");
 	}
 
 	private static final String TEXT_SEARCH_FUNC_ROOT = "local:textContains";
@@ -170,7 +226,8 @@ logLevel = Level.INFO;
 
 		textQueries.add (textQuery);
 
-		addPredicate (predicateFunctionCall);
+//		addPredicate (predicateFunctionCall);
+		handlePredicate (predicateFunctionCall);
 
 //		String posTest = textQuery.getPositiveTest();
 //		String negTest = textQuery.getNegativeTest();
@@ -199,7 +256,7 @@ logLevel = Level.INFO;
 			// TODO: check for Binary property type
 			// URI=xdmp:node-uri() - state.xml + property/values/value
 
-			sb.append ("\ndeclare private function ");
+			sb.append ("\ndeclare function ");
 			sb.append (textQuery.getFunctionName());
 			sb.append (" ($node as element (node)) as xs:boolean\n{\n\n");
 
