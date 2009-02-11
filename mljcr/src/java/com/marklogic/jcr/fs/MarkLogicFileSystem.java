@@ -49,7 +49,7 @@ public interface MarkLogicFileSystem extends FileSystem
 		String deltas, List contentList)
 		throws FileSystemException;
 
-	String[] runQuery (String docUri, String query) throws FileSystemException;
+	String[] runQuery (String docUri, String variableName, String query) throws FileSystemException;
 
 	//another method for query (MLQuery,
 }

@@ -5,7 +5,6 @@
 package com.marklogic.jcr.fs;
 
 import com.marklogic.jcr.compat.PMAdapter;
-import com.marklogic.xcc.AdhocQuery;
 import com.marklogic.xcc.Content;
 import com.marklogic.xcc.ContentCreateOptions;
 import com.marklogic.xcc.ContentFactory;
@@ -68,7 +67,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
-	private static final String QUERY = "query/";
+//	private static final String QUERY = "query/";
 	private final PMAdapter pmAdapter;
 
 	private FileMetaDataLruCache metaDataCache = null;
@@ -777,25 +776,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		return sb.toString();
 	}
 
-	private static final String RUN_QUERY_MODULE = QUERY + "run-query.xqy";
-
-	public String [] runQuery (String docName, String query) throws FileSystemException
-	{
-		String docUri = fullPath (docName);
-logger.log (Level.INFO, "doc=" + docUri);
-		String stateuri = "dummy";
-		XdmVariable stateuriVar = ValueFactory.newVariable (new XName ("state-uri"), ValueFactory.newXSString (stateuri));
-		XdmVariable queryVar = ValueFactory.newVariable (new XName ("query"), ValueFactory.newXSString (query.replaceAll (URI_PLACEHOLDER, docUri)));
-
-		try {
-			//ResultSequence rs = runAdHocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
-			ResultSequence rs = runModule (RUN_QUERY_MODULE, stateuriVar, queryVar, null);
-			return rs.asStrings();
-		} catch (FileSystemException fse) {
-			throw new FileSystemException ("unable to run query", fse);
-		}
-	}
-
 	// ------------------------------------------------------------
 
 	private static final String SANITY_MODULE = FS + "startup-check.xqy";
@@ -875,21 +855,6 @@ logger.log (Level.INFO, "doc=" + docUri);
 		return false;
 	}
 
-//    private ResultSequence runAdHocQuery (String query)
-//            throws FileSystemException
-//    {
-//        Session session = contentSource.newSession();
-//        AdhocQuery ahrequest =  session.newAdhocQuery(query);
-//            try{
-//		      //ahrequest.setQuery (query);
-//		      //ahrequest.setOptions (options);
-//              return session.submitRequest (ahrequest);
-//
-//            } catch(RequestException e){
-//                 throw new FileSystemException ("cannot run Mark Logic request: " + e, e);
-//            }
-//    }
-
 	private ResultSequence runModule (String module, XdmVariable var1,
 		XdmVariable var2, XdmVariable var3)
 		throws FileSystemException
@@ -929,6 +894,25 @@ logger.log (Level.INFO, "doc=" + docUri);
 		throws FileSystemException
 	{
 		return runBinaryModule (module, var, null, null);
+	}
+
+	// ------------------------------------------------------------
+
+	public String [] runQuery (String docName, String variableName, String query) throws FileSystemException
+	{
+		String docUri = fullPath (docName);
+logger.log (Level.INFO, "doc=" + docUri);
+		Session session = contentSource.newSession();
+		Request request = session.newAdhocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
+
+		request.setVariable (ValueFactory.newVariable (new XName (variableName), ValueFactory.newXSString (docUri)));
+
+		try {
+			ResultSequence rs = session.submitRequest (request);
+			return rs.asStrings();
+		} catch (RequestException e) {
+			throw new FileSystemException ("cannot run Mark Logic query: " + e, e);
+		}
 	}
 
 	// ------------------------------------------------------------

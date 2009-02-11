@@ -34,6 +34,8 @@ import java.util.logging.Logger;
  */
 abstract class AbstractQuery implements Query
 {
+	private static final String STATE_DOC_VAR_NAME = "state-doc-uri";
+
 	private static final Logger logger = Logger.getLogger (AbstractQuery.class.getName ());
 //	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
@@ -332,7 +334,7 @@ logLevel = Level.INFO;
 		generateTextFunctions (sb);
 
 		sb.append ("for $node in ");
-		sb.append ("fn:doc (\"").append (AbstractMLFileSystem.URI_PLACEHOLDER).append ("\")");
+		sb.append ("fn:doc ($").append (STATE_DOC_VAR_NAME).append (")");
 		sb.append ("/workspace");
 
 		sb.append (xpathBuffer);
@@ -356,12 +358,14 @@ logLevel = Level.INFO;
 		String xqry = "xquery version '1.0-ml';\n" +
 			"declare namespace mljcr = 'http://marklogic.com/jcr'; \n" +
 			"declare default element namespace 'http://marklogic.com/jcr'; \n" +
+			"declare variable $" + STATE_DOC_VAR_NAME + " as xs:string external;\n\n" +
 			getXQuery() + "\n";
 
 		logger.log (logLevel, "ML Query String: \n" + xqry);
 
 		try {
-			String [] resultUUIDs = mlfs.runQuery (AbstractPersistenceManager.WORKSPACE_DOC_NAME, xqry);
+			String [] resultUUIDs = mlfs.runQuery (
+				AbstractPersistenceManager.WORKSPACE_DOC_NAME, STATE_DOC_VAR_NAME, xqry);
 
 logger.log (logLevel, "resultUUIDS size: " + resultUUIDs.length);
 for (int i = 0; i < resultUUIDs.length; i++) {
