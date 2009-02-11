@@ -248,23 +248,32 @@ logLevel = Level.INFO;
 
 	private void generateTextFunctions (StringBuffer sb)
 	{
+		if (textQueries.size () == 0) return;
+
+		sb.append ("\ndeclare function local:doc-node ($prop as element(property)) as node()\n{\n");
+		sb.append ("	let $node-uri as xs:string := xdmp:node-uri ($prop)\n");
+		sb.append ("	let $uri-root as xs:string := fn:substring-before ($prop, '/state.xml')\n");
+		sb.append ("	let $uri := fn:concat ($uri-root, '/', fn:string ($prop/values/value))\n");
+		sb.append ("	return fn:doc ($uri)/node()\n");
+		sb.append ("};\n\n");
+
 		for (Iterator it = textQueries.iterator(); it.hasNext();) {
 			TextQueryParser textQuery = (TextQueryParser) it.next();
 			String posTest = textQuery.getPositiveTest();
 			String negTest = textQuery.getNegativeTest();
 
-			// TODO: check for Binary property type
-			// URI=xdmp:node-uri() - state.xml + property/values/value
-
 			sb.append ("\ndeclare function ");
 			sb.append (textQuery.getFunctionName());
-			sb.append (" ($node as element (node)) as xs:boolean\n{\n\n");
+			sb.append (" ($node as element (node)) as xs:boolean\n{\n");
+
+			String posExpr =
+				"cts:contains (\n" +
+				"		for $prop in $node/property return" +
+				" if ($prop/@type eq \"Binary\") then local:doc-node ($prop) else $prop/values,\n";
 
 			if (posTest != null) {
-//				sb.append ("	if (fn:exists ($node/property[@type = \"Binary\"]))");
-//				sb.append ("	for $prop in $node/");
-				sb.append ("	cts:contains ($node/property/values, ");
-				sb.append (posTest).append (")");
+				sb.append ("	").append (posExpr);
+				sb.append ("		").append (posTest).append (")");
 			}
 
 			if ((posTest != null) && (negTest != null)) {
@@ -272,8 +281,9 @@ logLevel = Level.INFO;
 			}
 
 			if (negTest != null) {
-				sb.append ("	fn:not (cts:contains ($node/property/values, ");
-				sb.append (negTest).append ("))");
+				sb.append ("	fn:not (");
+				sb.append (posExpr);
+				sb.append ("		").append (negTest).append ("))");
 			}
 
 			sb.append ("\n};\n\n");
