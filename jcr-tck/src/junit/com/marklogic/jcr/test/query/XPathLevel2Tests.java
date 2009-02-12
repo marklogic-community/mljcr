@@ -11,6 +11,11 @@ import javax.jcr.query.RowIterator;
 import javax.jcr.query.Row;
 import javax.jcr.query.Query;
 import javax.jcr.Value;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,13 +37,51 @@ public class XPathLevel2Tests extends AbstractQueryLevel2Test
 
 		checkResult (result, 2);
 
-		RowIterator itr = result.getRows ();
-		while (itr.hasNext ()) {
-			Row row = itr.nextRow ();
+		RowIterator itr = result.getRows();
+
+		while (itr.hasNext()) {
+			Row row = itr.nextRow();
 			Value value = row.getValue (propertyName1);
 			if (value != null) {
-				String fullText = value.getString ();
+				String fullText = value.getString();
+
 				if ((fullText.indexOf ("quick brown") == 0) && (fullText.indexOf ("cat") == 0)) {
+					fail ("Search Text: full text search not correct, returned prohibited text");
+				}
+			}
+		}
+	}
+
+	// Test a full-text query against a mix of string and binary properties
+	public void testFullTextSearchBinaryNode() throws RepositoryException, UnsupportedEncodingException
+	{
+		setUpFullTextTest();
+
+		String text = "This is the value of a\ntext document that will be stored\nas text\n";
+		byte [] data = text.getBytes ("UTF-8");
+
+		Node node = testRootNode.addNode(nodeName3, testNodeType);
+
+		// Binary properties are stored as a separate document
+		node.setProperty(propertyName1, superuser.getValueFactory().createValue(new ByteArrayInputStream(data)));
+		superuser.save();
+
+		String query = "/" + jcrRoot + testRoot + "/*[" + jcrContains +
+			"(., \"'will be stored' or cat\")]/@" + propertyName1;
+
+		QueryResult result = execute (query, Query.XPATH);
+
+		checkResult (result, 2);
+
+		RowIterator itr = result.getRows();
+
+		while (itr.hasNext()) {
+			Row row = itr.nextRow();
+			Value value = row.getValue (propertyName1);
+			if (value != null) {
+				String fullText = value.getString();
+
+				if ((fullText.indexOf ("will be stored") == 0) && (fullText.indexOf ("cat") == 0)) {
 					fail ("Search Text: full text search not correct, returned prohibited text");
 				}
 			}
