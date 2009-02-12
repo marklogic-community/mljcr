@@ -254,10 +254,10 @@ logLevel = Level.INFO;
 
 		sb.append ("\ndeclare function local:doc-node ($prop as element(property)) as node()\n{\n");
 		sb.append ("	let $node-uri as xs:string := xdmp:node-uri ($prop)\n");
-		sb.append ("	let $uri-root as xs:string := fn:substring-before ($prop, '/state.xml')\n");
-		sb.append ("	let $uri := fn:concat ($uri-root, '/', fn:string ($prop/values/value))\n");
+		sb.append ("	let $uri-root as xs:string := fn:substring-before ($node-uri, '/state.xml')\n");
+		sb.append ("	let $uri := fn:concat ($uri-root, fn:string ($prop/values/value))\n");
 		sb.append ("	return fn:doc ($uri)/node()\n");
-		sb.append ("};\n\n");
+		sb.append ("};\n");
 
 		for (Iterator it = textQueries.iterator(); it.hasNext();) {
 			TextQueryParser textQuery = (TextQueryParser) it.next();
