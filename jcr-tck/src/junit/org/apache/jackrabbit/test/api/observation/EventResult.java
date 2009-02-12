@@ -116,6 +116,8 @@ public class EventResult implements EventListener {
 		} catch (InterruptedException e) {
 			log.println ("Interrupted while waiting for EventIterator");
 		}
+
+		now = System.currentTimeMillis();
 	}
 
 	return events;

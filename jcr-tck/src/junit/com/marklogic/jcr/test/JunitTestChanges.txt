@@ -12,6 +12,7 @@ src/junit/org/apache/jackrabbit/test/api/lock/LockTest.java
 
 src/junit/org/apache/jackrabbit/test/api/observation/EventResult.java
 	Badly broken rendezvous code for thread synchronization
+	getEventIterator() did not update current time, waited forever
 
 src/junit/org/apache/jackrabbit/test/api/query/SQLPathTest.java
 	Added comment to testDescendantSelfTestRoot(), parser seems to
