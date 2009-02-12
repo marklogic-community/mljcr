@@ -76,6 +76,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		return data;
 	}
 
+	// FIXME: This is untested, no TCK query tests execute this code path
 	public Object visit (OrQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
@@ -93,7 +94,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 
 		node.acceptOperands (this, data);
 
-		query.popPredicateLevel ("(", " and ", ")");
+		query.popPredicateLevel ("(", ") or (", ")");
 
 		return data;
 	}
@@ -102,14 +103,8 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-//		if (node.getNumOperands() < 2) {
-//			node.acceptOperands (this, data);
-//			return data;
-//		}
-
-		// TODO: push to add-expr state
+		// multiple predicates are 'and'ed together
 		node.acceptOperands (this, data);
-		// TODO: pop from add-expr state
 
 		return data;
 	}
@@ -214,7 +209,6 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	public Object visit (RelationQueryNode node, Object data)
 	{
 		logger.log (logLevel, node.getClass().getName());
-logger.log (Level.INFO, node.getClass().getName());
 
 		AbstractQuery query = (AbstractQuery) data;
 
@@ -364,34 +358,4 @@ logger.log (Level.INFO, node.getClass().getName());
 
 		return "{" + NT_NS_NAME + "}" + stringValue.substring (3);
 	}
-
-
-//	private String propPath (Path relPath)
-//	{
-//		StringBuffer sb = new StringBuffer ();
-//		Path.Element[] elements = relPath.getElements ();
-//
-//		for (int i = 0; i < elements.length; i++) {
-//			if (i != 0) {
-//				sb.append ("/");
-//			}
-//
-//			if (i == elements.length - 1) {
-//				sb.append ("property[@name=\"").append (elements[i]).append ("\"]");
-//			} else {
-//				sb.append (elements[i]);
-//			}
-//		}
-//
-//		return sb.toString ();
-//	}
-//
-//	private String positionName (int pos)
-//	{
-//		if (pos == LocationStepQueryNode.LAST) {
-//			return "last()";
-//		}
-//
-//		return "" + pos;
-//	}
 }

@@ -6,7 +6,6 @@ package com.marklogic.jcr.query;
 
 
 import com.marklogic.jcr.fs.MarkLogicFileSystem;
-import com.marklogic.jcr.fs.AbstractMLFileSystem;
 import com.marklogic.jcr.persistence.AbstractPersistenceManager;
 
 import org.apache.jackrabbit.core.fs.FileSystemException;
@@ -46,7 +45,6 @@ abstract class AbstractQuery implements Query
 	private final Level logLevel;
 	private final MarkLogicFileSystem mlfs;
 	private final Session session;
-	// TODO: Handle this properly in result and as query constraint
 	private String [] propertySelectors = new String [0];
 	private final List orderSpecs = new ArrayList (5);
 	private final List textQueries = new ArrayList (5);
@@ -371,7 +369,7 @@ logger.log (logLevel, "resultUUIDS size: " + resultUUIDs.length);
 for (int i = 0; i < resultUUIDs.length; i++) {
 	System.out.println (resultUUIDs[i]);
 }
-			return new QueryResultImpl (session, resultUUIDs);
+			return new QueryResultImpl (session, propertySelectors, resultUUIDs);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);
 		}

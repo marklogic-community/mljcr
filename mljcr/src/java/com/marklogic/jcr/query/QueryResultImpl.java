@@ -14,8 +14,6 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 import javax.jcr.query.Row;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -32,25 +30,24 @@ public class QueryResultImpl implements QueryResult
 	private static final String SCORE_COL_NAME2 =  "{" + NS_JCR_URI + "}:score";
 	private static final String PATH_COL_NAME1 = "jcr:path";
 	private static final String PATH_COL_NAME2 =  "{" + NS_JCR_URI + "}:path";
-	private static final Logger logger = Logger.getLogger (QueryResultImpl.class.getName());
-	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private static final Value zeroValue = new LongValue (0);
 
 	private final String[] uuids;
 	private final Session session;
-	private final Level logLevel;
 	private String [] columnNames = null;
 
-
-	public QueryResultImpl (Session session, String[] uuids)
+	public QueryResultImpl (Session session, String[] propertySelectors, String[] uuids)
 	{
 		this.session = session;
 		this.uuids = uuids;
 
-		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
-		logLevel = Level.parse (levelName);
+		if ((propertySelectors != null) && (propertySelectors.length != 0)) {
+			columnNames = propertySelectors;
+		}
 	}
 
+	// --------------------------------------------------------
+	// Implementation of QueryResult interface
 
 	public String[] getColumnNames() throws RepositoryException
 	{
@@ -86,6 +83,8 @@ public class QueryResultImpl implements QueryResult
 	{
 		return new NodeIteratorImpl (session, uuids);
 	}
+
+	// -------------------------------------------------------
 
 	private class RowIteratorImpl implements RowIterator
 	{
@@ -155,14 +154,18 @@ public class QueryResultImpl implements QueryResult
 
 			public Value[] getValues() throws RepositoryException
 			{
-				return new Value[0];  // FIXME: auto-generated
+				String [] colNames = getColumnNames();
+				Value [] values = new Value [colNames.length];
+
+				for (int i = 0; i < colNames.length; i++) {
+					values [i] = getValue (colNames [i]);
+				}
+
+				return values;
 			}
 
 			public Value getValue (String s) throws RepositoryException
 			{
-				logger.log (logLevel, "column: " + s);
-//logger.log (Level.INFO, "column: " + s);
-
 				if (SCORE_COL_NAME1.equals (s) || SCORE_COL_NAME2.equals (s)) {
 					return zeroValue;
 				}
