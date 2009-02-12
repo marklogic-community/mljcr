@@ -7,6 +7,7 @@ package com.marklogic.jcr.query;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,30 +74,59 @@ public class TextQueryParser
 	}
 
 
-	// TODO: Need to handle "or" queries
-	// TODO: Need to handle precedence rules (parens?)
+	// This is a simplistic implementation that does not
+	// properly handle precendence of "and" vs "or" nor
+	// grouping of terms (parens are not part of the the
+	// BNF in Spec 6.6.5.2).
+	// Nor is composability with negation tests handled
+	// properly because this is hard to do cts:contains.
+	// The positive and negative tests are gathered separately
+	// and put out as two different predicates.
 	private String aggregateQuery (List terms)
 	{
-		boolean notFirst = false;
-		StringBuffer sb = new StringBuffer();
+		if (terms.size() == 1) {
+			return "'" + terms.get (0) + "'";
+		}
 
-		sb.append ("cts:and-query (");
-		if (terms.size() > 1) sb.append ("(");
+		LinkedList stack = new LinkedList();
 
 		for (Iterator it = terms.iterator(); it.hasNext();) {
+			String term = (String) it.next();
+
+			if (term.equalsIgnoreCase ("or")) {
+				if ((stack.size() == 0) || ( ! it.hasNext())) {
+					throw new IllegalStateException ("Malformed full text expression");
+				}
+
+				String left = (String) stack.removeLast();
+				String right = (String) it.next();
+
+				stack.add ("cts:or-query ((" + left + ", '" + right + "'))");
+			} else {
+				stack.add ("'" + term + "'");
+			}
+		}
+
+		if (stack.size() == 1) {
+			return (String) stack.get (0);
+		}
+
+		StringBuffer sb = new StringBuffer();
+		boolean notFirst = false;
+
+		sb.append ("cts:and-query ((");
+
+		for (Iterator it = stack.iterator(); it.hasNext();) {
 			if (notFirst) {
 				sb.append (", ");
 			} else {
 				notFirst = true;
 			}
 
-			sb.append ("'");
 			sb.append (it.next());
-			sb.append ("'");
 		}
 
-		if (terms.size() > 1) sb.append (")");
-		sb.append (")");
+		sb.append ("))");
 
 		return sb.toString();
 	}
@@ -118,58 +148,4 @@ public class TextQueryParser
 
 		return temp;
 	}
-
-       	// -------------------------------------------------------
-
-//	public static String parseContainsQuery (String rawQuery)
-//	{
-////		String [] terms = rawQuery.split (TERM_REGEX);
-//		List terms = findTerms (rawQuery);
-//System.out.println ("parseContainsQuery: rawQuery=" + rawQuery + ", terms=" + terms.size() + ", regex=" + TERM_REGEX);
-//		List queries = new ArrayList (10);
-//
-//		for (Iterator it = terms.iterator(); it.hasNext();) {
-//			String term = (String) it.next ();
-//
-////			if (term.equalsIgnoreCase ("or")) {
-////				// FIXME: what to do here?
-////			}
-//
-//			String ctsQuery = queryFor (term);
-//System.out.println ("  term=" + term + ", query=" + ctsQuery);
-//
-//			queries.add (ctsQuery);
-//		}
-//
-//		if (queries.size () == 1) {
-//			return (String) queries.get (0);
-//		}
-//
-//		return aggregateQuery (queries, sb);
-//	}
-
-//	private List findTerms (String rawQuery)
-//	{
-//		List terms = new ArrayList (10);
-//		Matcher matcher = termPattern.matcher (rawQuery);
-//
-//		while (matcher.find()) {
-//			terms.add (matcher.group());
-//		}
-//
-//		return terms;
-//	}
-
-//	private static String queryFor (String rawTerm)
-//	{
-//		boolean notQuery = rawTerm.charAt (0) == '-';
-//		String term = scrubTerm (rawTerm);
-//		String query = ("cts:word-query('" + term + "')");
-//
-//		if (notQuery) {
-//			query = "cts:not-query(" + query + ")";
-//		}
-//
-//		return query;
-//	}
 }

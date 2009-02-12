@@ -268,13 +268,13 @@ logLevel = Level.INFO;
 			sb.append (textQuery.getFunctionName());
 			sb.append (" ($node as element (node)) as xs:boolean\n{\n");
 
-			String posExpr =
+			String nodesExpr =
 				"cts:contains (\n" +
 				"		for $prop in $node/property return" +
 				" if ($prop/@type eq \"Binary\") then local:doc-node ($prop) else $prop/values,\n";
 
 			if (posTest != null) {
-				sb.append ("	").append (posExpr);
+				sb.append ("	").append (nodesExpr);
 				sb.append ("		").append (posTest).append (")");
 			}
 
@@ -284,7 +284,7 @@ logLevel = Level.INFO;
 
 			if (negTest != null) {
 				sb.append ("	fn:not (");
-				sb.append (posExpr);
+				sb.append (nodesExpr);
 				sb.append ("		").append (negTest).append ("))");
 			}
 
