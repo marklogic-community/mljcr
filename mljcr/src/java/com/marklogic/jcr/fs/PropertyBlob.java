@@ -4,6 +4,8 @@
 
 package com.marklogic.jcr.fs;
 
+import com.marklogic.jcr.compat.PMAdapter;
+
 import org.apache.jackrabbit.core.state.PropertyState;
 import org.apache.jackrabbit.core.value.BLOBFileValue;
 
@@ -19,18 +21,21 @@ public class PropertyBlob
 	private final BLOBFileValue blobFileValue;
 	private final String blobId;
 	private final int valueIndex;
+	private final PMAdapter pmAdapter;
 
-	public PropertyBlob (PropertyState propertyState, int valueIndex, BLOBFileValue blobFileValue, String blobId)
+	public PropertyBlob (PropertyState propertyState, int valueIndex,
+		BLOBFileValue blobFileValue, String blobId, PMAdapter pmAdapter)
 	{
 		this.propertyState = propertyState;
 		this.blobFileValue = blobFileValue;
 		this.blobId = blobId;
 		this.valueIndex = valueIndex;
+		this.pmAdapter = pmAdapter;
 	}
 
 	public String getPropertyHashKey()
 	{
-		return propertyState.getParentId().getUUID().toString() + "|" + propertyState.getName().toString();
+		return pmAdapter.propertyHashKey (propertyState);
 	}
 
 	public PropertyState getPropertyState()

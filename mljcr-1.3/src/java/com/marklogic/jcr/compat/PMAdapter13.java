@@ -83,4 +83,10 @@ public class PMAdapter13 implements PMAdapter
 	{
 		return (BLOBFileValue) val.internalValue();
 	}
+
+	public String propertyHashKey (PropertyState state)
+	{
+		return state.getParentId().getUUID().toString() + "|" + state.getName().toString();
+		
+	}
 }

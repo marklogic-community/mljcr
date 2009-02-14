@@ -641,7 +641,7 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 						: createBlobPath (state.getPropertyId(), txId);
 
 					if (blobLen != 0) {
-						contentList.add (new PropertyBlob (state, i, blobVal, blobId));
+						contentList.add (new PropertyBlob (state, i, blobVal, blobId, pmAdapter));
 					}
 
 					sb.append (blobId);

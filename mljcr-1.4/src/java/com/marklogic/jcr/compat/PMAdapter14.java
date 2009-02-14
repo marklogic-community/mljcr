@@ -86,4 +86,9 @@ public class PMAdapter14 implements PMAdapter
 	{
 		return val.getBLOBFileValue();
 	}
+
+	public String propertyHashKey (PropertyState state)
+	{
+		return state.getParentId().getUUID().toString() + "|" + state.getName().toString();
+	}
 }

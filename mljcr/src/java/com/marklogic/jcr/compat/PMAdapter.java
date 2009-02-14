@@ -42,4 +42,6 @@ public interface PMAdapter
 	void addName (Set set, String name);
 
 	abstract BLOBFileValue getBlobFileValue (InternalValue val);
+
+	String propertyHashKey (PropertyState state);
 }
