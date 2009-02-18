@@ -1,0 +1,62 @@
+<!--
+  This file contains common static property definitions that are
+  used by all the MLJCR builds.
+
+  ~ Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
+  -->
+
+<project name="MarkLogicJcr-common-defs">
+	<tstamp><format property="date-string" pattern="MMMM dd, yyyy"/></tstamp>
+	<property name="dist.dir" value="../dist"/>
+	<property name="mlcore.dir" value="../mljcr"/>
+	<property name="mlcore.jar.name" value="mljcr-core.jar"/>
+
+	<property name="java.source" value="src/java"/>
+	<property name="junit.source" value="src/junit"/>
+	<property name="buildtmp" value="buildtmp"/>
+	<property name="compiled.classes.dir" value="${buildtmp}/classes"/>
+	<property name="products" value="deliverable"/>
+
+	<property name="javac.nowarn" value="on"/>		<!-- on | off -->
+	<property name="compile.debug.symbols.flag" value="true"/>	<!-- on | off -->
+
+	<property name="jar.excluded.classes" value="org/**,**/test/*"/>
+
+
+	<target name="init">
+		<mkdir dir="${buildtmp}"/>
+		<mkdir dir="${compiled.classes.dir}"/>
+		<mkdir dir="${products}"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${buildtmp}"/>
+	</target>
+
+	<target name="cleanest" depends="clean">
+		<delete dir="${products}"/>
+	</target>
+
+
+	<path id="compile.classpath.1.4">
+		<pathelement path="${compiled.classes.dir}"/>
+		<pathelement path="${dist.dir}/jcr-1.0.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-core-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-jcr-commons-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-commons-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-j2ee-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-jcr-servlet-1.4.jar"/>
+		<pathelement path="${dist.dir}/servlet-api.jar"/>
+		<pathelement path="${dist.dir}/xcc.jar"/>
+	</path>
+
+	<path id="compile.classpath.1.3">
+		<pathelement path="${compiled.classes.dir}"/>
+		<pathelement path="${dist.dir}/jcr-1.0.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.3.3/jackrabbit-core-1.3.3.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.3.3/jackrabbit-jcr-commons-1.3.3.jar"/>
+		<pathelement path="${dist.dir}/servlet-api.jar"/>
+		<pathelement path="${dist.dir}/xcc.jar"/>
+	</path>
+</project>

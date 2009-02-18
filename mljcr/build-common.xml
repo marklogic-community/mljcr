@@ -1,0 +1,38 @@
+<!--
+  Common ant build defintions that are shared by all the MLJCR ant builds.
+  Definitions here depend on properties defined either in build-common-defs.xml
+  or in one of the specific build.xml fils that imports this.
+
+  ~ Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
+  -->
+
+<project name="MarkLogicJcr-common">
+	<property name="output.jar" value="${products}/${jar.name}"/>
+
+	<target name="compile" depends="init">
+		<javac classpathref="compile.classpath" srcdir="${java.source}"
+			destdir="${compiled.classes.dir}" deprecation="on"
+			debug="${compile.debug.symbols.flag}" failonerror="on"
+			nowarn="${javac.nowarn}"
+			source="1.4" target="1.4">
+		</javac>
+	</target>
+
+	<target name="make.jar" depends="compile">
+		<jar jarfile="${output.jar}" basedir="${compiled.classes.dir}"
+		     excludes="${jar.excluded.classes}">
+			<manifest>
+				<section name="${jar.section}">
+					<attribute name="Vendor" value="Mark Logic Corporation"/>
+					<attribute name="Description" value="${jar.desc}"/>
+					<attribute name="Component" value="${jar.component}"/>
+					<attribute name="Build-Version" value="${jar.build.version}"/>
+					<attribute name="Build-Date" value="${date-string}"/>
+				</section>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="package" depends="make.jar"/>
+	<target name="all" depends="package"/>
+</project>
