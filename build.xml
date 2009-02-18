@@ -1,13 +1,13 @@
 <!--
   This is a simple-minded ant build file that will package the MLJCR
-  source and binaries into zip file.
+  source and binaries into a zip file.
 
   This file blindly packages everything in the listed subdirectories.
   They should be clean (ant cleanest) when you run this, otherwise the
   compiled classes and jar files will also be bundled up.
 
   The binary package does a build in each of the MLJCR source dirs
-  and then bundles the jar files into a single zip file.
+  and then bundles the jar files, XQuery code and docs into a single zip file.
 
   ~ Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
   -->
@@ -15,9 +15,13 @@
 <project name="MLJCR-package" default="all">
 	<tstamp><format property="date-string" pattern="MMMM dd, yyyy"/></tstamp>
 
+	<!-- TODO: place zip files in "deliverables" dir? -->
 	<property name="src.zip" value="mljcr-src.zip"/>
 	<property name="bin.zip" value="mljcr-bin.zip"/>
-	<property name="stage.dir" value="lib"/>
+	<property name="stage.dir" value="stagetmp"/>
+	<property name="stage.lib" value="${stage.dir}/lib"/>
+	<property name="stage.xquery" value="${stage.dir}/Modules/MarkLogic"/>
+	<property name="stage.doc" value="${stage.dir}/docs"/>
 
 	<target name="package.src">
 		<zip zipfile="${src.zip}" basedir=".">
@@ -32,16 +36,34 @@
 
 	<target name="package.bin" depends="compile">
 		<mkdir dir="${stage.dir}"/>
+		<mkdir dir="${stage.lib}"/>
+		<mkdir dir="${stage.xquery}" />
+		<mkdir dir="${stage.doc}"/>
 
-		<copy todir="${stage.dir}">
+		<copy todir="${stage.lib}">
 			<fileset dir="mljcr/deliverable"/>
 			<fileset dir="mljcr-1.4/deliverable"/>
 			<fileset dir="mljcr-1.3/deliverable"/>
 		</copy>
+		<copy todir="${stage.lib}">
+			<fileset dir="docs" includes="readme-jars.txt"/>
+		</copy>
 
-		<zip zipfile="${bin.zip}" basedir="." includes="lib/**"/>
+		<copy todir="${stage.xquery}">
+			<fileset dir="mljcr/src/xquery"/>
+		</copy>
+		<copy todir="${stage.xquery}">
+			<fileset dir="docs" includes="readme-modules.txt"/>
+		</copy>
 
-		<delete dir="$stage.dir}"/>
+		<copy todir="${stage.doc}">
+			<fileset dir="docs"/>
+		</copy>
+
+		<zip zipfile="${bin.zip}" basedir="${stage.dir}"
+			includes="*/**" excludes="**/use-cases/*,**/test/*"/>
+
+		<delete dir="${stage.dir}"/>
 	</target>
 
 
