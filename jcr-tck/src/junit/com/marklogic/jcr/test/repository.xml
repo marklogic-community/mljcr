@@ -28,7 +28,7 @@
         (e.g. registered namespaces, custom node types, etc.)
     -->
     <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
-        <param name="uriRoot" value="${rep.home}/repository"/>
+        <param name="uriRoot" value="/jcrtck/repository"/>
         <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
     </FileSystem>
 
@@ -67,7 +67,7 @@
     <!--
         location of workspaces root directory and name of default workspace
     -->
-    <Workspaces rootPath="${rep.home}/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
+    <Workspaces rootPath="/jcrtck/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
     <!--
         workspace configuration template:
         used to create the initial workspace if there's no workspace yet
@@ -95,51 +95,19 @@
 			<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
 		    </FileSystem>
 	    </SearchIndex>
-<!--
-	    <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
-	      <param name="path" value="${wsp.home}/index" />
-	      <param name="useCompoundFile" value="true" />
-	      <param name="minMergeDocs" value="100" />
-	      <param name="volatileIdleTime" value="3" />
-	      <param name="maxMergeDocs" value="100000" />
-	      <param name="mergeFactor" value="10" />
-	      <param name="maxFieldLength" value="10000" />
-	      <param name="bufferSize" value="10" />
-	      <param name="cacheSize" value="1000" />
-	      <param name="forceConsistencyCheck" value="false" />
-	      <param name="autoRepair" value="true" />
-	      <param name="analyzer" value="org.apache.lucene.analysis.standard.StandardAnalyzer" />
-	      <param name="queryClass" value="org.apache.jackrabbit.core.query.QueryImpl" />
-	      <param name="respectDocumentOrder" value="true" />
-	      <param name="resultFetchSize" value="2147483647" />
-	      <param name="extractorPoolSize" value="3" />
-	      <param name="extractorTimeout" value="100" />
-	      <param name="extractorBackLogSize" value="100" />
-	      <param name="textFilterClasses"
-		value="org.apache.jackrabbit.extractor.MsWordTextExtractor,
-		       org.apache.jackrabbit.extractor.MsExcelTextExtractor,
-		       org.apache.jackrabbit.extractor.MsPowerPointTextExtractor,
-		       org.apache.jackrabbit.extractor.PdfTextExtractor,
-		       org.apache.jackrabbit.extractor.OpenOfficeTextExtractor,
-		       org.apache.jackrabbit.extractor.RTFTextExtractor,
-		       org.apache.jackrabbit.extractor.HTMLTextExtractor,
-		       org.apache.jackrabbit.extractor.PlainTextExtractor,
-		       org.apache.jackrabbit.extractor.XMLTextExtractor" />
-	    </SearchIndex>
--->
 
     </Workspace>
 
     <!--
         Configures the versioning
     -->
-    <Versioning rootPath="${rep.home}/version">
+    <Versioning rootPath="/jcrtck/version">
         <!--
             Configures the filesystem to use for versioning for the respective
             persistence manager
         -->
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
-            <param name="uriRoot" value="${rep.home}/version" />
+            <param name="uriRoot" value="/jcrtck/version" />
 		    <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
 
@@ -150,13 +118,12 @@
             implementations.
         -->
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
-              <param name="collections" value="jcr-${rep.home}"/>
         </PersistenceManager>
     </Versioning>
 
     <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex13">
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
-            <param name="uriRoot" value="${rep.home}/repository/index"/>
+            <param name="uriRoot" value="/jcrtck/repository/index"/>
             <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
     </SearchIndex>
