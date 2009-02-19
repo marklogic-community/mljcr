@@ -9,7 +9,7 @@
   The binary package does a build in each of the MLJCR source dirs
   and then bundles the jar files, XQuery code and docs into a single zip file.
 
-  ~ Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
+  Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
   -->
 
 <project name="MLJCR-package" default="all">
@@ -67,23 +67,40 @@
 	</target>
 
 
+	<!-- Compile code packages -->
 	<target name="compile.core">
-		<exec executable="ant" failonerror="true" dir="mljcr">
-		</exec>
+		<exec executable="ant" failonerror="true" dir="mljcr"/>
 	</target>
 
 	<target name="compile.compat.1.3">
-		<exec executable="ant" failonerror="true" dir="mljcr-1.3">
-		</exec>
+		<exec executable="ant" failonerror="true" dir="mljcr-1.3"/>
 	</target>
 
 	<target name="compile.compat.1.4">
+		<exec executable="ant" failonerror="true" dir="mljcr-1.4"/>
+	</target>
+
+	<!-- Cleanup code packages -->
+	<target name="clean.core">
+		<exec executable="ant" failonerror="true" dir="mljcr">
+			<arg value="cleanest"/>
+		</exec>
+	</target>
+
+	<target name="clean.compat.1.3">
+		<exec executable="ant" failonerror="true" dir="mljcr-1.3">
+			<arg value="cleanest"/>
+		</exec>
+	</target>
+
+	<target name="clean.compat.1.4">
 		<exec executable="ant" failonerror="true" dir="mljcr-1.4">
+			<arg value="cleanest"/>
 		</exec>
 	</target>
 
 	<target name="compile" depends="compile.core,compile.compat.1.4,compile.compat.1.3"/>
-
+	<target name="clean" depends="clean.core,clean.compat.1.4,clean.compat.1.3"/>
 	<target name="all" depends="package.src,package.bin"/>
 </project>
 
