@@ -66,7 +66,7 @@ public class MarkLogicSearchIndex14 extends AbstractSearchIndex
 		ItemManager itemMgr, String statement, String language)
 		throws InvalidQueryException
 	{
-		log.info ("lang=" + language + ", stmt=" + statement);
+		log.fine ("lang=" + language + ", stmt=" + statement);
 
 		QueryRootNode root = QueryParser.parse (statement, language,
 			session.getNamePathResolver(),
