@@ -74,6 +74,9 @@
       <entry name="?*.jpg" />
     </wildcardResourcePatterns>
   </component>
+  <component name="CopyrightManager" default="">
+    <module2copyright />
+  </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" warnedAboutFileOutOfSourceRoot="true" version="1" currentProject="/Users/ron/Work/marklogic/xcc/xcc/Makefile" />
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
@@ -376,6 +379,9 @@
     <option name="projectName" value="jsr170" />
   </component>
   <component name="ProjectFileVersion" converted="true" />
+  <component name="ProjectKey">
+    <option name="state" value="svn+ssh://cvs.marklogic.com/project/svnroot/jsr170/jsr170.ipr" />
+  </component>
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/dist/Distributions.iml" filepath="$PROJECT_DIR$/dist/Distributions.iml" />
@@ -411,6 +417,7 @@
       </map>
     </option>
     <option name="myVersion" value="124" />
+    <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
@@ -584,7 +591,7 @@
           <option name="filler" value=" " />
         </value>
       </option>
-      <option name="notice" value="Copyright (c) &amp;#36;today.year,  Mark Logic Corporation. All Rights Reserved." />
+      <option name="notice" value=" Copyright (c) &amp;#36;today.year,  Mark Logic Corporation.&#10;&#10; Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#10; you may not use this file except in compliance with the License.&#10; You may obtain a copy of the License at&#10;&#10; http://www.apache.org/licenses/LICENSE-2.0&#10;&#10; Unless required by applicable law or agreed to in writing, software&#10; distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#10; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#10; See the License for the specific language governing permissions and&#10; limitations under the License.&#10;&#10; The use of the Apache License does not indicate that this project is&#10; affiliated with the Apache Software Foundation." />
       <option name="keyword" value="Copyright" />
       <option name="fileTypeOverride" value="4" />
       <option name="relativeBefore" value="true" />
