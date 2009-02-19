@@ -12,7 +12,8 @@ jar files that you will need.
 (see the http://developer.marklogic.com/code/).  The other stuff there
 is not needed to setup a JCR repository with Jack Rabbit.
 
-   TODO: More to come here.
+   See addtional documentation in the docs subdirectory for installation
+and usage information.
 
 ----
 Feb 2009
