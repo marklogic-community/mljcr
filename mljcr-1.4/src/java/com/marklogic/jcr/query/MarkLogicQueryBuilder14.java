@@ -1,5 +1,20 @@
 /*
- * Copyright (c) 2009,  Mark Logic Corporation. All Rights Reserved.
+ *  Copyright (c) 2009,  Mark Logic Corporation.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  The use of the Apache License does not indicate that this project is
+ *  affiliated with the Apache Software Foundation.
  */
 
 package com.marklogic.jcr.query;
@@ -10,7 +25,6 @@ import org.apache.jackrabbit.core.query.QueryRootNode;
 import org.apache.jackrabbit.core.query.TextsearchQueryNode;
 import org.apache.jackrabbit.core.query.LocationStepQueryNode;
 import org.apache.jackrabbit.core.query.RelationQueryNode;
-import org.apache.jackrabbit.core.ItemManager;
 import org.apache.jackrabbit.spi.Path;
 import org.apache.jackrabbit.spi.Name;
 
@@ -26,9 +40,9 @@ import javax.jcr.query.Query;
 public class MarkLogicQueryBuilder14 extends AbstractQueryBuilder
 {
 	public MarkLogicQueryBuilder14 (QueryRootNode root, Session session,
-		ItemManager itemMgr, String statement, String language)
+		String statement, String language)
 	{
-		super (root, session, itemMgr, statement, language);
+		super (root, session, statement, language);
 	}
 
 	// -------------------------------------------------------
@@ -53,7 +67,11 @@ public class MarkLogicQueryBuilder14 extends AbstractQueryBuilder
 
 		return nameTest.toString();
 	}
+
 	// -------------------------------------------------------
+	// These two Visitor methods have dependencies on JackRabbit
+	// classes that vary between 1.3 and 1.4 so that are implemented
+	// here and marked as abstract in AbstractQueryBuilder.
 
 	public Object visit (QueryRootNode node, Object data)
 	{

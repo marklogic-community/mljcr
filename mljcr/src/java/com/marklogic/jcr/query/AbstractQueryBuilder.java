@@ -1,10 +1,24 @@
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ *  Copyright (c) 2009,  Mark Logic Corporation.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  The use of the Apache License does not indicate that this project is
+ *  affiliated with the Apache Software Foundation.
  */
 
 package com.marklogic.jcr.query;
 
-import org.apache.jackrabbit.core.ItemManager;
 import org.apache.jackrabbit.core.query.*;
 
 import javax.jcr.Session;
@@ -25,8 +39,6 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
-
-	//	private final ItemManager itemMgr;
 	private final QueryRootNode root;
 
 	protected final Logger logger = Logger.getLogger (AbstractQueryBuilder.class.getName());
@@ -35,12 +47,11 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	protected final String statement;
 	protected final String language;
 
-	public AbstractQueryBuilder (QueryRootNode root, Session session, ItemManager itemMgr,
+	public AbstractQueryBuilder (QueryRootNode root, Session session,
 		String statement, String language)
 	{
 		this.root = root;
 		this.session = session;
-//		this.itemMgr = itemMgr;
 		this.statement = statement;
 		this.language = language;
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
@@ -103,7 +114,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-		// multiple predicates are 'and'ed together
+		// multiple predicates are 'and'ed together in XQuery
 		node.acceptOperands (this, data);
 
 		return data;
@@ -154,14 +165,11 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		return data;
 	}
 
-
 	public Object visit (PathQueryNode node, Object data)
 	{
 		LocationStepQueryNode [] stepNodes = node.getPathSteps();
 
 		logger.log (logLevel, node.getClass().getName());
-
-		// FIXME: Need to do anything with node.isAbsolute?
 
 		for (int i = 0; i < stepNodes.length; i++) {
 			LocationStepQueryNode stepNode = stepNodes [i];
@@ -190,7 +198,6 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 			query.addNamedNodePathStep (nameTest, node.getIncludeDescendants());
 		}
 
-		// FIXME: should this operate like RelationQueryNode?
 		if (hasindexPredicate) {
 			if (index == LocationStepQueryNode.LAST) {
 				query.addPredicate ("position() = last()");
@@ -211,10 +218,6 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		logger.log (logLevel, node.getClass().getName());
 
 		AbstractQuery query = (AbstractQuery) data;
-
-//		log ("  op=" + node.getOperation());
-//		log ("  valtype=" + node.getValueType());
-//		log ("  pos=" + node.getPositionValue());
 
 		int op = node.getOperation();
 		String opString = null;
@@ -266,7 +269,6 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 		String value = ".";
 		String operand = "";
 
-		// TODO: add type tests here?
 		switch (valueType) {
 		case QueryConstants.TYPE_DATE:
 			operand = node.getDateValue().toString();
@@ -296,7 +298,6 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 			break;
 
 		case QueryConstants.TYPE_TIMESTAMP:
-			// FIXME:
 			operand = node.getDateValue().toString();
 			break;
 
@@ -333,7 +334,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-//		log ("  refprop=" + node.getRefProperty().toString());
+		// FIXME: Unimplemented, no TCK tests exercise this path
 
 		return data;
 	}
@@ -342,7 +343,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 	{
 		logger.log (logLevel, node.getClass().getName());
 
-//		log ("  funcname=" + node.getFunctionName());
+		// FIXME: Unimplemented, no TCK tests exercise this path
 
 		return data;
 	}

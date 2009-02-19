@@ -1,5 +1,21 @@
+
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ *  Copyright (c) 2009,  Mark Logic Corporation.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  The use of the Apache License does not indicate that this project is
+ *  affiliated with the Apache Software Foundation.
  */
 
 package com.marklogic.jcr.compat;
@@ -15,10 +31,8 @@ import org.apache.jackrabbit.name.QName;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ron
- * Date: Jul 16, 2008
- * Time: 7:59:50 PM
+ * This class contains methods that adapt the generic MLJCR code
+ * to JackRabbit 1.3.
  */
 public class PMAdapter13 implements PMAdapter
 {
@@ -69,13 +83,11 @@ public class PMAdapter13 implements PMAdapter
 
 	public boolean sameNodeTypeName (NodeState state, String name)
 	{
-		// FIXME: I think this may be broken, it tests identity in Object.equals
 		return QName.valueOf (name).equals (state.getNodeTypeName());
 	}
 
 	public boolean samePropertyName (PropertyState state, String name)
 	{
-		// FIXME: I think this may be broken, it tests identity in Object.equals
 		return state.getName().equals(QName.valueOf (name));
 	}
 
@@ -87,6 +99,5 @@ public class PMAdapter13 implements PMAdapter
 	public String propertyHashKey (PropertyState state)
 	{
 		return state.getParentId().getUUID().toString() + "|" + state.getName().toString();
-		
 	}
 }
