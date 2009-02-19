@@ -15,17 +15,20 @@
 <project name="MLJCR-package" default="all">
 	<tstamp><format property="date-string" pattern="MMMM dd, yyyy"/></tstamp>
 
-	<!-- TODO: place zip files in "deliverables" dir? -->
+	<property name="stage.dir" value="mljcr-1.0"/>  <!-- update when version changes -->
+	<property name="products" value="deliverable"/>
 	<property name="src.zip" value="mljcr-src.zip"/>
 	<property name="bin.zip" value="mljcr-bin.zip"/>
-	<property name="stage.dir" value="stagetmp"/>
 	<property name="stage.lib" value="${stage.dir}/lib"/>
-	<property name="stage.xquery" value="${stage.dir}/Modules/MarkLogic"/>
+	<property name="stage.modules" value="${stage.dir}/Modules"/>
+	<property name="stage.xquery" value="${stage.modules}/MarkLogic"/>
 	<property name="stage.doc" value="${stage.dir}/docs"/>
 
 	<target name="package.src">
-		<zip zipfile="${src.zip}" basedir=".">
+		<mkdir dir="${products}"/>
+		<zip zipfile="${products}/${src.zip}" basedir="." >
 			<include name="build.xml"/>
+			<include name="Readme.txt"/>
 			<include name="mljcr/**"/>
 			<include name="mljcr-1.4/**"/>
 			<include name="mljcr-1.3/**"/>
@@ -36,33 +39,33 @@
 	</target>
 
 	<target name="package.bin" depends="compile">
+		<mkdir dir="${products}"/>
 		<mkdir dir="${stage.dir}"/>
 		<mkdir dir="${stage.lib}"/>
 		<mkdir dir="${stage.xquery}" />
 		<mkdir dir="${stage.doc}"/>
 
+		<copy todir="${stage.dir}" file="Readme.txt"/>
+
 		<copy todir="${stage.lib}">
 			<fileset dir="mljcr/deliverable"/>
 			<fileset dir="mljcr-1.4/deliverable"/>
 			<fileset dir="mljcr-1.3/deliverable"/>
-		</copy>
-		<copy todir="${stage.lib}">
-			<fileset dir="docs" includes="readme-jars.txt"/>
+			<fileset dir="mljcr-1.3/deliverable"/>
+			<fileset file="docs/readme-jars.txt"/>
 		</copy>
 
 		<copy todir="${stage.xquery}">
 			<fileset dir="mljcr/src/xquery"/>
 		</copy>
-		<copy todir="${stage.xquery}">
-			<fileset dir="docs" includes="readme-modules.txt"/>
-		</copy>
+		<copy todir="${stage.modules}" file="docs/readme-modules.txt"/>
 
 		<copy todir="${stage.doc}">
 			<fileset dir="docs"/>
 		</copy>
 
-		<zip zipfile="${bin.zip}" basedir="${stage.dir}"
-			includes="*/**" excludes="**/use-cases/*,**/test/*"/>
+		<zip zipfile="${products}/${bin.zip}" basedir="."
+			includes="${stage.dir}/**" excludes="**/use-cases/*"/>
 
 		<delete dir="${stage.dir}"/>
 	</target>
@@ -100,8 +103,11 @@
 		</exec>
 	</target>
 
+	<target name="clean" depends="clean.core,clean.compat.1.4,clean.compat.1.3">
+		<delete dir="${products}"/>
+	</target>
+
 	<target name="compile" depends="compile.core,compile.compat.1.4,compile.compat.1.3"/>
-	<target name="clean" depends="clean.core,clean.compat.1.4,clean.compat.1.3"/>
 	<target name="all" depends="package.src,package.bin"/>
 </project>
 
