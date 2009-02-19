@@ -53,6 +53,8 @@ abstract class AbstractQuery implements Query
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
 	private final String language;
+	private final long offset;
+	private final long limit;
 
 	private final Level logLevel;
 	private final MarkLogicFileSystem mlfs;
@@ -63,15 +65,24 @@ abstract class AbstractQuery implements Query
 	private final LinkedList pendingPredicateContexts = new LinkedList();
 	private StringBuffer xpathBuffer = new StringBuffer();
 
-	public AbstractQuery (String statement, String language, MarkLogicFileSystem mlfs, Session session)
+	public AbstractQuery (String statement, String language,
+		long offset, long limit, MarkLogicFileSystem mlfs, Session session)
 	{
 		this.statement = statement;
 		this.language = language;
+		this.offset = offset;
+		this.limit = limit;
 		this.mlfs = mlfs;
 		this.session = session;
 
 		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
 		logLevel = Level.parse (levelName);
+	}
+
+	public AbstractQuery (String statement, String language,
+		MarkLogicFileSystem mlfs, Session session)
+	{
+		this (statement, language, 0, Long.MAX_VALUE, mlfs, session);
 	}
 
 	// --------------------------------------------------------------
@@ -307,9 +318,14 @@ abstract class AbstractQuery implements Query
 
 	String getXQuery()
 	{
+		boolean range = (limit != 0) || (offset != Long.MAX_VALUE);
 		StringBuffer sb = new StringBuffer();
 
 		generateTextFunctions (sb);
+
+		if (range) {
+			sb.append ("(\n");
+		}
 
 		sb.append ("for $node in ");
 		sb.append ("fn:doc ($").append (STATE_DOC_VAR_NAME).append (")");
@@ -323,7 +339,11 @@ abstract class AbstractQuery implements Query
 
 		sb.append ("return $node/@uuid\n");
 
-		return sb.toString ();
+		if (range) {
+			sb.append (")[").append (offset).append (" to ").append (limit).append ("]\n");
+		}
+
+		return sb.toString();
 	}
 
 	// ---------------------------------------------------------------

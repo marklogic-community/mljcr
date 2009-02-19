@@ -37,7 +37,7 @@ public class MarkLogicQuery13 extends AbstractQuery
 	public MarkLogicQuery13 (String statement, String language,
 		MarkLogicFileSystem mlfs, Session session)
 	{
-		super (statement, language, 0, Long.MAX_VALUE, mlfs, session);
+		super (statement, language, mlfs, session);
 	}
 
 	// -----------------------------------------------------------
