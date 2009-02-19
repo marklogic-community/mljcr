@@ -1,5 +1,20 @@
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ *  Copyright (c) 2009,  Mark Logic Corporation.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  The use of the Apache License does not indicate that this project is
+ *  affiliated with the Apache Software Foundation.
  */
 
 package com.marklogic.jcr.fs;
@@ -62,12 +77,11 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	private static final String DEFAULT_LOG_LEVEL = "FINE";
 
 	private final Level logLevel;
-	private static final int DEFUALT_METADATA_CACHE_SIZE = 256;
-	private static final int DEFUALT_ITEMSTATE_CACHE_SIZE = 64;
+	private static final int DEFAULT_METADATA_CACHE_SIZE = 256;
+	private static final int DEFAULT_ITEMSTATE_CACHE_SIZE = 64;
 	private static final String MODULES_ROOT = "/MarkLogic/jcr/";
 	private static final String FS = "filesystem/";
 	private static final String STATE = "state/";
-//	private static final String QUERY = "query/";
 	private final PMAdapter pmAdapter;
 
 	private FileMetaDataLruCache metaDataCache = null;
@@ -76,8 +90,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	// bean properties
 	private String contentSourceUrl = null;
 	private String uriRoot = null;
-	private int metaDataCacheSize = DEFUALT_METADATA_CACHE_SIZE;
-	private int itemStateCacheSize = DEFUALT_ITEMSTATE_CACHE_SIZE;
+	private int metaDataCacheSize = DEFAULT_METADATA_CACHE_SIZE;
+	private int itemStateCacheSize = DEFAULT_ITEMSTATE_CACHE_SIZE;
 
 	private ContentSource contentSource = null;
 
@@ -135,9 +149,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	{
 		logger.log (logLevel, "init: path=" + uriRoot + ", uri=" + contentSourceUrl);
 
-//        System.out.println("======URI ROOT IN INIT "+uriRoot);
-//        System.out.println("======contentSourceUrl INIT "+contentSourceUrl);
-
 		try {
 			URI uri = new URI (contentSourceUrl);
 			contentSource = ContentSourceFactory.newContentSource (uri);
@@ -151,14 +162,11 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		metaDataCache = new FileMetaDataLruCache (metaDataCacheSize);
 		itemStateCache = new ItemStateLruCache (itemStateCacheSize);
-
-		// TODO: fetch db metadata, check modules setup, store modules?
-		// TODO: create/check repo dir?
 	}
 
-	public void close() throws FileSystemException
+	public void close()
 	{
-		// TODO: anything to do here?
+		// nothing to do here
 	}
 
 	// ------------------------------------------------------------
@@ -254,7 +262,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 			TransientFileFactory fileFactory = TransientFileFactory.getInstance();
 			final File tmpFile = fileFactory.createTransientFile ("jcrInsert", ".tmp", null);
 
-			//noinspection OverlyComplexAnonymousInnerClass
 			return new FilterOutputStream (new FileOutputStream (tmpFile)) {
 				public void close() throws IOException
 				{
@@ -264,36 +271,16 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 					Content content = ContentFactory.newContent (uri, tmpFile, options);
 					Session session = contentSource.newSession();
 
-//		pukeFile (tmpFile);
 					try {
 						session.insertContent (content);
 					} catch (RequestException e) {
 						throw new IOException ("Inserting " + uri + ": " + e.getMessage());
 					} finally {
-					    // temp file can now safely be removed
+						// temp file can now safely be removed
 						//noinspection ResultOfMethodCallIgnored
 						tmpFile.delete();
 					}
 				}
-
-//				private void pukeFile (File tmpFile) throws IOException
-//				{
-//					System.out.println ("File: " + uri);
-//					if ( ! uri.endsWith (".xml")) return;
-//
-//					InputStream in = new FileInputStream (tmpFile);
-//					byte [] buf = new byte [1024];
-//					int rc;
-//
-//					System.out.println ("========");
-//					while ((rc = in.read (buf)) != -1) {
-//						System.out.write (buf, 0, rc);
-//						System.out.flush();
-//					}
-//
-//					System.out.println ("========");
-//					in.close();
-//				}
 			};
 		} catch (Exception e) {
 		    String msg = "Failed to open output stream to file: " + filePath;
@@ -302,7 +289,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		}
 	}
 
-	// FIXME: Implement this
 	public RandomAccessOutputStream getRandomAccessOutputStream (String filePath)
 		throws FileSystemException, UnsupportedOperationException
 	{
@@ -310,7 +296,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		logger.log (logLevel, "getRandomAccessOutputStream: filePath=" + filePath);
 
-		throw new FileSystemException ("NOT IMPL");
+		throw new FileSystemException ("RandomAccessOutputStream NOT IMPLEMENTED");
 	}
 
 	private static final String CREATE_FOLDER_MODULE = FS + "create-folder.xqy";
@@ -483,20 +469,18 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		runModule (DELETE_FOLDER_MODULE, var);
 	}
 
-	// FIXME: Implement this
 	public void move (String srcPath, String destPath) throws FileSystemException
 	{
 		logger.log (logLevel, "move: srcPath=" + srcPath + ", destPath" + destPath);
 
-		throw new FileSystemException ("NOT IMPL");
+		throw new FileSystemException ("move NOT IMPLEMENTED");
 	}
 
-	// FIXME: Implement this
 	public void copy (String srcPath, String destPath) throws FileSystemException
 	{
 		logger.log (logLevel, "copy: srcPath=" + srcPath + ", destPath" + destPath);
 
-		throw new FileSystemException ("NOT IMPL");
+		throw new FileSystemException ("copy NOT IMPLEMENTED");
 	}
 
 	// ------------------------------------------------------------
@@ -656,7 +640,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	}
 
 	// ------------------------------------------------------------
-	// MArk Logic extensions for updating workspace state
+	// Mark Logic extensions for updating workspace state
 
 	private static final String UPDATE_STATE_MODULE = STATE + "update-state.xqy";
 
@@ -670,7 +654,9 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		String fullWsDocUri = fullPath (workspaceDocUri);
 
-		logger.log (logLevel, "+Begin: workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
+		if (logger.isLoggable (logLevel)) {
+			logger.log (logLevel, "+Begin: workspaceDocUri=" + fullWsDocUri + ", contentsize=" + contentList.size());
+		}
 
 		ContentCreateOptions options = ContentCreateOptions.newBinaryInstance();
 		Content [] blobs = new Content [contentList.size() + 1];
@@ -720,17 +706,12 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 			if (strings.length != 3) throw new FileSystemException ("Bad blob path item: " + blobPathItem);
 
 			blobMap.put (strings [0] +"|" + strings [1], strings [2]);
-//System.out.println ("  rs: uuid=" + strings [0] + ", name=" + strings [1] + ", path=" + strings [2]);
 		}
 
 		for (Iterator it = contentList.iterator(); it.hasNext();) {
 			PropertyBlob blob = (PropertyBlob) it.next();
 			String hashKey = blob.getPropertyHashKey();
 			String newBlobPath = (String) blobMap.get (hashKey);
-
-//System.out.println ("blob: uuid=" + blob.getPropertyState ().getParentId ().getUUID ().toString () +
-//	", name=" + blob.getPropertyState ().getName ().toString () +
-//	", path=" + blob.getBlobId () + ", newpath=" + newBlobPath);
 
 			if (newBlobPath == null) throw new FileSystemException ("Missing blob path: " + blob.getPropertyHashKey());
 
@@ -749,13 +730,15 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		if (blobMap.size () != 0) throw new FileSystemException ("Blob map inconsistency: size=" + blobMap.size());
 
-		logger.log (logLevel, "-End:   workspaceDocUri=" + fullWsDocUri);
+		if (logger.isLoggable (logLevel)) {
+			logger.log (logLevel, "-End:   workspaceDocUri=" + fullWsDocUri);
 
-		logger.log (logLevel, "Insert: " + fmttime (prepareDone - startTime) +
-			", New State: " + fmttime (updateDone - prepareDone) +
-			", Total: " + fmttime (System.currentTimeMillis () - startTime) +
-			", new blobs: " + rs.size() +
-			", WS: " + fullWsDocUri);
+			logger.log (logLevel, "Insert: " + fmttime (prepareDone - startTime) +
+				", New State: " + fmttime (updateDone - prepareDone) +
+				", Total: " + fmttime (System.currentTimeMillis () - startTime) +
+				", new blobs: " + rs.size() +
+				", WS: " + fullWsDocUri);
+		}
 	}
 
 	private String fmttime (long interval)
@@ -768,8 +751,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 		if (millis < 10) sb.append ("0");
 		if (millis < 100) sb.append ("0");
-//		if ((millis % 10) == 0) millis /= 10;
-//		if ((millis % 10) == 0) millis /= 10;
 
 		sb.append (millis);
 
@@ -780,7 +761,7 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 
 	private static final String SANITY_MODULE = FS + "startup-check.xqy";
 
-	private void sanityCheckConnection () throws FileSystemException
+	private void sanityCheckConnection() throws FileSystemException
 	{
 		Session session = contentSource.newSession();
 		Request request = session.newModuleInvoke (modulePath (SANITY_MODULE));
@@ -828,7 +809,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		}
 	}
 
-	// need to flesh this out
 	private boolean isXmlType (String uri)
 	{
 		if (uri.endsWith (".xml") ||
@@ -841,7 +821,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 		return false;
 	}
 
-	// need to flesh this out
 	private boolean isTextType (String uri)
 	{
 		if (uri.endsWith (".txt") ||
@@ -901,7 +880,6 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 	public String [] runQuery (String docName, String variableName, String query) throws FileSystemException
 	{
 		String docUri = fullPath (docName);
-logger.log (Level.INFO, "doc=" + docUri);
 		Session session = contentSource.newSession();
 		Request request = session.newAdhocQuery (query.replaceAll (URI_PLACEHOLDER, docUri));
 
@@ -914,6 +892,4 @@ logger.log (Level.INFO, "doc=" + docUri);
 			throw new FileSystemException ("cannot run Mark Logic query: " + e, e);
 		}
 	}
-
-	// ------------------------------------------------------------
 }

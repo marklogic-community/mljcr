@@ -1,5 +1,20 @@
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ *  Copyright (c) 2009,  Mark Logic Corporation.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  The use of the Apache License does not indicate that this project is
+ *  affiliated with the Apache Software Foundation.
  */
 
 package com.marklogic.jcr.persistence;
@@ -428,15 +443,8 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 
 	// ---------------------------------------------------------
 
-	/** @noinspection UseOfSystemOutOrSystemErr*/
 	public void store (ChangeLog changeLog) throws ItemStateException
 	{
-		// TODO: Gather blobs in a list
-		// assign unique names to each
-		// assign unique name to change list XML
-		// insert all into temp dir
-		// invoke module to process them and delete
-
 		String txId = generateTxId();
 		List contentList = new ArrayList (16);
 
@@ -489,7 +497,6 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 			if (state.isNode ()) {
 				formatElement ((NodeState) state, sb);
 			} else {
-				// FIXME: encode blobs inline?
 				formatElement ((PropertyState) state, txId, contentList, sb);
 			}
 		}
@@ -505,7 +512,6 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 			if (state.isNode ()) {
 				formatElement ((NodeState) state, sb);
 			} else {
-				// FIXME: encode blobs inline?
 				formatElement ((PropertyState) state, txId, contentList, sb);
 			}
 		}
@@ -524,11 +530,6 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		sb.append ("\t</").append ("modified-refs").append (">\n");
 
 		sb.append ("</").append (CHANGE_LIST_ELEMENT).append (">\n");
-
-
-//System.out.println ("========================================");
-//System.out.println (sb.toString());
-//System.out.println ("========================================");
 
 		String deltas = sb.toString();
 		String deltasDocPath = txDirRootString (txId) + changeListDocName;
@@ -645,53 +646,6 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 					}
 
 					sb.append (blobId);
-
-
-
-
-
-//					// put binary value in BLOB store
-//					BLOBFileValue blobVal = val.getBLOBFileValue();
-//					long blobLen = blobVal.getLength();
-//
-//					if (blobLen == 0) {
-//						blobId = MarkLogicBlobStore.MAGIC_EMPTY_BLOB_ID;
-//					} else {
-//						InputStream in = blobVal.getStream();
-//						try {
-//							blobStore.put (blobId, in, blobLen);
-//						} finally {
-//							try {
-//								in.close();
-//							} catch (IOException e) {
-//								// ignore
-//							}
-//						}
-//					}
-//					// store id of BLOB as property value
-//					sb.append (blobId);
-//
-//					// replace value instance with value backed by resource
-//					// in BLOB store and discard old value instance (e.g. temp file)
-//					if (blobStore instanceof ResourceBasedBLOBStore) {
-//						// optimization: if the BLOB store is resource-based
-//						// retrieve the resource directly rather than having
-//						// to read the BLOB from an input stream
-//						FileSystemResource fsRes = blobStore.getResource (blobId);
-//						values[i] = InternalValue.create (fsRes);
-//					} else {
-//						InputStream in = blobStore.get (blobId);
-//						try {
-//							values[i] = InternalValue.create (in);
-//						} finally {
-//							try {
-//								in.close ();
-//							} catch (IOException e) {
-//								// ignore
-//							}
-//						}
-//					}
-//					blobVal.discard();
 				} catch (Exception e) {
 					throw new ItemStateException ("Cannot store BLOB : " + e, e);
 				}
@@ -933,6 +887,4 @@ abstract public class AbstractPersistenceManager implements PersistenceManager
 		writer.flush();
 		writer.close();
 	}
-
-	// --------------------------------------------------------------
 }

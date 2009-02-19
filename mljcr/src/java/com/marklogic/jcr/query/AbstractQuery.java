@@ -1,9 +1,23 @@
 /*
- * Copyright (c) 2008,  Mark Logic Corporation. All Rights Reserved.
+ *  Copyright (c) 2009,  Mark Logic Corporation.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  The use of the Apache License does not indicate that this project is
+ *  affiliated with the Apache Software Foundation.
  */
 
 package com.marklogic.jcr.query;
-
 
 import com.marklogic.jcr.fs.MarkLogicFileSystem;
 import com.marklogic.jcr.persistence.AbstractPersistenceManager;
@@ -29,18 +43,16 @@ import java.util.logging.Logger;
  * User: ron
  * Date: Nov 12, 2008
  * Time: 3:50:47 PM
- * @noinspection ClassWithTooManyMethods
+ * @noinspection ClassWithTooManyFields,ClassWithTooManyMethods
  */
 abstract class AbstractQuery implements Query
 {
 	private static final String STATE_DOC_VAR_NAME = "state-doc-uri";
 
-	private static final Logger logger = Logger.getLogger (AbstractQuery.class.getName ());
-//	private static final String DEFAULT_LOG_LEVEL = "FINE";
+	private static final Logger logger = Logger.getLogger (AbstractQuery.class.getName());
+	private static final String DEFAULT_LOG_LEVEL = "FINE";
 	private final String statement;
 	private final String language;
-	private final long offset;
-	private final long limit;
 
 	private final Level logLevel;
 	private final MarkLogicFileSystem mlfs;
@@ -51,18 +63,15 @@ abstract class AbstractQuery implements Query
 	private final LinkedList pendingPredicateContexts = new LinkedList();
 	private StringBuffer xpathBuffer = new StringBuffer();
 
-	public AbstractQuery (String statement, String language, long offset, long limit, MarkLogicFileSystem mlfs, Session session)
+	public AbstractQuery (String statement, String language, MarkLogicFileSystem mlfs, Session session)
 	{
 		this.statement = statement;
 		this.language = language;
-		this.offset = offset;
-		this.limit = limit;
 		this.mlfs = mlfs;
 		this.session = session;
 
-//		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
-//		logLevel = Level.parse (levelName);
-logLevel = Level.INFO;
+		String levelName = System.getProperty ("mljcr.log.level", DEFAULT_LOG_LEVEL);
+		logLevel = Level.parse (levelName);
 	}
 
 	// --------------------------------------------------------------
@@ -162,13 +171,11 @@ logLevel = Level.INFO;
 
 	public void addPositionPredicate (int position)
 	{
-//		xpathBuffer.append ("[").append (position).append ("]");
 		handlePredicate ("" + position);
 	}
 
 	public void addPredicate (String pred)
 	{
-//		xpathBuffer.append ("[").append (pred).append ("]");
 		handlePredicate (pred);
 	}
 
@@ -181,8 +188,6 @@ logLevel = Level.INFO;
 		String opString, String value, String operand, String functionName)
 	{
 		StringBuffer sb = new StringBuffer();
-
-//		xpathBuffer.append ("[");
 
 		if (functionName != null) {
 			sb.append (functionName).append ("(");
@@ -212,8 +217,6 @@ logLevel = Level.INFO;
 		}
 
 		handlePredicate (sb.toString());
-
-//		xpathBuffer.append ("]");
 	}
 
 	private static final String TEXT_SEARCH_FUNC_ROOT = "local:textContains";
@@ -226,22 +229,7 @@ logLevel = Level.INFO;
 
 		textQueries.add (textQuery);
 
-//		addPredicate (predicateFunctionCall);
 		handlePredicate (predicateFunctionCall);
-
-//		String posTest = textQuery.getPositiveTest();
-//		String negTest = textQuery.getNegativeTest();
-//
-//		if (posTest != null) {
-//			logger.log (logLevel, "positive test: " + posTest);
-//			addPredicate ("cts:contains(" + relPathStr + "/property/values, " + posTest + ")");
-//		}
-//
-//		if (negTest != null) {
-//			logger.log (logLevel, "negative test: " + negTest);
-//			addPredicate ("fn:not(cts:contains(" + relPathStr + "/property/values, " + negTest + "))");
-//		}
-
 	}
 
 	// ---------------------------------------------------------------
@@ -292,14 +280,6 @@ logLevel = Level.INFO;
 
 	// ---------------------------------------------------------------
 
-//	private void insertPropertyRelations (List relations, StringBuffer sb)
-//	{
-//		for (Iterator it = relations.iterator (); it.hasNext ();) {
-//			String s = (String) it.next ();
-//			sb.append ("[property[@name=\"").append (s).append ("\"]]");
-//		}
-//	}
-
 	private void insertOrderSpecs (List orderSpecs, StringBuffer sb)
 	{
 		boolean notFirst = false;
@@ -337,8 +317,6 @@ logLevel = Level.INFO;
 
 		sb.append (xpathBuffer);
 
-//		insertPropertyRelations (propertySelectors, sb);
-
 		sb.append ("\n");
 
 		insertOrderSpecs (orderSpecs, sb);
@@ -365,10 +343,6 @@ logLevel = Level.INFO;
 			String [] resultUUIDs = mlfs.runQuery (
 				AbstractPersistenceManager.WORKSPACE_DOC_NAME, STATE_DOC_VAR_NAME, xqry);
 
-logger.log (logLevel, "resultUUIDS size: " + resultUUIDs.length);
-for (int i = 0; i < resultUUIDs.length; i++) {
-	System.out.println (resultUUIDs[i]);
-}
 			return new QueryResultImpl (session, propertySelectors, resultUUIDs);
 		} catch (FileSystemException e) {
 			throw new RepositoryException ("unable to runQuery()", e);
