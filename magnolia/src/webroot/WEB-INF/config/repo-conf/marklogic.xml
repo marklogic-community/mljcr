@@ -3,7 +3,7 @@
 <Repository>
     <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
         <param name="uriRoot" value="${rep.home}/repository"/>
-        <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+        <param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
     </FileSystem>
     <Security appName="Jackrabbit">
         <AccessManager class="org.apache.jackrabbit.core.security.SimpleAccessManager">
@@ -16,18 +16,22 @@
     <Workspace name="${wsp.name}">
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
 		<param name="uriRoot" value="${wsp.home}"/>
-		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+		<param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
         </FileSystem>
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
 		<param name="collections" value="jcr-${wsp.name}"/>
         </PersistenceManager>
 	<SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex13">
+		<FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
+		    <param name="uriRoot" value="${wsp.home}"/>
+		    <param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
+		</FileSystem>
 	</SearchIndex>
     </Workspace>
     <Versioning rootPath="${rep.home}/version">
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
             <param name="uriRoot" value="${rep.home}/version" />
-		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
+		<param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
         </FileSystem>
         <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
         </PersistenceManager>
