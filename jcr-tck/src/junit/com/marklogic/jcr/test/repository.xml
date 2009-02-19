@@ -27,7 +27,7 @@
         virtual file system where the repository stores global state
         (e.g. registered namespaces, custom node types, etc.)
     -->
-    <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+    <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
         <param name="uriRoot" value="${rep.home}/repository"/>
         <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
     </FileSystem>
@@ -77,7 +77,7 @@
             virtual file system of the workspace:
             class: FQN of class implementing the FileSystem interface
         -->
-        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
 		<param name="uriRoot" value="${wsp.home}"/>
 		<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
@@ -85,12 +85,12 @@
             persistence manager of the workspace:
             class: FQN of class implementing the PersistenceManager interface
         -->
-        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager14">
+        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
 		    <param name="collections" value="jcr-${wsp.name}"/>
 	    </PersistenceManager>
 
-	    <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex14">
-		    <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+	    <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex13">
+		    <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
 			<param name="uriRoot" value="${wsp.home}"/>
 			<param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
 		    </FileSystem>
@@ -138,7 +138,7 @@
             Configures the filesystem to use for versioning for the respective
             persistence manager
         -->
-        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
             <param name="uriRoot" value="${rep.home}/version" />
 		    <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
@@ -149,13 +149,13 @@
             a 'normal' persistence manager, but this could change in future
             implementations.
         -->
-        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager14">
+        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
               <param name="collections" value="jcr-${rep.home}"/>
         </PersistenceManager>
     </Versioning>
 
-    <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex14">
-        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem14">
+    <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex13">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
             <param name="uriRoot" value="${rep.home}/repository/index"/>
             <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
