@@ -1,7 +1,71 @@
 
-	Instructions for installing MLJCR on MarkLogic Server
+	Installing MLJCR on MarkLogic Server
 
-	TODO
+   Setting up to run MLJCR involves two steps.  Configuring your JackRabbit
+based application to use the MLJCR Java classes and installing the MLJCR
+XQuery modules in MarkLogic Server.  See the document run-mljcr.txt for
+information about setting up the Java side.  This document covers the
+XQuery part.
+
+   MLJCR uses XCC (the Java<->Mark Logic connector) to issue requests
+to Mark Logic.  You must setup an appserver for XCC on the server using
+the Mark Logic Admin UI.  XCC connects to XBDC appservers.  XCC speaks
+the XDBC protocol.
+
+   Included in the binary zip file is a directory hierarchy like this:
+
+      Modules/
+         MarkLogic/
+            jcr/
+               filesystem/
+               lib/
+               state/
+
+   The directories under jcr contain the XQuery modules invoked by the
+MLJCR Java classes.  These modules are referenced from Java with paths
+that start with /MarkLogic/jcr.  These files are also in the source
+tree at mljcr/src/xquery.
+
+   There are two ways that you can set things up to run these modules.
+
+
+1) Server-wide
+
+   MarkLogic Server has a special directory that contains modules
+that are in scope for all appservers, regardless of the "root" setting
+in the Admin UI.  These modules are located under the "Modules" directory
+in the server installation directory (/opt/MarkLogic/Modules on Linux).
+
+   If you want to make the MLJCR functionality available to all appservers,
+place the "jcr" directory under /opt/MarkLogic/Modules/MarkLogic.  That's
+all there is to it.  No server restart is needed, the modules will be
+available immediately.  Doing this makes the XQuery modules appear
+as if they are in the module root at the relative path /MarkLogic/jcr/.
+
+   Note that placing modules under the MarkLogic Server installation
+directory is not directly supported.  Subsequent server upgrades may
+remove the MLJCR modules  Keep a copy around in a different location
+and re-install them after an upgrade if needed.
+
+   Server-wide modules are in scope whether or not a specific XDBC
+server is configured to run modules from the filesystem or a database.
+
+
+2) Per Appserver
+
+   If you want to limit MLJCR to a single XDBC appserver, you will need
+to place the XQuery modules under the module root for that appserver.  You
+must maintain the same structure so that the MLJCR modules are at
+MarkLogic/jcr relative to the module root.
+
+   For example, if the appserver's module root is /foo/bar/mymodules,
+then the MLJCR modules should be at /foo/bar/mymodules/MarkLogic/jcr/...
+You can also place the modules under a directory relative to the Mark Logic
+instalation, such as /opt/MarkLogic/Docs (which is configured as just /Docs).
+The same applies here, place them at /opt/MarkLogic/Docs/MarkLogic/jcr/...
+
+   If the appserver is set to run modules from a database, then the MLJCR
+modules must also be loaded into that database, at similar relative URIs.
 
 ----
 Rh, Feb 2009

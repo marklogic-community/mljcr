@@ -1,5 +1,5 @@
 
-	Installing MLJCR
+	Running MLJCR
 
    Mark Logic JCR plugs into JackRabbit (http://jackrabbit.apache.org/)
 which is the JSR-170 reference implementation and is also the basis of
