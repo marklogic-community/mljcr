@@ -16,14 +16,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repository.xml" afterPath="$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repository.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jackrabbit-1.4/src/webroot/WEB-INF/marklogic-config/bootstrap.properties" afterPath="$PROJECT_DIR$/jackrabbit-1.4/src/webroot/WEB-INF/marklogic-config/bootstrap.properties" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Readme.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jsr170.iws" afterPath="$PROJECT_DIR$/jsr170.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.xml" afterPath="$PROJECT_DIR$/build.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/magnolia.properties" afterPath="$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/magnolia.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/repo-conf/marklogic.xml" afterPath="$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/repo-conf/marklogic.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jackrabbit-1.4/src/webroot/WEB-INF/marklogic-config/repository.xml" afterPath="$PROJECT_DIR$/jackrabbit-1.4/src/webroot/WEB-INF/marklogic-config/repository.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/docs/installation.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/docs/install-mljcr.txt" />
     </list>
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
@@ -217,19 +212,55 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="startup-check.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/filesystem/startup-check.xqy">
+      <file leaf-file-name="magnolia.properties" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/magnolia.properties">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="0" selection-start="26" selection-end="728" vertical-scroll-proportion="0.0">
+            <state line="18" column="0" selection-start="736" selection-end="826" vertical-scroll-proportion="-13.538462">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="fs-lib.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/fs-lib.xqy">
+      <file leaf-file-name="installation.txt" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/installation.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="26" selection-end="729" vertical-scroll-proportion="0.0">
+            <state line="189" column="45" selection-start="9194" selection-end="9211" vertical-scroll-proportion="-11.730769">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="install-mljcr.txt" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/docs/install-mljcr.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="6" column="12" selection-start="81" selection-end="81" vertical-scroll-proportion="0.1237721">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="log4j.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/log4j.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="readme.txt" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/readme.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="repositories.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/repositories.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -238,79 +269,7 @@
       <file leaf-file-name="state-lib.xqy" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/state-lib.xqy">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test-lib.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/test-lib.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="run-query.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/query/run-query.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="check-node-exists.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/check-node-exists.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="check-property-exists.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/check-property-exists.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="check-reference-exists.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/check-reference-exists.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="query-node-state.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/query-node-state.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="query-property-state.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/query-property-state.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="query-references-state.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/query-references-state.xqy">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+            <state line="195" column="20" selection-start="6572" selection-end="6572" vertical-scroll-proportion="-31.5">
               <folding />
             </state>
           </provider>
@@ -319,34 +278,88 @@
       <file leaf-file-name="update-state.xqy" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/update-state.xqy">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="0" selection-start="703" selection-end="703" vertical-scroll-proportion="0.0">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="display-profile.xqy" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/test/display-profile.xqy">
+      <file leaf-file-name="AbstractPersistenceManager.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/mljcr/src/java/com/marklogic/jcr/persistence/AbstractPersistenceManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="9" selection-start="788" selection-end="788" vertical-scroll-proportion="0.0">
+            <state line="863" column="23" selection-start="27835" selection-end="27835" vertical-scroll-proportion="-10.923077">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/build.xml">
+      <file leaf-file-name="jackrabbit-mysql-search.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/repo-conf/jackrabbit-mysql-search.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="55" selection-start="791" selection-end="791" vertical-scroll-proportion="-13.5">
+            <state line="4" column="41" selection-start="300" selection-end="311" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Readme.txt" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Readme.txt">
+      <file leaf-file-name="jackrabbit-file-search.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/repo-conf/jackrabbit-file-search.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="27" selection-start="649" selection-end="649" vertical-scroll-proportion="0.28880158">
+            <state line="25" column="23" selection-start="1400" selection-end="1400" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="repository.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repository.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="98" column="16" selection-start="4180" selection-end="4180" vertical-scroll-proportion="-14.730769">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test-namespaces.properties" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/test-namespaces.properties">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="repostub.properties" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repostub.properties">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="repository-file-xml.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repository-file-xml.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="61" column="25" selection-start="3152" selection-end="3152" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="JunitTestChanges.txt" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/JunitTestChanges.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MarkLogicSearchIndex14.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/mljcr-1.4/src/java/com/marklogic/jcr/query/MarkLogicSearchIndex14.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="68" column="24" selection-start="2286" selection-end="2286" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -361,19 +374,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractMLFileSystem.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/java/com/marklogic/jcr/fs/AbstractMLFileSystem.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="782" column="0" selection-start="24440" selection-end="24440" vertical-scroll-proportion="-27.846153">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="QueryHandler.java" pinned="false" current="false" current-in-tab="false">
         <entry file="jar://$PROJECT_DIR$/dist/jackrabbit-1.4/jackrabbit-core-1.4.8-src.jar!/jackrabbit-core-1.4.8/src/main/java/org/apache/jackrabbit/core/query/QueryHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="121" column="65" selection-start="5226" selection-end="5226" vertical-scroll-proportion="-26.923077">
+            <state line="121" column="65" selection-start="5226" selection-end="5226" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -383,15 +387,6 @@
         <entry file="file://$PROJECT_DIR$/mljcr/src/java/com/marklogic/jcr/query/QueryResultImpl.java">
           <provider selected="true" editor-type-id="text-editor">
             <state line="44" column="13" selection-start="1341" selection-end="1341" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TextQueryParser.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mljcr/src/java/com/marklogic/jcr/query/TextQueryParser.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="110" column="31" selection-start="2970" selection-end="2970" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -538,6 +533,24 @@
           <option name="myItemId" value="jsr170" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
         </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="MLJCR-ProjectRoot" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="docs" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
       </PATH>
       <PATH>
         <PATH_ELEMENT>
@@ -545,7 +558,7 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
+          <option name="myItemId" value="Magnolia" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -555,11 +568,11 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
+          <option name="myItemId" value="Magnolia" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
+          <option name="myItemId" value="magnolia" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -569,11 +582,157 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
+          <option name="myItemId" value="Magnolia" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
+          <option name="myItemId" value="magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="webroot" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="webroot" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="webroot" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="config" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="webroot" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="config" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="repo-conf" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="webroot" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="WEB-INF" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="config" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="default" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jsr170" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Magnolia" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="magnolia" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
@@ -587,150 +746,8 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
+          <option name="myItemId" value="JCR 1.0 TCK Tests" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="query" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jsr170" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="persistence" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jsr170" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="fs" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jsr170" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="compat" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jsr170" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="cache" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jsr170" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="MarkLogicJCR" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mljcr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="src" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="java" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
     </subPane>
@@ -746,7 +763,7 @@
       <showLibraryContents />
       <hideEmptyPackages ProjectPane="false" />
       <abbreviatePackageNames ProjectPane="false" />
-      <showStructure PackagesPane="false" Scope="false" Favorites="false" ProjectPane="false" />
+      <showStructure ProjectPane="false" Scope="false" PackagesPane="false" Favorites="false" />
       <autoscrollToSource PackagesPane="true" ProjectPane="true" />
       <autoscrollFromSource ProjectPane="true" />
       <sortByType />
@@ -768,9 +785,9 @@
     <property name="options.lastSelected" value="com.maddyhome.idea.copyright.CopyrightProjectPluginImpl" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
-    <property name="MemberChooser.sorted" value="false" />
     <property name="options.searchVisible" value="true" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
     <property name="RunManagerConfig.compileBeforeRunning" value="true" />
     <property name="cvs_file_history_flatOrder0" value="0" />
     <property name="cvs_file_history_treeOrder3" value="3" />
@@ -803,8 +820,8 @@
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="220" />
     <property name="cvs_file_history_treeOrder2" value="2" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="989" />
-    <property name="cvs_file_history_flatWidth0" value="435" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
+    <property name="cvs_file_history_flatWidth0" value="435" />
     <property name="cvs_file_history_treeOrder0" value="0" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="190" />
   </component>
@@ -1447,7 +1464,7 @@
     <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Checkpoint" />
+    <option name="LAST_COMMIT_MESSAGE" value="change repo path" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -1464,6 +1481,9 @@
     <MESSAGE value="Code cleanup, misc fixup" />
     <MESSAGE value="Copyrights, cleanup" />
     <MESSAGE value="Checkpoint" />
+    <MESSAGE value="Rename marklogic repository config file" />
+    <MESSAGE value="Update log level" />
+    <MESSAGE value="change repo path" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1612,114 +1632,114 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/filesystem/startup-check.xqy">
+    <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repository.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="0" selection-start="26" selection-end="728" vertical-scroll-proportion="0.0">
+        <state line="98" column="16" selection-start="4180" selection-end="4180" vertical-scroll-proportion="-14.730769">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/fs-lib.xqy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="26" selection-end="729" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/state-lib.xqy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/test-lib.xqy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/query/run-query.xqy">
+    <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/test-namespaces.properties">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/check-node-exists.xqy">
+    <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repository-file-xml.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+        <state line="61" column="25" selection-start="3152" selection-end="3152" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/check-property-exists.xqy">
+    <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/JunitTestChanges.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/check-reference-exists.xqy">
+    <entry file="file://$PROJECT_DIR$/jcr-tck/src/junit/com/marklogic/jcr/test/repostub.properties">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/query-node-state.xqy">
+    <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/repo-conf/jackrabbit-file-search.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+        <state line="25" column="23" selection-start="1400" selection-end="1400" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/query-property-state.xqy">
+    <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/repo-conf/jackrabbit-mysql-search.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+        <state line="4" column="41" selection-start="300" selection-end="311" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/query-references-state.xqy">
+    <entry file="file://$PROJECT_DIR$/mljcr/src/java/com/marklogic/jcr/persistence/AbstractPersistenceManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="0" selection-start="729" selection-end="729" vertical-scroll-proportion="0.0">
+        <state line="863" column="23" selection-start="27835" selection-end="27835" vertical-scroll-proportion="-10.923077">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/state/update-state.xqy">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="0" selection-start="703" selection-end="703" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/test/prof.css">
+    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/lib/state-lib.xqy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="195" column="20" selection-start="6572" selection-end="6572" vertical-scroll-proportion="-31.5">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/magnolia.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="0" selection-start="736" selection-end="826" vertical-scroll-proportion="-13.538462">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/log4j.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mljcr/src/xquery/jcr/test/display-profile.xqy">
+    <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/readme.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="9" selection-start="788" selection-end="788" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/build.xml">
+    <entry file="file://$PROJECT_DIR$/magnolia/src/webroot/WEB-INF/config/default/repositories.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="55" selection-start="791" selection-end="791" vertical-scroll-proportion="-13.5">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Readme.txt">
+    <entry file="file://$PROJECT_DIR$/docs/installation.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="27" selection-start="649" selection-end="649" vertical-scroll-proportion="0.28880158">
+        <state line="189" column="45" selection-start="9194" selection-end="9211" vertical-scroll-proportion="-11.730769">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/install-mljcr.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="12" selection-start="81" selection-end="81" vertical-scroll-proportion="0.1237721">
           <folding />
         </state>
       </provider>

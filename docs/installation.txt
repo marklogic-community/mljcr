@@ -1,0 +1,220 @@
+
+	Installing MLJCR
+
+   Mark Logic JCR plugs into JackRabbit (http://jackrabbit.apache.org/)
+which is the JSR-170 reference implementation and is also the basis of
+most JSR-170-based products.
+
+   The integration takes the form of providing classes that perform the
+roles of PersistenceManager, FileSystem and SearchIndex (these are interfaces
+defined by JackRabbit) and some configuration to tell JackRabbit to use
+those classes.
+
+   Persistence options are typically configured in an XML file called
+repository.xml.  The location is usually specified by a Java system
+property, which in turn is usually listed in an application-specific
+properties file.  For example, Magnolia has a properties file at
+WEB-INF/config/magnolia.properties, which has a property named
+magnolia.repositories.jackrabbit.config whose value is something like
+WEB-INF/config/repo-conf/jackrabbit-marklogic.xml
+
+   An example repositories.xml file for Magnolia looks like this:
+
+<?xml version="1.0"?>
+<!DOCTYPE Repository PUBLIC "-//The Apache Software Foundation//DTD Jackrabbit 1.2//EN" "http://jackrabbit.apache.org/dtd/repository-1.2.dtd">
+<Repository>
+    <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
+        <param name="uriRoot" value="/magnolia/repository"/>
+        <param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
+    </FileSystem>
+    <Security appName="Jackrabbit">
+        <AccessManager class="org.apache.jackrabbit.core.security.SimpleAccessManager">
+        </AccessManager>
+        <LoginModule class="org.apache.jackrabbit.core.security.SimpleLoginModule">
+           <param name="anonymousId" value="anonymous"/>
+        </LoginModule>
+    </Security>
+    <Workspaces rootPath="/magnolia/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
+    <Workspace name="${wsp.name}">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
+		<param name="uriRoot" value="${wsp.home}"/>
+		<param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
+        </FileSystem>
+        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
+		<param name="collections" value="jcr-${wsp.name}"/>
+        </PersistenceManager>
+	<SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex13">
+		<FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
+		    <param name="uriRoot" value="${wsp.home}"/>
+		    <param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
+		</FileSystem>
+	</SearchIndex>
+    </Workspace>
+    <Versioning rootPath="/magnolia/version">
+        <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
+            <param name="uriRoot" value="/magnolia/version"/>
+	    <param name="contentSourceUrl" value="xcc://admin:admin@ronh-amd64:8060/magnolia"/>
+        </FileSystem>
+        <PersistenceManager class="com.marklogic.jcr.persistence.MarkLogicPersistenceManager13">
+        </PersistenceManager>
+    </Versioning>
+</Repository>
+
+
+   This file configures three things:
+
+      o The FileSystem class, which configures where things will be stored
+      o The PersistenceManager class, which stores node/property state information
+      o The SearchIndex class, which runs queries against stored content
+
+   There are to versions of each of these, for JackRabbit 1.3 and 1.4.  In
+the example above, the 1.3 versions are used.
+
+
+FileSystem
+
+   Note that there are two required parameters for each FileSystem declaration.
+The "uriRoot" parameter specifies the root URI (a directory) where things
+will be stored in Mark Logic for the context in which it's defined.  The
+second parameter is "contentSourceUrl", which is the XCC connection string
+that identifies how to connect to Mark Logic.
+
+   There are three FileSystem declarations in this example.  Verbose, yes,
+but that's the way JackRabbit is configured.  To keep all the information
+related to a given JackRabbit repository together, these should all have
+the same root path ("/magnolia" in this case").
+
+   Most JackRabbit repository config files make use of a variable name
+${rep.home}.  The value of this variable usually comes from a property
+which represents a path to a repository on a local filesystem.  You can
+use this variable if you like, but the same path must be writable on
+the local filesystem where the JackRabbit Java code is running.  You
+may want to use a path in Mark Logic that is not a valid local path.
+
+   Related to that, note that the Workspaces element above has an
+additional attribute that is not in most JackRabbit configurations.
+Setting configRootPath="/workspaceconfig" indicates that configuration
+information about workspaces, in addition to the workspace content,
+should also be stored in the repository.  Without this property, metadata
+about the repository is stored locally even if the content is stored in
+a remote database.
+
+   Even though the repository.xml file has all the inforamtion needed
+to configure the repository, somewhere in your app will be a property
+that specifies the "repository home".  In Magnolia, it is in a properties
+file named WEB-INF/config/magnolia.properties in the property
+magnolia.repositories.home=/tmp/magnolia/repositories  Due to the way
+the JackRabbit classes work, this path must be provided (even though
+Mark Logic JCR doesn't need it) and it will be created if it doesn't
+already exist.  This happens before repository.xml is read, so there
+is no way to get around it.  Provide any path that is writable, it
+is not used otherwise.
+
+
+PersistenceManager
+
+   By contrast, the PersistenceManager configuration is very simple.
+You just need to name the appropriate class name, and provide one
+optional parameter.  The "collections" parameter, if provided, is
+a list of strings that specify which XQuery collections that stored
+documents should be placed in.  This is a convenience for XQuery code
+that may want to identify which documents are under control of JSR-170.
+Collections are not used by MLJCR.  In the example above, the workspace
+name variable is used.  You could also provide a comma-separated list
+as well, such as "foo,bar".
+
+   Note that only binary properties (binary in JSR-170 parlance) are
+stored as separate documents.  A "binary" document will be stored as XML,
+text() or binary() according to its actual content.  Text and XML
+documents are searched by JSR-170 queries.
+
+
+SearchIndex
+
+   Configuring the SearchIndex class is also very easy.  It consists
+of a simply a SearchIndex element and a contained FileSystem declaration.
+The FileSystem is redundant but is necessary because at runtime the
+SearchIndex class does not have access to the Workspace's FileSystem
+definition.  The FileSystem definition inside the SearchIndex element
+should be identical to the one in the parent Workspace element.  Otherwise,
+search queries will not run against the workspace's content.
+
+   Unlike the Lucene SearchIndex, which is the most commonly used, there
+is no separately maintained search index.  Queries are sent to Mark Logic
+and evaluated there.  Note that JSR-170 does not expose the sophisticated
+search capabilities of Mark Logic's cts queries.  You may want to run
+separate XQuery queries and make use of collections (configured above)
+to find the managed documents, if simple text searches are not sufficient.
+
+
+MLJCR Checklist
+
+   In order to run MLJCR you will need to add several jar files to the
+classpath and modify a few config files.  Each app built on JackRabbit
+is setup differently, so the locations of config files and jar libraries
+will vary.  Below is a checklist to get Magnolia up and running with MLJCR.
+
+   o Install Magnolia (http://www.magnolia-cms.com/)
+     When unpacked, Magnolia is a standard Java webapp.  The changes
+     you will need to make are all under the WEB-INF directory, which
+     is at the root of the directory hierarchy.
+
+   o Jars.  You will need to add three jar files to WEB-INF/lib
+      o xcc.jar  This is needed for the MLJCR Java code to talk to the
+        Mark Logic repository.  Download the latest version from
+        http://developer.marklogic.com/download/
+
+      o mljcr-core.jar  This contains the code that implements MLJCR
+        and which is not tied to either JackRabbit 1.3 or 1.4.
+
+      o mljcr-compat-1.3.jar  This contains code to interface to
+        JackRabbit 1.3, which the version that Magnolia uses.
+
+   o WEB-INF/config/default/magnolia.properties
+
+     There are two properties here that matter:
+
+        magnolia.repositories.home=repositories
+           This is the path (in this case relative to the webapp of the
+           repository home directory).  This must be a writable path, but
+           is not used by MLJCR (see above).  You can also use something
+           like /tmp/foobar.
+
+        magnolia.repositories.jackrabbit.config=WEB-INF/config/repo-conf/jackrabbit-marklogic.xml
+           This is the path, relative to the webapp, of the repository
+           config file.  You will need to create this file (from the
+           example above) setting the paths and XCC URLs as appropriate.
+
+   o Configure Mark Logic to Run MLJCR
+
+      See separate document install-mljcr.txt for setup details.  They
+      MLJCR XQuery must be in scope on the server for MLJCR to work.
+
+      Determine the appropriate XCC connection URL and base URI.  You may
+      want to create a new XDBC appserver and/or database.
+
+   o Startup Magnolia.  By default, the Magnolia webapp listens at the
+     URL http://localhost:8080/magnolia.  Point your browser at that
+     location.  You should see a welcome screen that instructs you to
+     start the installation.
+
+     NOTE:  The initial Magnolia installation can be very slow.  It does
+     a large number of document versioning operations in rapid sccession,
+     which is something that MLJCR currently does not handle very quickly.
+     Depending on the server configuration, the installation can takes
+     a couple of hours or more.  Once the installation is completed,
+     performance should be better.  MLJCR does some caching which helps
+     with repeated reads, but not very much for document loads.
+
+
+Use and Enjoy
+
+   MLJCR is open source and is a work in progress.  It is not an officially
+supported Mark Logic product.  If have questions or suggestion, please
+join the Mark Logic Developer mailing list on the developer site at
+http://developer.marklogic.com/discuss/
+
+   If you would like to contribute to this project, please let us know
+
+-----
+Rh, Feb 2009
