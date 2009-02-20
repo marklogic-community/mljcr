@@ -19,6 +19,9 @@ xquery version "1.0-ml";
  affiliated with the Apache Software Foundation.
 :)
 
+(: This is debug code, it is not needed to run MLJCR.
+:)
+
 declare function local:slowest10-uris()
 	as xs:string*
 {

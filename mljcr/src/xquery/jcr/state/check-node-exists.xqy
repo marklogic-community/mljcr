@@ -31,6 +31,9 @@ declare variable $uuid external;
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
 let $result := state:check-node-exists ($state, $uuid)
-let $dummy := xdmp:log (fn:concat ("check-node-exists: uri=", $uri, ", uuid=", $uuid, ", result=", $result), "debug")
+
+(:
+let $dummy := xdmp:log (fn:concat ("check-node-exists: uri=", $uri, ", uuid=", $uuid, ", result=", $result), $log-level)
+:)
 
 return $result

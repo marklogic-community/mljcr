@@ -33,6 +33,9 @@ declare variable $decoded-name := xdmp:url-decode ($name);
 declare variable $state as element (workspace) := doc ($uri)/workspace;
 
 let $result := state:query-property-state ($state, $uuid, $decoded-name)
+
+(:
 let $dummy := xdmp:log (fn:concat ("query-prop-state: uri=", $uri, ", uuid=", $uuid, ", name=", $decoded-name, ", result=", if (fn:empty ($result)) then "(empty)" else xdmp:quote ($result)), $log-level)
+:)
 
 return $result
