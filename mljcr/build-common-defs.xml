@@ -42,6 +42,7 @@
 		<pathelement path="${compiled.classes.dir}"/>
 		<pathelement path="${dist.dir}/jcr-1.0.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-core-1.4.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-api-1.4.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-jcr-commons-1.4.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-1.4.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.4/jackrabbit-spi-commons-1.4.jar"/>
@@ -55,6 +56,7 @@
 		<pathelement path="${compiled.classes.dir}"/>
 		<pathelement path="${dist.dir}/jcr-1.0.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.3.3/jackrabbit-core-1.3.3.jar"/>
+		<pathelement path="${dist.dir}/jackrabbit-1.3.3/jackrabbit-api-1.3.3.jar"/>
 		<pathelement path="${dist.dir}/jackrabbit-1.3.3/jackrabbit-jcr-commons-1.3.3.jar"/>
 		<pathelement path="${dist.dir}/servlet-api.jar"/>
 		<pathelement path="${dist.dir}/xcc.jar"/>
