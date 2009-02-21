@@ -58,7 +58,7 @@
 		<copy todir="${stage.xquery}">
 			<fileset dir="mljcr/src/xquery"/>
 		</copy>
-		<copy todir="${stage.modules}" file="docs/readme-modules.txt"/>
+		<copy todir="${stage.modules}" file="docs/install-mljcr.txt"/>
 
 		<copy todir="${stage.doc}">
 			<fileset dir="docs"/>
