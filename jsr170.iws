@@ -256,19 +256,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="build.xml" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/build.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="60" column="75" selection-start="2160" selection-end="2160" vertical-scroll-proportion="-24.75">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="jsr170.iws" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/jsr170.iws">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="35" column="38" selection-start="1891" selection-end="1891" vertical-scroll-proportion="0.7328016">
+            <state line="83" column="52" selection-start="2702" selection-end="2702" vertical-scroll-proportion="0.6575758">
               <folding />
             </state>
           </provider>
@@ -1370,7 +1361,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="2" y="23" width="1863" height="1178" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" />
@@ -1379,7 +1370,7 @@
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
       <window_info id="SvgViewer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32933578" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19944903" sideWeight="0.6651291" order="0" side_tool="false" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19944903" sideWeight="0.6651291" order="0" side_tool="false" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32841328" sideWeight="0.5" order="1" side_tool="false" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" />
@@ -1423,7 +1414,7 @@
     <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="edits" />
+    <option name="LAST_COMMIT_MESSAGE" value="checkpoint" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -1443,9 +1434,9 @@
     <MESSAGE value="Rename marklogic repository config file" />
     <MESSAGE value="Update log level" />
     <MESSAGE value="change repo path" />
-    <MESSAGE value="checkpoint" />
     <MESSAGE value="Clean up comments and debug stuff" />
     <MESSAGE value="edits" />
+    <MESSAGE value="checkpoint" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1692,16 +1683,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/build.xml">
+    <entry file="file://$PROJECT_DIR$/jsr170.iws">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="60" column="75" selection-start="2160" selection-end="2160" vertical-scroll-proportion="-24.75">
+        <state line="35" column="38" selection-start="1891" selection-end="1891" vertical-scroll-proportion="0.7328016">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/jsr170.iws">
+    <entry file="file://$PROJECT_DIR$/build.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="38" selection-start="1891" selection-end="1891" vertical-scroll-proportion="0.7328016">
+        <state line="83" column="52" selection-start="2702" selection-end="2702" vertical-scroll-proportion="0.6575758">
           <folding />
         </state>
       </provider>
