@@ -15,7 +15,7 @@
    	still very new as of this writing.
 
 
-   In addtion to mljcr-code.jar and one of the compatability jars, you
+   In addtion to mljcr-core.jar and one of the compatability jars, you
 will also need xcc.jar in your classpath.  The xcc.jar jar may be downloaded
 from http://developer.marklogic.com/download/
 

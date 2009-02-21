@@ -1,9 +1,9 @@
 
-	Running MLJCR
+	Running MLJCR with JackRabbit
 
    Mark Logic JCR plugs into JackRabbit (http://jackrabbit.apache.org/)
-which is the JSR-170 reference implementation and is also the basis of
-most JSR-170-based products.
+which is the JSR-170 reference implementation and also serves as the basis
+of most JSR-170-based products.
 
    The integration takes the form of providing classes that perform the
 roles of PersistenceManager, FileSystem and SearchIndex (these are interfaces
@@ -64,10 +64,11 @@ WEB-INF/config/repo-conf/jackrabbit-marklogic.xml
    This file configures three things:
 
       o The FileSystem class, which configures where things will be stored
-      o The PersistenceManager class, which stores node/property state information
+      o The PersistenceManager class, which stores and fetches information
+        about nodes and properties
       o The SearchIndex class, which runs queries against stored content
 
-   There are to versions of each of these, for JackRabbit 1.3 and 1.4.  In
+   There are two versions of each of these, for JackRabbit 1.3 and 1.4.  In
 the example above, the 1.3 versions are used.
 
 
@@ -84,12 +85,12 @@ but that's the way JackRabbit is configured.  To keep all the information
 related to a given JackRabbit repository together, these should all have
 the same root path ("/magnolia" in this case").
 
-   Most JackRabbit repository config files make use of a variable name
+   Most JackRabbit repository config files make use of a variable named
 ${rep.home}.  The value of this variable usually comes from a property
 which represents a path to a repository on a local filesystem.  You can
 use this variable if you like, but the same path must be writable on
 the local filesystem where the JackRabbit Java code is running.  You
-may want to use a path in Mark Logic that is not a valid local path.
+may want to use a URI path in Mark Logic that is not a valid local path.
 
    Related to that, note that the Workspaces element above has an
 additional attribute that is not in most JackRabbit configurations.
@@ -99,10 +100,10 @@ should also be stored in the repository.  Without this property, metadata
 about the repository is stored locally even if the content is stored in
 a remote database.
 
-   Even though the repository.xml file has all the inforamtion needed
+   Even though the repository.xml file has all the information needed
 to configure the repository, somewhere in your app will be a property
 that specifies the "repository home".  In Magnolia, it is in a properties
-file named WEB-INF/config/magnolia.properties in the property
+file named WEB-INF/config/magnolia.properties and the property is
 magnolia.repositories.home=/tmp/magnolia/repositories  Due to the way
 the JackRabbit classes work, this path must be provided (even though
 Mark Logic JCR doesn't need it) and it will be created if it doesn't
@@ -120,8 +121,8 @@ a list of strings that specify which XQuery collections that stored
 documents should be placed in.  This is a convenience for XQuery code
 that may want to identify which documents are under control of JSR-170.
 Collections are not used by MLJCR.  In the example above, the workspace
-name variable is used.  You could also provide a comma-separated list
-as well, such as "foo,bar".
+name variable (${wsp.name}) is used to form the collection name.  You
+can also provide a comma-separated list, such as "foo,bar".
 
    Note that only binary properties (binary in JSR-170 parlance) are
 stored as separate documents.  A "binary" document will be stored as XML,
@@ -132,7 +133,7 @@ documents are searched by JSR-170 queries.
 SearchIndex
 
    Configuring the SearchIndex class is also very easy.  It consists
-of a simply a SearchIndex element and a contained FileSystem declaration.
+of simply a SearchIndex element and a contained FileSystem declaration.
 The FileSystem is redundant but is necessary because at runtime the
 SearchIndex class does not have access to the Workspace's FileSystem
 definition.  The FileSystem definition inside the SearchIndex element
@@ -142,9 +143,8 @@ search queries will not run against the workspace's content.
    Unlike the Lucene SearchIndex, which is the most commonly used, there
 is no separately maintained search index.  Queries are sent to Mark Logic
 and evaluated there.  Note that JSR-170 does not expose the sophisticated
-search capabilities of Mark Logic's cts queries.  You may want to run
-separate XQuery queries and make use of collections (configured above)
-to find the managed documents, if simple text searches are not sufficient.
+search capabilities of Mark Logic's cts: queries.  You can use collection
+names (configured above) to run XQuery request against managed documents.
 
 
 MLJCR Checklist
@@ -175,9 +175,9 @@ will vary.  Below is a checklist to get Magnolia up and running with MLJCR.
      There are two properties here that matter:
 
         magnolia.repositories.home=repositories
-           This is the path (in this case relative to the webapp of the
-           repository home directory).  This must be a writable path, but
-           is not used by MLJCR (see above).  You can also use something
+           This is the "home" path (in this case relative to the webapp of
+           the repository home directory).  This must be a writable path,
+           but is not used by MLJCR (see above).  You can also use something
            like /tmp/foobar.
 
         magnolia.repositories.jackrabbit.config=WEB-INF/config/repo-conf/jackrabbit-marklogic.xml
@@ -186,25 +186,24 @@ will vary.  Below is a checklist to get Magnolia up and running with MLJCR.
            example above) setting the paths and XCC URLs as appropriate.
 
    o Configure Mark Logic to Run MLJCR
-
-      See separate document install-mljcr.txt for setup details.  They
-      MLJCR XQuery must be in scope on the server for MLJCR to work.
+      See separate document install-mljcr.txt for setup details.  The MLJCR
+      XQuery modules must be in scope on the server for MLJCR to work.
 
       Determine the appropriate XCC connection URL and base URI.  You may
-      want to create a new XDBC appserver and/or database.
+      need to create a new XDBC appserver and/or database.
 
    o Startup Magnolia.  By default, the Magnolia webapp listens at the
-     URL http://localhost:8080/magnolia.  Point your browser at that
-     location.  You should see a welcome screen that instructs you to
-     start the installation.
+     URL http://localhost:8080/magnolia (consult the Magnolia install docs).
+     Point your browser at the appropriate location.  You should see a welcome
+     screen that instructs you to start the installation.
 
      NOTE:  The initial Magnolia installation can be very slow.  It does
      a large number of document versioning operations in rapid sccession,
-     which is something that MLJCR currently does not handle very quickly.
-     Depending on the server configuration, the installation can takes
+     which is something that MLJCR currently does not handle very well.
+     Depending on your server configuration, the installation can take
      a couple of hours or more.  Once the installation is completed,
      performance should be better.  MLJCR does some caching which helps
-     with repeated reads, but not very much for document loads.
+     with repeated reads, but not much for document loads.
 
 
 Use and Enjoy
@@ -214,7 +213,7 @@ supported Mark Logic product.  If have questions or suggestion, please
 join the Mark Logic Developer mailing list on the developer site at
 http://developer.marklogic.com/discuss/
 
-   If you would like to contribute to this project, please let us know
+   If you would like to contribute to this project, please let us know.
 
 -----
 Rh, Feb 2009

@@ -8,9 +8,8 @@ information about setting up the Java side.  This document covers the
 XQuery part.
 
    MLJCR uses XCC (the Java<->Mark Logic connector) to issue requests
-to Mark Logic.  You must setup an appserver for XCC on the server using
-the Mark Logic Admin UI.  XCC connects to XBDC appservers.  XCC speaks
-the XDBC protocol.
+to Mark Logic.  You must setup an XDBC appserver for XCC using the
+Mark Logic Admin UI  XCC speaks the XDBC protocol.
 
    Included in the binary zip file is a directory hierarchy like this:
 
@@ -21,10 +20,10 @@ the XDBC protocol.
                lib/
                state/
 
-   The directories under jcr contain the XQuery modules invoked by the
+   The directories under 'jcr' contain the XQuery modules invoked by the
 MLJCR Java classes.  These modules are referenced from Java with paths
-that start with /MarkLogic/jcr.  These files are also in the source
-tree at mljcr/src/xquery.
+that start with /MarkLogic/jcr.  These XQuery modules are also in the
+source tree under mljcr/src/xquery.
 
    There are two ways that you can set things up to run these modules.
 
@@ -55,7 +54,7 @@ server is configured to run modules from the filesystem or a database.
 
    If you want to limit MLJCR to a single XDBC appserver, you will need
 to place the XQuery modules under the module root for that appserver.  You
-must maintain the same structure so that the MLJCR modules are at
+must maintain the same structure so that the MLJCR modules are under
 MarkLogic/jcr relative to the module root.
 
    For example, if the appserver's module root is /foo/bar/mymodules,
