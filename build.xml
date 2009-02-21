@@ -103,7 +103,8 @@
 		</exec>
 	</target>
 
-	<!-- Other target -->
+
+	<!-- Other targets -->
 	<target name="clean" depends="clean.core,clean.compat.1.4,clean.compat.1.3">
 		<delete dir="${products}"/>
 	</target>
