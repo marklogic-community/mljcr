@@ -70,6 +70,8 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 
 	abstract public Object visit (TextsearchQueryNode node, Object data);
 	abstract public Object visit (QueryRootNode node, Object data);
+	abstract protected String queryNodeValueAsString (ExactQueryNode node);
+	abstract protected String propertyNameAsString (ExactQueryNode node);
 
 	// internal method that subclasses call for common operations
 	protected Object visitRoot (QueryRootNode node, Object data)
@@ -145,7 +147,7 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 
 		AbstractQuery query = (AbstractQuery) data;
 
-		query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString(), "eq");
+		query.addPropertyValuePredicate (propertyNameAsString (node), queryNodeValueAsString (node), "eq");
 
 		return data;
 	}
@@ -156,10 +158,10 @@ abstract class AbstractQueryBuilder implements QueryNodeVisitor
 
 		AbstractQuery query = (AbstractQuery) data;
 
-		String typeName = node.getValue().toString();
+		String typeName = queryNodeValueAsString (node);
 
 		if ( ! NT_BASE_TYPE_NAME.equals (typeName)) {
-			query.addPropertyValuePredicate (node.getPropertyName().toString(), node.getValue().toString(), "eq");
+			query.addPropertyValuePredicate (propertyNameAsString (node), queryNodeValueAsString (node), "eq");
 		}
 
 		return data;

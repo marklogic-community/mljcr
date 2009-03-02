@@ -25,6 +25,7 @@ import org.apache.jackrabbit.core.query.QueryRootNode;
 import org.apache.jackrabbit.core.query.TextsearchQueryNode;
 import org.apache.jackrabbit.core.query.LocationStepQueryNode;
 import org.apache.jackrabbit.core.query.RelationQueryNode;
+import org.apache.jackrabbit.core.query.ExactQueryNode;
 import org.apache.jackrabbit.name.Path;
 import org.apache.jackrabbit.name.QName;
 
@@ -66,6 +67,16 @@ public class MarkLogicQueryBuilder13 extends AbstractQueryBuilder
 		}
 
 		return nameTest.toString();
+	}
+
+	protected String queryNodeValueAsString (ExactQueryNode node)
+	{
+		return node.getValue().toString();
+	}
+
+	protected String propertyNameAsString (ExactQueryNode node)
+	{
+		return node.getPropertyName().toString();
 	}
 
 	// ---------------------------------------------------------
