@@ -43,7 +43,8 @@ import java.util.logging.Logger;
 public class MarkLogicRepoStub extends RepositoryStub
 {
 	public static final String REPO_CONFIG_FILE_PROP = "com.marklogic.jcr.test.repoconfig";
-	public static final String REPO_HOME = "/tmp/JackRabbitRepo";
+	public static final String REPO_HOME_PROP = "com.marklogic.jcr.test.repohome";
+	public static final String REPO_HOME_DEFAULT = "/tmp/jcrtck";
 
 	private static final String SERIALIZED_TESTDATA = "com/marklogic/jcr/test/testdata-docview.xml";
 	private static final String SERIALIZED_TESTROOT = "com/marklogic/jcr/test/testroot-docview.xml";
@@ -68,6 +69,7 @@ public class MarkLogicRepoStub extends RepositoryStub
 	public Repository getRepository() throws RepositoryStubException
 	{
 		if (repository == null) {
+			String repoHome = environment.getProperty (REPO_HOME_PROP, REPO_HOME_DEFAULT);
 			String repoConfigFile = environment.getProperty(REPO_CONFIG_FILE_PROP);
 
 			if (repoConfigFile == null) {
@@ -79,7 +81,7 @@ public class MarkLogicRepoStub extends RepositoryStub
 
 			try {
 				in = new FileInputStream (repoConfigFile);
-				repositoryConfig = RepositoryConfig.create (new InputSource (in), REPO_HOME);
+				repositoryConfig = RepositoryConfig.create (new InputSource (in), repoHome);
 				repository = RepositoryImpl.create (repositoryConfig);
 				Session session = repository.login (getSuperuserCredentials(), null);
 

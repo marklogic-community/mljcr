@@ -28,7 +28,7 @@
         (e.g. registered namespaces, custom node types, etc.)
     -->
     <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
-        <param name="uriRoot" value="/jcrtck/repository"/>
+        <param name="uriRoot" value="${rep.home}/repository"/>
         <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
     </FileSystem>
 
@@ -67,7 +67,7 @@
     <!--
         location of workspaces root directory and name of default workspace
     -->
-    <Workspaces rootPath="/jcrtck/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
+    <Workspaces rootPath="${rep.home}/workspaces" configRootPath="/workspaceconfig" defaultWorkspace="default"/>
     <!--
         workspace configuration template:
         used to create the initial workspace if there's no workspace yet
@@ -101,13 +101,13 @@
     <!--
         Configures the versioning
     -->
-    <Versioning rootPath="/jcrtck/version">
+    <Versioning rootPath="${rep.home}/version">
         <!--
             Configures the filesystem to use for versioning for the respective
             persistence manager
         -->
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
-            <param name="uriRoot" value="/jcrtck/version" />
+            <param name="uriRoot" value="${rep.home}/version" />
 		    <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
 
@@ -123,7 +123,7 @@
 
     <SearchIndex class="com.marklogic.jcr.query.MarkLogicSearchIndex13">
         <FileSystem class="com.marklogic.jcr.fs.MarkLogicFileSystem13">
-            <param name="uriRoot" value="/jcrtck/repository/index"/>
+            <param name="uriRoot" value="${rep.home}/repository/index"/>
             <param name="contentSourceUrl" value="xcc://admin:admin@localhost:10000/jsr170"/>
         </FileSystem>
     </SearchIndex>
