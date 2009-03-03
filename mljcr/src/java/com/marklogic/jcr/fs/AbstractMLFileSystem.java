@@ -770,7 +770,8 @@ abstract public class AbstractMLFileSystem implements MarkLogicFileSystem
 			session.submitRequest (request);
 			// TODO: check version, etc
 		} catch (RequestException e) {
-			throw new FileSystemException ("Cannot establish connection with " + contentSourceUrl);
+			logger.log (Level.SEVERE, "Sanity check caught exception: " + e, e);
+			throw new FileSystemException ("Cannot establish connection with " + contentSourceUrl + ", " + e);
 		}
 	}
 

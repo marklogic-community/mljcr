@@ -316,9 +316,15 @@ abstract class AbstractQuery implements Query
 		sb.append ("\n");
 	}
 
+	private boolean hasRange()
+	{
+		return (offset != 0) && (limit != 0) && (limit != Long.MAX_VALUE)
+			&& (limit > offset);
+	}
+
 	String getXQuery()
 	{
-		boolean range = (limit != 0) || (offset != Long.MAX_VALUE);
+		boolean range = hasRange();
 		StringBuffer sb = new StringBuffer();
 
 		generateTextFunctions (sb);
